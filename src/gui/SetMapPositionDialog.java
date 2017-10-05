@@ -67,30 +67,25 @@ public class SetMapPositionDialog extends JDialog {
 				e.printStackTrace();
 			}
 			
-			for (int i = 0; i < 13; i++) {
+			for (int i = 0; i < 22; i++) {
 				iconList.add(iconSheet.getSubimage((i * 28) + 1, iconSheet.getHeight() - 28, 27, 27));
 			}
 			
 			for (int i = 0; i < iconList.size(); i++) {
-				BufferedImage bb = new BufferedImage(27, 27, BufferedImage.TYPE_INT_ARGB);
+				BufferedImage bb = iconList.get(i);
+				BufferedImage b2 = new BufferedImage(27, 27, BufferedImage.TYPE_INT_ARGB);
 				
 				int oldRGB = new Color(155, 232, 224).getRGB();
-			    int newRGB = new Color(155, 232, 224, 0).getRGB();
-			    int currRGB;
-			 
-			    for (int x = 0; x < iconList.get(i).getWidth(); x++) {
-			    	for (int y = 0; y < iconList.get(i).getHeight(); y++) {
-			    		currRGB = iconList.get(i).getRGB(x, y);
-			 
-				    	if (oldRGB == currRGB) {
-				    		bb.setRGB(x, y, newRGB);
-				    	} else {
-				    		bb.setRGB(x, y, currRGB);
-				    	}
-			    	}
-			    }
+
+				for (int x = 0; x < bb.getWidth(); x++) {
+					for (int y = 0; y < bb.getHeight(); y++) {
+						if (bb.getRGB(x, y) != oldRGB) {
+							b2.setRGB(x, y, bb.getRGB(x, y));
+						}
+					}
+				}
 			    
-			    iconList.set(i, bb);
+			    iconList.set(i, b2);
 			}
 		}
 		
