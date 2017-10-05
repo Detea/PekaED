@@ -167,8 +167,11 @@ public class SpritePanel extends JPanel {
 					
 					dfm.fireTableDataChanged();
 				
-					if (dfm.getRowCount() - 1 >= 0) {
-						table.setRowSelectionInterval(dfm.getRowCount() - 1, dfm.getRowCount() - 1);
+					if (sr - 1 >= 0) {
+						table.setRowSelectionInterval(sr - 1, sr - 1);
+						Data.selectedSprite = table.getSelectedRow();
+					} else {
+						Data.selectedSprite = 255;
 					}
 					
 					Data.fileChanged = true;
