@@ -228,7 +228,7 @@ public class MapSettingsPanel extends JPanel {
 		add(lblIcon);
 		
 		comboBox_2 = new JComboBox();
-		comboBox_2.setModel(new DefaultComboBoxModel(new String[] {"Question mark", "Forest Hill", "Forest Hill at night", "Deep Forest", "Deep Forest at Night", "Field", "Field at night", "Mountains", "Castle", "Red Castle", "Cave", "Boss Battle", "Factory"}));
+		comboBox_2.setModel(new DefaultComboBoxModel(new String[] {"Question mark", "Forest Hill", "Forest Hill at night", "Deep Forest", "Deep Forest at Night", "Field", "Field at night", "Mountains", "Castle", "Red Castle", "Cave", "Boss Battle", "Factory", "Custom icon #14", "Custom icon #15", "Custom icon #16", "Custom icon #17", "Custom icon #18", "Custom icon #19", "Custom icon #20", "Custom icon #21", "Custom icon #22"}));
 		comboBox_2.setBounds(71, 218, 108, 20);
 		add(comboBox_2);
 		
