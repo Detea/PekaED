@@ -26,10 +26,12 @@ import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
 import data.Data;
+import data.Settings;
 
 public class EpisodePanel extends JPanel {
 	
@@ -53,8 +55,9 @@ public class EpisodePanel extends JPanel {
 		list.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
 				if (e.getClickCount() == 2) {
-					if (Data.currentEpisodeFile != null) {
-						pkg.loadLevel((String) dfm.getElementAt(list.getSelectedIndex()));
+					if (Data.currentEpisodeFile != null && !dfm.isEmpty()) {
+						pkg.loadLevel((String) Data.currentEpisodePath + File.separatorChar + dfm.getElementAt(list.getSelectedIndex()));
+						pkg.setFrameTitle((String) Data.currentEpisodePath + File.separatorChar + dfm.getElementAt(list.getSelectedIndex()));
 					}
 				}
 			}
@@ -63,7 +66,7 @@ public class EpisodePanel extends JPanel {
 		scrollPane.setPreferredSize(new Dimension(250, 500));
 		
 		JLabel lblEpisode = new JLabel("Episode: ");
-		lblEpisodeName = new JLabel("name");
+		lblEpisodeName = new JLabel("");
 		
 		JButton btnImport = new JButton("Import Level");
 		JButton btnRemove = new JButton("Remove");
@@ -80,6 +83,24 @@ public class EpisodePanel extends JPanel {
 				if (res == JFileChooser.APPROVE_OPTION) {
 					importLevel(fc.getSelectedFile());
 				}
+			}
+			
+		});
+		
+		btnRemove.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				int res = JOptionPane.showConfirmDialog(null, "Delete file from disk?", "Remove level", JOptionPane.YES_NO_OPTION);
+				
+				if (res == JOptionPane.YES_OPTION) {
+					Data.episodeFiles.get(list.getSelectedIndex()).delete();
+				}
+				
+				Data.episodeFiles.remove(list.getSelectedIndex());
+				dfm.remove(list.getSelectedIndex());
+				
+				Data.episodeChanged = true;
 			}
 			
 		});
@@ -106,6 +127,7 @@ public class EpisodePanel extends JPanel {
 		dfm.clear();
 		
 		currentEpisode = name;
+		Data.episodeChanged = false;
 		
 		lblEpisodeName.setText(currentEpisode);
 	}
@@ -146,7 +168,7 @@ public class EpisodePanel extends JPanel {
 			while ((read = r.readLine()) != null) {
 				Data.episodeFiles.add(new File(read)); // Todo: Error handling
 				
-				filepath = read.split("//");
+				filepath = read.split("\\\\"); // Is this platform independent?
 				
 				dfm.addElement(filepath[filepath.length - 1]);
 			}
@@ -160,20 +182,22 @@ public class EpisodePanel extends JPanel {
 	}
 	
 	public void importLevel(File file) {
-		if (file.getParentFile().getPath() != Data.currentEpisodePath) {
-			try {
-				Files.copy(file.toPath(), (new File(Data.currentEpisodePath + File.separatorChar + file.getName()).toPath()), StandardCopyOption.REPLACE_EXISTING);
-				
-				file = new File(Data.currentEpisodePath + File.separatorChar + file.getName());
-			} catch (IOException e) {
-				e.printStackTrace();
+		if (Data.episodeFiles.size() < Data.EPISODE_LEVEL_LIMIT) {
+			if (file.getParentFile().getPath() != Data.currentEpisodePath) {
+				try {
+					Files.copy(file.toPath(), (new File(Data.currentEpisodePath + File.separatorChar + file.getName()).toPath()), StandardCopyOption.REPLACE_EXISTING);
+					
+					file = new File(Data.currentEpisodePath + File.separatorChar + file.getName());
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
+			
+			Data.episodeFiles.add(file);
+			
+			dfm.addElement(file.getName());
+			
+			Data.episodeChanged = true;
 		}
-		
-		Data.episodeFiles.add(file);
-		
-		dfm.addElement(file.getName());
-		
-		saveEpisode();
 	}
 }

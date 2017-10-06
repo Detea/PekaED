@@ -16,6 +16,8 @@ public class Settings {
 	public static String DEFAULT_TILESET = "TILES01.bmp";
 	public static String DEFAULT_BACKGROUND = "CASTLE.bmp";
 	public static String DEFAULT_MUSIC = "song01.xm";
+
+	public static boolean loadEpisodeOnStartup = false;
 	
 	// Using File.separatorChar so that this program is platform independent
 	public static void setPaths() {

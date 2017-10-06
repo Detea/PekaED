@@ -10,7 +10,12 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.BufferedWriter;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Vector;
@@ -101,7 +106,6 @@ public class PekaEDGUI {
 		JMenuItem mifNewEpisode = new JMenuItem("New Episode");
 		JMenuItem mifOpenEpisode = new JMenuItem("Open Episode");
 		JMenuItem mifSaveEpisode = new JMenuItem("Save Episode");
-		JMenuItem mifSaveEpisodeAs = new JMenuItem("Save Episode As...");
 		
 		JMenuItem mifImportEpisode = new JMenuItem("Import Episode");
 		
@@ -113,7 +117,6 @@ public class PekaEDGUI {
 		mFile.add(mifNewEpisode);
 		mFile.add(mifOpenEpisode);
 		mFile.add(mifSaveEpisode);
-		mFile.add(mifSaveEpisodeAs);
 		mFile.add(new JSeparator());
 		mFile.add(mifImportEpisode);
 		
@@ -229,6 +232,15 @@ public class PekaEDGUI {
 		
 		});
 		
+		mifSaveEpisode.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				ep.saveEpisode();
+			}
+			
+		});
+
 		JMenu mExtras = new JMenu("Extras");
 		JMenuItem mieSettings = new JMenuItem("Settings");
 		JMenuItem mieAbout = new JMenuItem("About");
@@ -237,13 +249,12 @@ public class PekaEDGUI {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				// TODO Auto-generated method stub
-				
+				new SettingsDialog(); // The user can open the settings dialog multiple times, may not want that
 			}
 		
 		});
 		
-		mieSettings.addActionListener(new ActionListener() {
+		mieAbout.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -265,28 +276,16 @@ public class PekaEDGUI {
 		JButton bLoadMap = new JButton();
 		JButton bSaveMap = new JButton();
 		JButton bSaveAsMap = new JButton();
-		JButton bHelp = new JButton();
 		
 		bNewMap.setToolTipText("New Level");
 		bLoadMap.setToolTipText("Load Level");
 		bSaveMap.setToolTipText("Save Level");
 		bSaveAsMap.setToolTipText("Save Level As...");
-		bHelp.setToolTipText("About");
 	
 		bNewMap.setIcon(new ImageIcon(getClass().getResource("/document-new.png")));
 		bLoadMap.setIcon(new ImageIcon(getClass().getResource("/document-open.png")));
 		bSaveMap.setIcon(new ImageIcon(getClass().getResource("/document-save.png")));
 		bSaveAsMap.setIcon(new ImageIcon(getClass().getResource("/document-save-as.png")));
-		bHelp.setIcon(new ImageIcon(getClass().getResource("/help-browser.png")));
-		
-		bHelp.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				new AboutFrame();
-			}
-			
-		});
 		
 		bNewMap.addActionListener(new ActionListener() {
 
@@ -344,8 +343,6 @@ public class PekaEDGUI {
 		toolbar.add(bLoadMap);
 		toolbar.add(bSaveMap);
 		toolbar.add(bSaveAsMap);
-		toolbar.add(bHelp);
-		toolbar.addSeparator();
 		
 		JComboBox<String> cbLayers = new JComboBox<String>();
 		cbLayers.addItem("Both");
@@ -612,14 +609,34 @@ public class PekaEDGUI {
 
 			@Override
 			public void windowClosing(WindowEvent e) {
+				boolean quit = false;
+				
 				if (Data.fileChanged) {
-					if (showSaveWarning()) {
-						Data.runThread = false;
-						
-						System.exit(0);
-					}
+					quit = showSaveWarning();
 				} else {
+					quit = true;
+				}
+				
+				if (quit) {
 					Data.runThread = false;
+					
+					
+					if (Settings.loadEpisodeOnStartup && Data.currentEpisodeFile != null) {
+						// Maybe store path to last used episode in settings file?
+						
+						try {
+							DataOutputStream dos = new DataOutputStream(new FileOutputStream("lastepisode"));
+							
+							dos.writeUTF(Data.currentEpisodeFile.getAbsolutePath());
+							
+							dos.flush();
+							dos.close();
+						} catch (IOException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+						
+					}
 					
 					System.exit(0);
 				}
@@ -661,6 +678,31 @@ public class PekaEDGUI {
 			img = ImageIO.read(getClass().getResource("/pkedit.png"));
 		} catch (IOException e1) {
 			e1.printStackTrace();
+		}
+		
+		if (Settings.loadEpisodeOnStartup) {
+			try {
+				DataInputStream dis = new DataInputStream(new FileInputStream("lastepisode"));
+				File f = new File(dis.readUTF());
+				
+				Data.currentEpisodeFile = f;
+				Data.currentEpisodePath = f.getAbsolutePath();
+				
+				ep.loadEpisode(Data.currentEpisodeFile);
+				
+				if (!Data.episodeFiles.isEmpty()) {
+					loadLevel(Data.episodeFiles.get(0).getAbsolutePath());
+					setFrameTitle(Data.episodeFiles.get(0).getAbsolutePath());
+				}
+			} catch (FileNotFoundException e1) {
+				JOptionPane.showMessageDialog(frame, "Can't find last episode", "Error", JOptionPane.ERROR_MESSAGE);
+				
+				e1.printStackTrace();
+			} catch (IOException e1) {
+				JOptionPane.showMessageDialog(frame, "Can't find last episode", "Error", JOptionPane.ERROR_MESSAGE);
+				
+				e1.printStackTrace();
+			}
 		}
 		
 		frame.setIconImage(img);
@@ -820,7 +862,7 @@ public class PekaEDGUI {
 		return false;
 	}
 	
-	private void setFrameTitle(String title) {
+	public void setFrameTitle(String title) {
 		frame.setTitle(title + " - PekaED");
 	}
 }
