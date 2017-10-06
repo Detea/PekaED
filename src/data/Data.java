@@ -19,6 +19,8 @@ public class Data {
 	
 	public static int sx, sy, sw, sh; // SelectionX, SelectionY, SelectionWidth, SelectionHeight
 	
+	public static int EPISODE_LEVEL_LIMIT = 50;
+	
 	public static int currentLayer = 2;
 	
 	public static boolean showSprites = true;
@@ -29,7 +31,13 @@ public class Data {
 	
 	public static ArrayList<Integer> multiSelection = new ArrayList<Integer>();
 	
-	public static File currentFile;
+	public static ArrayList<File> episodeFiles = new ArrayList<File>();
+	
+	public static File currentFile, currentEpisodeFile;
+	
+	public static String currentEpisodePath;
+	
+	public static int mode = Constants.MODE_LEGACY;
 	
 	public static PK2Map map;
 	
