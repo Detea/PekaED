@@ -497,7 +497,7 @@ public class PekaEDGUI {
 			tp.setTileset(Data.map.getTileset());
 			lp.setMap();
 			msp.setMap();
-			sp.setMap(Data.map);
+			sp.setMap();
 			
 			Data.fileChanged = false;
 
@@ -518,11 +518,9 @@ public class PekaEDGUI {
 		Data.selectedTile = 0;
 		
 		msp.setMap();
-		sp.setMap(Data.map);
+		sp.setMap();
 		
 		tp.setTileset(Data.map.getTileset());
-		
-		lp.setTileset(Data.map.getTileset());
 		lp.setMap();
 		
 		setFrameTitle("Untitled");

@@ -23,7 +23,7 @@ public class Settings {
 		TILES_PATH = BASE_PATH  + File.separatorChar + "gfx" + File.separatorChar + "tiles" + File.separatorChar;
 		SCENERY_PATH = BASE_PATH + File.separatorChar + "gfx" + File.separatorChar + "scenery" + File.separatorChar;
 		SPRITE_PATH = BASE_PATH + File.separatorChar + "sprites" + File.separatorChar;
-		MUSIC_PATH = BASE_PATH + File.separatorChar + "music";
+		MUSIC_PATH = BASE_PATH + File.separatorChar + "music" + File.separatorChar;
 		GFX_PATH = BASE_PATH + File.separatorChar + "gfx" + File.separatorChar;
 	}
 }

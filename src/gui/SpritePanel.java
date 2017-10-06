@@ -32,13 +32,10 @@ import pekkakana.PK2Sprite;
 
 public class SpritePanel extends JPanel {
 
-	PK2Map map;
 	DefaultTableModel dfm;
 	JTable table;
 	
 	public SpritePanel() {
-		this.map = Data.map;
-		
 		dfm = new DefaultTableModel();
 		
 		table = new JTable(dfm);
@@ -207,9 +204,7 @@ public class SpritePanel extends JPanel {
 		add(buttonPanel, BorderLayout.SOUTH);
 	}
 	
-	public void setMap(PK2Map map) {
-		this.map = map;
-		
+	public void setMap() {
 		setList();
 		
 		dfm.fireTableDataChanged();
@@ -229,8 +224,6 @@ public class SpritePanel extends JPanel {
 				
 				Vector v = new Vector();
 				v.addElement(" " + s.getName() + " (" + fc.getSelectedFile().getName() + ")");
-				
-				v.addElement(false);
 				
 				dfm.addRow(v);
 				
@@ -261,8 +254,6 @@ public class SpritePanel extends JPanel {
 			
 			if (Data.map.spriteList.get(i).type == 1 && Data.map.playerSprite == i) {
 				v.addElement("true");
-			} else {
-				v.addElement("false");
 			}
 			
 			dfm.addRow(v);
