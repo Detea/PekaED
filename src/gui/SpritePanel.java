@@ -13,6 +13,7 @@ import java.io.File;
 import java.util.EventObject;
 import java.util.Vector;
 
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -27,7 +28,6 @@ import javax.swing.table.TableCellEditor;
 
 import data.Data;
 import data.Settings;
-import pekkakana.PK2Map;
 import pekkakana.PK2Sprite;
 
 public class SpritePanel extends JPanel {

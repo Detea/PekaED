@@ -1,13 +1,14 @@
 package main;
 
-import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 
 import javax.swing.JOptionPane;
 
+import data.Constants;
 import data.Settings;
 import gui.PekaEDGUI;
 import gui.SetPathDialog;
@@ -18,10 +19,13 @@ public class PekaED {
 		
 		if (settingsFile.exists()) {
 			try {
-				BufferedReader r = new BufferedReader(new FileReader(settingsFile));
+				DataInputStream dis = new DataInputStream(new FileInputStream("settings"));
 				
-				Settings.BASE_PATH = r.readLine();
+				Settings.BASE_PATH = dis.readUTF();
 				Settings.setPaths();
+				
+				Settings.loadEpisodeOnStartup = dis.readBoolean();
+				Constants.ENHANCED_LEVEL_LIMIT = dis.readInt();
 				
 				File pathFile = new File(Settings.BASE_PATH);
 				
@@ -31,12 +35,12 @@ public class PekaED {
 					new PekaEDGUI().setup();
 				}
 				
-				r.close();
+				dis.close();
 			} catch (FileNotFoundException e1) {
-				JOptionPane.showConfirmDialog(null, "Could'nt find settings file.\n" + e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(null, "Could'nt find settings file.\n" + e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 				//e1.printStackTrace();
 			} catch (IOException e1) {
-				JOptionPane.showConfirmDialog(null, "Could'nt read settings file.\n" + e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(null, "Could'nt read settings file.\n" + e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 				//e1.printStackTrace();
 			}
 		} else {

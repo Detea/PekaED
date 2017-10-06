@@ -44,5 +44,5 @@ public class Data {
 	public static TilePanel tp;
 	public static LevelPanel lp;
 	
-	public static boolean fileChanged = false;
+	public static boolean fileChanged = false, episodeChanged = false;
 }

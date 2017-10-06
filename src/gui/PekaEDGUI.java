@@ -783,7 +783,7 @@ public class PekaEDGUI {
 			int res = JOptionPane.showConfirmDialog(frame, "Do you want to add this file to the episode '" + ep.currentEpisode + "'?", "Add file to episode?", JOptionPane.YES_NO_OPTION);
 			
 			if (res == JOptionPane.YES_OPTION) {
-				if (showSaveDialog()) {
+				if (showAddToEpisodeSave()) {
 					ep.importLevel(Data.currentFile);
 				}
 			}
@@ -827,6 +827,39 @@ public class PekaEDGUI {
 		}
 		
 		return quit;
+	}
+	
+	// dumb name, I'm really tired right now
+	private boolean showAddToEpisodeSave() {
+		JFileChooser fc = new JFileChooser(Data.currentEpisodePath);
+		
+		fc.setDialogTitle("Save level");
+		
+		fc.setAcceptAllFileFilterUsed(false);
+		
+		fc.setFileFilter(new FileFilter() {
+
+			@Override
+			public boolean accept(File f) {
+				return f.isDirectory() || f.getName().endsWith(".map") && f.getName().length() < 39;
+			}
+
+			@Override
+			public String getDescription() {
+				return "Pekka Kana 2 level";
+			}
+			
+		});
+		
+		int res = fc.showSaveDialog(frame);
+		
+		if (res == JFileChooser.APPROVE_OPTION) {
+			saveLevel(fc.getSelectedFile());
+			
+			return true;
+		}
+		
+		return false;
 	}
 	
 	private boolean showSaveDialog() {
