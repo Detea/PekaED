@@ -29,13 +29,13 @@ public class PekaED {
 				
 				File pathFile = new File(Settings.BASE_PATH);
 				
+				dis.close();
+				
 				if (!pathFile.exists()) {
 					new SetPathDialog();
 				} else {
 					new PekaEDGUI().setup();
 				}
-				
-				dis.close();
 			} catch (FileNotFoundException e1) {
 				JOptionPane.showMessageDialog(null, "Could'nt find settings file.\n" + e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 				//e1.printStackTrace();

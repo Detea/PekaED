@@ -682,26 +682,30 @@ public class PekaEDGUI {
 		
 		if (Settings.loadEpisodeOnStartup) {
 			try {
-				DataInputStream dis = new DataInputStream(new FileInputStream("lastepisode"));
-				File f = new File(dis.readUTF());
-				
-				Data.currentEpisodeFile = f;
-				Data.currentEpisodePath = f.getAbsolutePath();
-				
-				ep.loadEpisode(Data.currentEpisodeFile);
-				
-				if (!Data.episodeFiles.isEmpty()) {
-					loadLevel(Data.episodeFiles.get(0).getAbsolutePath());
-					setFrameTitle(Data.episodeFiles.get(0).getAbsolutePath());
+				if (new File("lastepisode").exists()) {
+					DataInputStream dis = new DataInputStream(new FileInputStream("lastepisode"));
+					String episodePath = dis.readUTF();
+					
+					if (!episodePath.isEmpty()) {
+						File f = new File(episodePath);
+						
+						Data.currentEpisodeFile = f;
+						Data.currentEpisodePath = f.getParent();
+						
+						ep.loadEpisode(Data.currentEpisodeFile);
+						
+						if (!Data.episodeFiles.isEmpty()) {
+							loadLevel(Data.episodeFiles.get(0).getAbsolutePath());
+							setFrameTitle(Data.episodeFiles.get(0).getAbsolutePath());
+						}
+					}
 				}
 			} catch (FileNotFoundException e1) {
-				JOptionPane.showMessageDialog(frame, "Can't find last episode", "Error", JOptionPane.ERROR_MESSAGE);
-				
-				e1.printStackTrace();
+				// log this
+				//e1.printStackTrace();
 			} catch (IOException e1) {
-				JOptionPane.showMessageDialog(frame, "Can't find last episode", "Error", JOptionPane.ERROR_MESSAGE);
-				
-				e1.printStackTrace();
+				// log this
+				//e1.printStackTrace();
 			}
 		}
 		
@@ -796,17 +800,18 @@ public class PekaEDGUI {
 		if (file.exists())
 			file.delete();
 		
-		File f = file;
-		
-		if (!file.getName().endsWith(".map")) {
-			f = new File(file.getAbsolutePath() + ".map");
+		if (!file.getName().endsWith("map")) {
+			file = new File(file.getAbsolutePath() +  ".map");
 		}
 		
 		msp.saveChanges();
 		
-		Data.map.saveFile(f);
+		Data.map.file = file;
+		Data.map.saveFile();
 		
-		setFrameTitle(Data.currentFile.getAbsolutePath());
+		Data.currentFile = file;
+		
+		setFrameTitle(file.getAbsolutePath());
 	}
 	
 	private boolean showSaveWarning() {
@@ -841,7 +846,7 @@ public class PekaEDGUI {
 
 			@Override
 			public boolean accept(File f) {
-				return f.isDirectory() || f.getName().endsWith(".map") && f.getName().length() < 39;
+				return f.isDirectory() || f.getName().endsWith("map") && f.getName().length() < 39;
 			}
 
 			@Override
@@ -873,7 +878,7 @@ public class PekaEDGUI {
 
 			@Override
 			public boolean accept(File f) {
-				return f.isDirectory() || f.getName().endsWith(".map") && f.getName().length() < 39;
+				return f.isDirectory() || f.getName().endsWith("map") && f.getName().length() < 39;
 			}
 
 			@Override

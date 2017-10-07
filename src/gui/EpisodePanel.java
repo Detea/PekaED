@@ -8,12 +8,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -29,9 +25,10 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.filechooser.FileFilter;
 
 import data.Data;
-import data.Settings;
+import pekkakana.PK2Map;
 
 public class EpisodePanel extends JPanel {
 	
@@ -78,6 +75,20 @@ public class EpisodePanel extends JPanel {
 				JFileChooser fc = new JFileChooser();
 				fc.setDialogTitle("Import a level into an episode...");
 				
+				fc.setFileFilter(new FileFilter() {
+
+					@Override
+					public boolean accept(File f) {
+						return f.isDirectory() || f.getName().endsWith("map");
+					}
+
+					@Override
+					public String getDescription() {
+						return "Pekka Kana 2 level file";
+					}
+					
+				});
+				
 				int res = fc.showOpenDialog(null);
 				
 				if (res == JFileChooser.APPROVE_OPTION) {
@@ -93,12 +104,20 @@ public class EpisodePanel extends JPanel {
 			public void actionPerformed(ActionEvent arg0) {
 				int res = JOptionPane.showConfirmDialog(null, "Delete file from disk?", "Remove level", JOptionPane.YES_NO_OPTION);
 				
+				int index = list.getSelectedIndex();
+				
 				if (res == JOptionPane.YES_OPTION) {
-					Data.episodeFiles.get(list.getSelectedIndex()).delete();
+					Data.episodeFiles.get(index).delete();
 				}
 				
-				Data.episodeFiles.remove(list.getSelectedIndex());
-				dfm.remove(list.getSelectedIndex());
+				Data.episodeFiles.remove(index);
+				dfm.remove(index);
+				
+				for (int i = index; i < Data.episodeFiles.size(); i++) {
+					PK2Map map = new PK2Map(Data.episodeFiles.get(i).getAbsolutePath());
+					map.levelNumber--;
+					map.saveFile();
+				}
 				
 				Data.episodeChanged = true;
 			}
@@ -112,7 +131,7 @@ public class EpisodePanel extends JPanel {
 		topPanel.add(lblEpisode);
 		topPanel.add(lblEpisodeName);
 		
-		bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.X_AXIS));
+		bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.Y_AXIS));
 		bottomPanel.add(btnImport);
 		bottomPanel.add(btnRemove);
 		
@@ -172,8 +191,22 @@ public class EpisodePanel extends JPanel {
 				
 				dfm.addElement(filepath[filepath.length - 1]);
 			}
+			
+			r.close();
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
+			JOptionPane.showMessageDialog(null, "Coudl'nt find episode file '" + file.getName() + "'.", "Error", JOptionPane.ERROR_MESSAGE);
+			
+			FileWriter w;
+			try {
+				w = new FileWriter("lastepisode");
+				w.close();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			
+			Data.currentEpisodeFile = null;
+			
 			e.printStackTrace();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -192,6 +225,10 @@ public class EpisodePanel extends JPanel {
 					e.printStackTrace();
 				}
 			}
+			
+			PK2Map map = new PK2Map(file.getAbsolutePath());
+			map.levelNumber = Data.episodeFiles.size() + 1;
+			map.saveFile();
 			
 			Data.episodeFiles.add(file);
 			

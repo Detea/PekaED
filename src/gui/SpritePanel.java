@@ -13,7 +13,6 @@ import java.io.File;
 import java.util.EventObject;
 import java.util.Vector;
 
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -26,6 +25,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 
+import data.Constants;
 import data.Data;
 import data.Settings;
 import pekkakana.PK2Sprite;
@@ -211,32 +211,34 @@ public class SpritePanel extends JPanel {
 	}
 	
 	public void addSprite() {
-		JFileChooser fc = new JFileChooser(Settings.BASE_PATH + File.separatorChar + "sprites");
-		
-		fc.setDialogTitle("Select a sprite to load");
-		fc.setFileFilter(new FileNameExtensionFilter("Pekka Kana 2 Sprite file", "spr"));
-		
-		int res = fc.showOpenDialog(null);
-		
-		if (res == JFileChooser.APPROVE_OPTION) {
-			if (fc.getSelectedFile().exists()) {
-				PK2Sprite s = new PK2Sprite(fc.getSelectedFile().getName());
-				
-				Vector v = new Vector();
-				v.addElement(" " + s.getName() + " (" + fc.getSelectedFile().getName() + ")");
-				
-				dfm.addRow(v);
-				
-				Data.map.addSprite(s, fc.getSelectedFile().getName());
-				
-				table.setRowSelectionInterval(dfm.getRowCount() - 1, dfm.getRowCount() - 1);
-				
-				Data.selectedSprite = table.getSelectedRow();
-				Data.selectedTile = 255;
-				Data.selectedTileForeground = 255;
-				Data.selectedTileBackground = 255;
-			} else {
-				JOptionPane.showMessageDialog(null, "Coulnd't find file '" + fc.getSelectedFile().getName() + "'.", "Error", JOptionPane.OK_OPTION);
+		if (Data.map.spriteList.size() < Constants.SPRITE_LIMIT) {
+			JFileChooser fc = new JFileChooser(Settings.BASE_PATH + File.separatorChar + "sprites");
+			
+			fc.setDialogTitle("Select a sprite to load");
+			fc.setFileFilter(new FileNameExtensionFilter("Pekka Kana 2 Sprite file", "spr"));
+			
+			int res = fc.showOpenDialog(null);
+			
+			if (res == JFileChooser.APPROVE_OPTION) {
+				if (fc.getSelectedFile().exists()) {
+					PK2Sprite s = new PK2Sprite(fc.getSelectedFile().getName());
+					
+					Vector v = new Vector();
+					v.addElement(" " + s.getName() + " (" + fc.getSelectedFile().getName() + ")");
+					
+					dfm.addRow(v);
+					
+					Data.map.addSprite(s, fc.getSelectedFile().getName());
+					
+					table.setRowSelectionInterval(dfm.getRowCount() - 1, dfm.getRowCount() - 1);
+					
+					Data.selectedSprite = table.getSelectedRow();
+					Data.selectedTile = 255;
+					Data.selectedTileForeground = 255;
+					Data.selectedTileBackground = 255;
+				} else {
+					JOptionPane.showMessageDialog(null, "Coulnd't find file '" + fc.getSelectedFile().getName() + "'.", "Error", JOptionPane.OK_OPTION);
+				}
 			}
 		}
 	}
