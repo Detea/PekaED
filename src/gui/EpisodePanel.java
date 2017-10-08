@@ -2,6 +2,7 @@ package gui;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -67,6 +68,8 @@ public class EpisodePanel extends JPanel {
 		
 		JButton btnImport = new JButton("Import Level");
 		JButton btnRemove = new JButton("Remove");
+		JButton btnUp = new JButton("Up");
+		JButton btnDown = new JButton("Down");
 		
 		btnImport.addActionListener(new ActionListener() {
 
@@ -74,6 +77,7 @@ public class EpisodePanel extends JPanel {
 			public void actionPerformed(ActionEvent arg0) {
 				JFileChooser fc = new JFileChooser();
 				fc.setDialogTitle("Import a level into an episode...");
+				fc.setMultiSelectionEnabled(true);
 				
 				fc.setFileFilter(new FileFilter() {
 
@@ -92,7 +96,9 @@ public class EpisodePanel extends JPanel {
 				int res = fc.showOpenDialog(null);
 				
 				if (res == JFileChooser.APPROVE_OPTION) {
-					importLevel(fc.getSelectedFile());
+					for (File f : fc.getSelectedFiles()) {
+						importLevel(f);
+					}
 				}
 			}
 			
@@ -119,6 +125,18 @@ public class EpisodePanel extends JPanel {
 					map.saveFile();
 				}
 				
+				// Broken
+				if (!Data.episodeFiles.isEmpty() && list.getSelectedIndex() > 0) {
+					if (Data.episodeFiles.size() - 1 > 0) {
+						Data.currentFile = Data.episodeFiles.get(Data.episodeFiles.size() - 1);
+						pkg.loadLevel(Data.currentFile.getAbsolutePath());
+						list.setSelectedIndex(Data.episodeFiles.size() - 1);
+						
+						if (Data.episodeFiles.size() == 0) {
+							pkg.createEmptyLevel();
+						}
+					}
+				}
 				Data.episodeChanged = true;
 			}
 			
@@ -131,9 +149,17 @@ public class EpisodePanel extends JPanel {
 		topPanel.add(lblEpisode);
 		topPanel.add(lblEpisodeName);
 		
-		bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.Y_AXIS));
+		btnImport.setBounds(10, 20, 80, 25);
+		btnRemove.setBounds(10, 550, 80, 25);
+		
+		btnUp.setBounds(170, 520, 80, 25);
+		btnDown.setBounds(170, 550, 80, 25);
+		
+		bottomPanel.setLayout(new GridLayout(2, 2));
 		bottomPanel.add(btnImport);
+		bottomPanel.add(btnUp);
 		bottomPanel.add(btnRemove);
+		bottomPanel.add(btnDown);
 		
 		add(topPanel, BorderLayout.NORTH);
 		add(scrollPane, BorderLayout.CENTER);
@@ -226,7 +252,7 @@ public class EpisodePanel extends JPanel {
 				}
 			}
 			
-			PK2Map map = new PK2Map(file.getAbsolutePath());
+			PK2Map map = new PK2Map(file.getAbsolutePath()); // This is way too slow, need to find a better way
 			map.levelNumber = Data.episodeFiles.size() + 1;
 			map.saveFile();
 			

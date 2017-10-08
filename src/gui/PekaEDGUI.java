@@ -765,7 +765,18 @@ public class PekaEDGUI {
 		}
 	}
 	
-	private void newLevel() {
+	public void createEmptyLevel() {
+		Data.map = new PK2Map();
+		msp.setMap();
+		sp.setMap();
+		
+		tp.setTileset(Data.map.getTileset());
+		lp.setMap();
+		
+		setFrameTitle("Untitled");
+	}
+	
+	public void newLevel() {
 		Data.fileChanged = false;
 		
 		PK2Sprite psprite = new PK2Sprite("rooster.spr");
@@ -789,11 +800,15 @@ public class PekaEDGUI {
 			if (res == JOptionPane.YES_OPTION) {
 				if (showAddToEpisodeSave()) {
 					ep.importLevel(Data.currentFile);
+					
+					setFrameTitle(Data.episodeFiles.get(Data.episodeFiles.size() - 1).getAbsolutePath());
+				} else {
+					setFrameTitle("Untitled");
 				}
 			}
 		}
 		
-		setFrameTitle("Untitled");
+		
 	}
 	
 	private void saveLevel(File file) {
