@@ -371,7 +371,7 @@ public class PekaEDGUI {
 			
 		});
 		
-		JLabel lblLayer = new JLabel("Layer: ");
+		JLabel lblLayer = new JLabel("Layer:  ");
 		
 		toolbar.addSeparator();
 		
@@ -443,7 +443,7 @@ public class PekaEDGUI {
 			
 		});
 		
-		JLabel lblMode = new JLabel("Mode:");
+		JLabel lblMode = new JLabel("Mode:  ");
 		
 		Vector<String> modeList = new Vector<String>();
 		modeList.addElement("Legacy");
@@ -470,6 +470,7 @@ public class PekaEDGUI {
 		toolbar.addSeparator();
 		toolbar.add(lblLayer); 
 		toolbar.add(cbLayers);
+		toolbar.addSeparator(new Dimension(10, 0));
 		toolbar.add(lblMode);
 		toolbar.add(cbMode);
 		
@@ -505,7 +506,7 @@ public class PekaEDGUI {
 
 						@Override
 						public boolean accept(File f) {
-							return f.getName().endsWith(".map") && f.getName().length() < 39;
+							return f.isDirectory() || f.getName().endsWith(".map") && f.getName().length() < 39;
 						}
 
 						@Override
@@ -524,6 +525,45 @@ public class PekaEDGUI {
 					if (Data.fileChanged) {
 						saveLevel(Data.currentFile);
 					}
+				}
+			}
+			
+		});
+		
+		actionMap.put("saveAsAction", new AbstractAction() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				JFileChooser fc = null;
+				fc = new JFileChooser();
+				
+				if (Data.currentFile != null) {
+					fc.setCurrentDirectory(Data.currentFile.getParentFile());
+					fc.setSelectedFile(Data.currentFile);
+				}
+				
+				fc.setDialogTitle("Save level as...");
+				
+				fc.setAcceptAllFileFilterUsed(false);
+				
+				fc.setFileFilter(new FileFilter() {
+
+					@Override
+					public boolean accept(File f) {
+						return f.isDirectory() || f.getName().endsWith(".map") && f.getName().length() < 39;
+					}
+
+					@Override
+					public String getDescription() {
+						return "Pekka Kana 2 level";
+					}
+					
+				});
+				
+				int res = fc.showSaveDialog(frame);
+				
+				if (res == JFileChooser.APPROVE_OPTION) {
+					saveLevel(fc.getSelectedFile());
 				}
 			}
 			
@@ -581,14 +621,56 @@ public class PekaEDGUI {
 			
 		});
 		
+		actionMap.put("selectBrush", new AbstractAction() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				Data.selectedTool = Data.TOOL_BRUSH;
+				btEraser.setSelected(false);
+				btBrush.setSelected(true);
+			}
+			
+		});
+		
+		actionMap.put("selectEraser", new AbstractAction() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				Data.selectedTool = Data.TOOL_ERASER;
+				btBrush.setSelected(false);
+				btEraser.setSelected(true);
+			}
+			
+		});
+		
+		actionMap.put("showSprites", new AbstractAction() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				if (Data.showSprites) {
+					Data.showSprites = false;
+					btShowSprites.setSelected(false);
+				} else {
+					Data.showSprites = true;
+					btShowSprites.setSelected(true);
+				}
+			}
+			
+		});
+		
 		InputMap keyMap = new ComponentInputMap((JComponent) frame.getContentPane());
 		keyMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_S, Event.CTRL_MASK), "saveAction");
 		keyMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_O, Event.CTRL_MASK), "loadAction");
 		keyMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_N, Event.CTRL_MASK), "newAction");
 		keyMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_A, Event.CTRL_MASK), "addSpriteAction");
+		keyMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_S, Event.CTRL_MASK | Event.SHIFT_MASK), "saveAsAction");
 		keyMap.put(KeyStroke.getKeyStroke("1"), "layerAction1");
 		keyMap.put(KeyStroke.getKeyStroke("2"), "layerAction2");
 		keyMap.put(KeyStroke.getKeyStroke("3"), "layerAction3");
+		
+		keyMap.put(KeyStroke.getKeyStroke("E"), "selectBrush");
+		keyMap.put(KeyStroke.getKeyStroke("R"), "selectEraser");
+		keyMap.put(KeyStroke.getKeyStroke("S"), "showSprites");
 		
 		SwingUtilities.replaceUIActionMap((JComponent) frame.getContentPane(), actionMap);
 		SwingUtilities.replaceUIInputMap((JComponent) frame.getContentPane(),  JComponent.WHEN_IN_FOCUSED_WINDOW, keyMap);
@@ -712,10 +794,10 @@ public class PekaEDGUI {
 		frame.setIconImage(img);
 		
 		frame.setSize(1280, 720);
-		frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+		//frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
 		frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		
-		frame.pack();
+		//frame.pack();
 		frame.setVisible(true);
 	}
 	

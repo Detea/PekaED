@@ -7,7 +7,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferInt;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -61,6 +60,8 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 				}
 			}
 			
+			//g.drawImage(background, 0, 0, null);
+			
 			if (Data.currentLayer == Constants.LAYER_BACKGROUND || Data.currentLayer == Constants.LAYER_BOTH) {
 				for (int i = 0; i < PK2Map.MAP_WIDTH; i++) {
 					for (int j = 0; j < PK2Map.MAP_HEIGHT; j++) {
@@ -88,7 +89,7 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 					}
 				}
 			}
-				
+			
 			if (Data.selectedTool == Data.TOOL_BRUSH) {
 				if (Data.currentLayer != Constants.LAYER_BOTH) {
 					if (!Data.multiSelectTiles) {
@@ -113,16 +114,15 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 						g.drawImage(Data.map.spriteList.get(Data.selectedSprite).image, mx - (Data.map.spriteList.get(Data.selectedSprite).image.getWidth() / 2), my - (Data.map.spriteList.get(Data.selectedSprite).image.getHeight() / 2), null);
 					}
 				}
-			}
-			/*
-			 * if (Data.multiSelection.size() > 0) {
-				for (int x = 0; x < Data.sw; x++) {
-					for (int y = 0; y < Data.sh; y++) {
-						drawTile(g, x * 32, y * 32, Data.multiSelection.get(Data.sw * x + y));
+				
+				if (Data.multiSelection.size() > 0) {
+					for (int x = 0; x < Data.sw; x++) {
+						for (int y = 0; y < Data.sh; y++) {
+							drawTile(g, x * 32, y * 32, Data.multiSelection.get(Data.sw * x + y));
+						}
 					}
 				}
 			}
-			 */
 		}
 	}
 

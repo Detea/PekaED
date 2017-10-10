@@ -152,14 +152,9 @@ public class EpisodePanel extends JPanel {
 		btnImport.setBounds(10, 20, 80, 25);
 		btnRemove.setBounds(10, 550, 80, 25);
 		
-		btnUp.setBounds(170, 520, 80, 25);
-		btnDown.setBounds(170, 550, 80, 25);
-		
-		bottomPanel.setLayout(new GridLayout(2, 2));
+		bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.X_AXIS));
 		bottomPanel.add(btnImport);
-		bottomPanel.add(btnUp);
 		bottomPanel.add(btnRemove);
-		bottomPanel.add(btnDown);
 		
 		add(topPanel, BorderLayout.NORTH);
 		add(scrollPane, BorderLayout.CENTER);
@@ -252,9 +247,10 @@ public class EpisodePanel extends JPanel {
 				}
 			}
 			
+			/*
 			PK2Map map = new PK2Map(file.getAbsolutePath()); // This is way too slow, need to find a better way
 			map.levelNumber = Data.episodeFiles.size() + 1;
-			map.saveFile();
+			map.saveFile();*/
 			
 			Data.episodeFiles.add(file);
 			
