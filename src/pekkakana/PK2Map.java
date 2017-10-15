@@ -7,6 +7,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
 
 import javax.swing.JOptionPane;
@@ -21,7 +22,7 @@ public class PK2Map {
 	public static final int MAP_SIZE = MAP_WIDTH * MAP_HEIGHT;
 	public static final int MAP_MAX_PROTOTYPES = 100;
 	
-	public char[] version = {'1', '.', '3', '\0'};
+	public char[] version = {0x31, 0x2E, 0x33, 0x00, 0xCD};
 	public char[] tilesetImageFile = new char[13];
 	public char[] backgroundImageFile = new char[13];
 	public char[] musicFile = new char[13];
@@ -111,8 +112,6 @@ public class PK2Map {
 			}
 			
 			readAmount(version, dis);
-			
-			dis.readByte();
 			
 			readAmount(tilesetImageFile, dis);
 			readAmount(backgroundImageFile, dis);
@@ -222,8 +221,6 @@ public class PK2Map {
 			DataOutputStream dos = new DataOutputStream(new FileOutputStream(file));
 			
 			writeArray(version, dos);
-			
-			dos.writeByte(0xCD);
 			
 			writeArray(tilesetImageFile, dos);
 			writeArray(backgroundImageFile, dos);
@@ -415,6 +412,35 @@ public class PK2Map {
 		return 255;
 	}
 	
+	/*
+	public void readLevelNumberFromFile(File file) {
+		RandomAccessFile r = null;
+		
+		try {
+			r = new RandomAccessFile(file, "r");
+			
+			r.skipBytes(124);
+			
+			char[] ln = new char[8];
+			for (int i = 0; i < 8; i++) {
+				ln[i] = (char) (r.readByte());
+			}
+			
+			levelNumber = Integer.parseInt(cleanString(ln));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			try {
+				r.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}*/
+	
 	public String getTileset() {
 		return cleanString(tilesetImageFile);
 	}
@@ -533,7 +559,7 @@ public class PK2Map {
 	 * This methods looks for the space where tiles are placed.
 	 * That way you can store only the placed tiles and don't have to save the whole map.
 	 */
-	private Rectangle calculateUsedArea(int[] array) {
+	public Rectangle calculateUsedArea(int[] array) {
 		Rectangle r = new Rectangle(0, 0, 0, 0);
 		
 		int x, y;
@@ -583,5 +609,13 @@ public class PK2Map {
 		for (int i = 0; i < array.length; i++) {
 			dos.writeByte(array[i]);
 		}
+	}
+
+	public void setForegroundTile(int x, int y, int tile) {
+		layers[Constants.LAYER_FOREGROUND][MAP_WIDTH * (x / 32) + (y / 32)] = tile;
+	}
+	
+	public void setBackgroundTile(int x, int y, int tile) {
+		layers[Constants.LAYER_BACKGROUND][MAP_WIDTH * (x / 32) + (y / 32)] = tile;
 	}
 }

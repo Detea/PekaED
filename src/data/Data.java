@@ -28,8 +28,10 @@ public class Data {
 	public static boolean runThread = true;
 	public static boolean multiSelectLevel = false;
 	public static boolean multiSelectTiles = false;
+	public static boolean dragging = false;
 	
-	public static ArrayList<Integer> multiSelection = new ArrayList<Integer>();
+	public static ArrayList<Integer> multiSelectionForeground = new ArrayList<Integer>();
+	public static ArrayList<Integer> multiSelectionBackground = new ArrayList<Integer>();
 	
 	public static ArrayList<File> episodeFiles = new ArrayList<File>();
 	

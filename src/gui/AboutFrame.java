@@ -36,13 +36,13 @@ public class AboutFrame extends JFrame {
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 		
-		JLabel lblPekkaKana = new JLabel("Pekka Kana 2 Edtior v." + Settings.version);
+		JLabel lblPekkaKana = new JLabel("Pekka Kana 2 Editor v.1.1");
 		lblPekkaKana.setFont(new Font("Tahoma", Font.PLAIN, 18));
 		lblPekkaKana.setBounds(104, 11, 254, 26);
 		contentPane.add(lblPekkaKana);
 		
-		JLabel lblProgrammedByX = new JLabel("Programmed by deta");
-		lblProgrammedByX.setBounds(150, 60, 123, 14);
+		JLabel lblProgrammedByX = new JLabel("Github:");
+		lblProgrammedByX.setBounds(193, 60, 91, 14);
 		contentPane.add(lblProgrammedByX);
 		
 		JLabel lblAllRights = new JLabel("Pekka Kana 2 belongs to pistegamez.");

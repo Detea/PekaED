@@ -102,6 +102,7 @@ public class TilePanel extends JPanel implements MouseListener, MouseMotionListe
 		
 		if (Data.sw > 1 | Data.sh > 1) {
 			Data.multiSelectTiles = true;
+			Data.multiSelectLevel = false;
 		}
 		
 		repaint();
@@ -140,17 +141,22 @@ public class TilePanel extends JPanel implements MouseListener, MouseMotionListe
 			w = 32;
 			h = 32;
 			
+			Data.multiSelectionForeground.clear();
+			Data.multiSelectionBackground.clear();
 			Data.multiSelectTiles = false;
 			
 			Data.sx = x;
 			Data.sy = y;
-			Data.sw = 1;
-			Data.sh = 1;
+			Data.sw = 0;
+			Data.sh = 0;
 			
-			if (Data.currentLayer != Constants.LAYER_BOTH) {
-				Data.selectedTile = y * (320 / 32) + x;
+			if (Data.currentLayer == Constants.LAYER_FOREGROUND) {
+				Data.selectedTileBackground = 255;
+				Data.selectedTileForeground = y * (320 / 32) + x;
+			} else if (Data.currentLayer == Constants.LAYER_BACKGROUND) {
+				Data.selectedTileForeground = 255;
+				Data.selectedTileBackground = y * (320 / 32) + x;
 			} else {
-				Data.selectedTile = y * (320 / 32) + x;
 				Data.selectedTileForeground = y * (320 / 32) + x;
 				Data.selectedTileBackground = y * (320 / 32) + x;
 			}
@@ -164,12 +170,20 @@ public class TilePanel extends JPanel implements MouseListener, MouseMotionListe
 
 	@Override
 	public void mouseReleased(MouseEvent e) {
-		Data.multiSelection.clear();
-		
-		for (int x = Data.sx; x < Data.sx + Data.sw; x++) {
-			for (int y = Data.sy; y < Data.sy + Data.sh; y++) {
-				if (!Data.multiSelection.contains(y * (320 / 32) + x)) {
-					Data.multiSelection.add(y * (320 / 32) + x);
+		if (Data.multiSelectTiles) {
+			for (int x = Data.sx; x < Data.sx + Data.sw; x++) {
+				for (int y = Data.sy; y < Data.sy + Data.sh; y++) {
+					if (Data.currentLayer == Constants.LAYER_FOREGROUND || Data.currentLayer == Constants.LAYER_BOTH) {
+						if (!Data.multiSelectionForeground.contains(y * (320 / 32) + x)) { // is this line necessary?
+							Data.multiSelectionForeground.add(y * (320 / 32) + x);
+						}
+					}
+					
+					if (Data.currentLayer == Constants.LAYER_BACKGROUND || Data.currentLayer == Constants.LAYER_BOTH) {
+						if (!Data.multiSelectionBackground.contains(y * (320 / 32) + x)) { // is this line necessary?
+							Data.multiSelectionBackground.add(y * (320 / 32) + x);
+						}
+					}
 				}
 			}
 		}
