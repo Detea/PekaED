@@ -51,6 +51,9 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.plaf.ActionMapUIResource;
 
+import java.lang.System;
+import java.io.IOException;
+
 import data.Constants;
 import data.Data;
 import data.Settings;
@@ -284,16 +287,19 @@ public class PekaEDGUI {
 		JButton bLoadMap = new JButton();
 		JButton bSaveMap = new JButton();
 		JButton bSaveAsMap = new JButton();
+                JButton bTestLevel = new JButton();
 		
 		bNewMap.setToolTipText("New Level");
 		bLoadMap.setToolTipText("Load Level");
 		bSaveMap.setToolTipText("Save Level");
 		bSaveAsMap.setToolTipText("Save Level As...");
+                bTestLevel.setToolTipText("Test Level");
 	
 		bNewMap.setIcon(new ImageIcon(getClass().getResource("/document-new.png")));
 		bLoadMap.setIcon(new ImageIcon(getClass().getResource("/document-open.png")));
 		bSaveMap.setIcon(new ImageIcon(getClass().getResource("/document-save.png")));
 		bSaveAsMap.setIcon(new ImageIcon(getClass().getResource("/document-save-as.png")));
+                bTestLevel.setIcon(new ImageIcon(getClass().getResource("/play.png")));
 		
 		bNewMap.addActionListener(new ActionListener() {
 
@@ -346,11 +352,36 @@ public class PekaEDGUI {
 			}
 			
 		});
+                
+                bTestLevel.addActionListener(new ActionListener(){
+                    
+                        @Override
+			public void actionPerformed(ActionEvent arg0) {
+                                if(Data.currentFile != null){
+                                    if (Data.fileChanged) {
+					if (showSaveWarning()) {
+						saveLevel(Data.currentFile);
+					} else return;
+                                    }
+
+                                    String cmd =  Settings.BASE_PATH + File.separatorChar + "pk2.exe";
+                                    String args = "dev" + " test \"" + Data.currentFile.getParentFile().getName() + "/" + Data.currentFile.getName() + "\"";
+                                    try{
+                                        Runtime runTime = Runtime.getRuntime();
+                                        Process process = runTime.exec(cmd + " " + args);
+                                    } catch (IOException e) {
+                                       e.printStackTrace();
+                                    }
+                                }
+			}
+                    
+                });
 		
 		toolbar.add(bNewMap);
 		toolbar.add(bLoadMap);
 		toolbar.add(bSaveMap);
 		toolbar.add(bSaveAsMap);
+                toolbar.add(bTestLevel);
 		
 		JComboBox<String> cbLayers = new JComboBox<String>();
 		cbLayers.addItem("Both");
