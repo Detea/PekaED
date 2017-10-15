@@ -5,9 +5,11 @@ import java.awt.FlowLayout;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedWriter;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
@@ -22,6 +24,7 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.EmptyBorder;
 
+import data.Constants;
 import data.Settings;
 
 public class SetPathDialog extends JDialog {
@@ -36,12 +39,16 @@ public class SetPathDialog extends JDialog {
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (ClassNotFoundException e2) {
+			// TODO Auto-generated catch block
 			e2.printStackTrace();
 		} catch (InstantiationException e2) {
+			// TODO Auto-generated catch block
 			e2.printStackTrace();
 		} catch (IllegalAccessException e2) {
+			// TODO Auto-generated catch block
 			e2.printStackTrace();
 		} catch (UnsupportedLookAndFeelException e2) {
+			// TODO Auto-generated catch block
 			e2.printStackTrace();
 		}
 		
@@ -56,6 +63,7 @@ public class SetPathDialog extends JDialog {
 		try {
 			img = ImageIO.read(getClass().getResource("/pkedit.png"));
 		} catch (IOException e2) {
+			// TODO Auto-generated catch block
 			e2.printStackTrace();
 		}
 		setIconImage(img);

@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Event;
 import java.awt.Image;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -57,14 +58,16 @@ import pekkakana.PK2Map;
 import pekkakana.PK2Sprite;
 
 public class PekaEDGUI {
-	JFrame frame;
+	private JFrame frame;
 	
-	LevelPanel lp;
-	TilePanel tp;
+	private LevelPanel lp;
+	private TilePanel tp;
 	
-	MapSettingsPanel msp;
-	SpritePanel sp;
-	EpisodePanel ep;
+	private MapSettingsPanel msp;
+	private SpritePanel sp;
+	private EpisodePanel ep;
+	
+	private JScrollPane scrollPane2;
 	
 	public void setup() {
 		frame = new JFrame("PekaED");
@@ -72,16 +75,12 @@ public class PekaEDGUI {
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (InstantiationException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IllegalAccessException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (UnsupportedLookAndFeelException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -172,7 +171,7 @@ public class PekaEDGUI {
 					Data.currentEpisodePath = fc.getSelectedFile().getAbsolutePath();
 					
 					File episodeFile = new File(fc.getSelectedFile().getAbsolutePath() + File.separatorChar + fc.getSelectedFile().getName() + ".episode");
-					
+		
 					try {
 						BufferedWriter w = new BufferedWriter(new FileWriter(episodeFile));
 						
@@ -241,6 +240,15 @@ public class PekaEDGUI {
 			
 		});
 
+		mifImportEpisode.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				importEpisode();
+			}
+			
+		});
+		
 		JMenu mExtras = new JMenu("Extras");
 		JMenuItem mieSettings = new JMenuItem("Settings");
 		JMenuItem mieAbout = new JMenuItem("About");
@@ -481,7 +489,7 @@ public class PekaEDGUI {
 		tabbedPane.setPreferredSize(new Dimension(256, 600));
 		
 		JScrollPane scrollPane1 = new JScrollPane(tp, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		JScrollPane scrollPane2 = new JScrollPane(lp, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		scrollPane2 = new JScrollPane(lp, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, scrollPane1, scrollPane2);
 	
 		splitPane.setDividerLocation(320);
@@ -699,6 +707,22 @@ public class PekaEDGUI {
 					quit = true;
 				}
 				
+				if (Data.episodeChanged) {
+					int res = JOptionPane.showConfirmDialog(frame, "Episode has changed. Do you want to save the changes?", "Save episode?", JOptionPane.YES_NO_CANCEL_OPTION);
+					
+					if (res == JOptionPane.YES_OPTION) {
+						ep.saveEpisode();
+						quit = true;
+						
+					} else if (res == JOptionPane.NO_OPTION) {
+						quit = true;
+					} else {
+						quit = false;
+					}
+				} else {
+					quit = true;
+				}
+				
 				if (quit) {
 					Data.runThread = false;
 					
@@ -707,9 +731,9 @@ public class PekaEDGUI {
 						// Maybe store path to last used episode in settings file?
 						
 						try {
-							DataOutputStream dos = new DataOutputStream(new FileOutputStream("lastepisode"));
+							DataOutputStream dos = new DataOutputStream(new FileOutputStream("/lastepisode"));
 							
-							dos.writeUTF(Data.currentEpisodeFile.getAbsolutePath());
+							dos.writeUTF(Data.currentEpisodePath + File.separatorChar + Data.currentEpisodeFile.getName());
 							
 							dos.flush();
 							dos.close();
@@ -717,7 +741,6 @@ public class PekaEDGUI {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
 						}
-						
 					}
 					
 					System.exit(0);
@@ -777,8 +800,8 @@ public class PekaEDGUI {
 						ep.loadEpisode(Data.currentEpisodeFile);
 						
 						if (!Data.episodeFiles.isEmpty()) {
-							loadLevel(Data.episodeFiles.get(0).getAbsolutePath());
-							setFrameTitle(Data.episodeFiles.get(0).getAbsolutePath());
+							loadLevel(Data.episodeFiles.get(Data.episodeFiles.size() - 1).getAbsolutePath());
+							setFrameTitle(Data.episodeFiles.get(Data.episodeFiles.size() - 1).getAbsolutePath());
 						}
 					}
 				}
@@ -793,12 +816,32 @@ public class PekaEDGUI {
 		
 		frame.setIconImage(img);
 		
-		frame.setSize(1280, 720);
-		//frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+		frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
 		frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		
-		//frame.pack();
+		frame.pack();
 		frame.setVisible(true);
+	}
+	
+	private void importEpisode() {
+		JFileChooser fc = new JFileChooser("Import an episode...");
+		fc.setCurrentDirectory(new File(Settings.EPISODES_PATH));
+		fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		
+		int res = fc.showOpenDialog(frame);
+		
+		if (res == JFileChooser.APPROVE_OPTION) {
+			ep.newEpisode(fc.getSelectedFile().getName());
+			Data.currentEpisodePath = fc.getSelectedFile().getAbsolutePath();
+
+			for (File f : fc.getSelectedFile().listFiles()) {
+				if (f.getName().toLowerCase().endsWith("map")) {
+					ep.importLevel(f);
+				}
+			}
+			
+			ep.saveEpisode();
+		}
 	}
 	
 	public void showLoadDialog() {
@@ -822,6 +865,11 @@ public class PekaEDGUI {
 		lp.setMap();
 		msp.setMap();
 		sp.setMap();
+		
+		Rectangle r = Data.map.calculateUsedArea(Data.map.layers[Constants.LAYER_BACKGROUND]);
+		
+		scrollPane2.getVerticalScrollBar().setValue(r.y * 32);
+		scrollPane2.getHorizontalScrollBar().setValue(r.x * 32);
 		
 		Data.fileChanged = false;
 
@@ -864,6 +912,7 @@ public class PekaEDGUI {
 		PK2Sprite psprite = new PK2Sprite("rooster.spr");
 		Data.map = new PK2Map();
 		Data.map.addSprite(psprite, psprite.filename);
+		Data.map.levelNumber = Data.episodeFiles.size() + 1;
 		sp.setList();
 		
 		Data.currentFile = null;
@@ -881,7 +930,9 @@ public class PekaEDGUI {
 			
 			if (res == JOptionPane.YES_OPTION) {
 				if (showAddToEpisodeSave()) {
+					Data.map.saveFile();
 					ep.importLevel(Data.currentFile);
+					ep.setSelectedLevel(Data.episodeFiles.size() - 1);
 					
 					setFrameTitle(Data.episodeFiles.get(Data.episodeFiles.size() - 1).getAbsolutePath());
 				} else {
@@ -931,9 +982,12 @@ public class PekaEDGUI {
 		return quit;
 	}
 	
-	// dumb name, I'm really tired right now
 	private boolean showAddToEpisodeSave() {
-		JFileChooser fc = new JFileChooser(Data.currentEpisodePath);
+		JFileChooser fc = new JFileChooser("Add level to current episode...");
+		
+		if (Data.currentEpisodeFile != null) {
+			fc.setCurrentDirectory(new File(Data.currentEpisodePath));
+		}
 		
 		fc.setDialogTitle("Save level");
 		

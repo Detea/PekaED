@@ -2,7 +2,6 @@ package gui;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -16,6 +15,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
@@ -33,19 +33,21 @@ import pekkakana.PK2Map;
 
 public class EpisodePanel extends JPanel {
 	
-	DefaultListModel dfm;
-	JLabel lblEpisodeName;
+	private DefaultListModel dfm;
+	private JLabel lblEpisodeName;
 	
-	String currentEpisode;
+	public String currentEpisode;
 	
-	PekaEDGUI pkg;
+	private JList list;
+	
+	private PekaEDGUI pkg;
 	
 	public EpisodePanel(PekaEDGUI pkg) {
 		this.pkg = pkg;
 		
 		dfm = new DefaultListModel();
 		
-		JList list = new JList();
+		list = new JList();
 		list.setModel(dfm);
 		
 		JScrollPane scrollPane = new JScrollPane(list, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -54,6 +56,10 @@ public class EpisodePanel extends JPanel {
 			public void mouseClicked(MouseEvent e) {
 				if (e.getClickCount() == 2) {
 					if (Data.currentEpisodeFile != null && !dfm.isEmpty()) {
+						if (Data.fileChanged) {
+							Data.map.saveFile();
+						}
+						
 						pkg.loadLevel((String) Data.currentEpisodePath + File.separatorChar + dfm.getElementAt(list.getSelectedIndex()));
 						pkg.setFrameTitle((String) Data.currentEpisodePath + File.separatorChar + dfm.getElementAt(list.getSelectedIndex()));
 					}
@@ -113,31 +119,8 @@ public class EpisodePanel extends JPanel {
 				int index = list.getSelectedIndex();
 				
 				if (res == JOptionPane.YES_OPTION) {
-					Data.episodeFiles.get(index).delete();
+					removeLevel(index);
 				}
-				
-				Data.episodeFiles.remove(index);
-				dfm.remove(index);
-				
-				for (int i = index; i < Data.episodeFiles.size(); i++) {
-					PK2Map map = new PK2Map(Data.episodeFiles.get(i).getAbsolutePath());
-					map.levelNumber--;
-					map.saveFile();
-				}
-				
-				// Broken
-				if (!Data.episodeFiles.isEmpty() && list.getSelectedIndex() > 0) {
-					if (Data.episodeFiles.size() - 1 > 0) {
-						Data.currentFile = Data.episodeFiles.get(Data.episodeFiles.size() - 1);
-						pkg.loadLevel(Data.currentFile.getAbsolutePath());
-						list.setSelectedIndex(Data.episodeFiles.size() - 1);
-						
-						if (Data.episodeFiles.size() == 0) {
-							pkg.createEmptyLevel();
-						}
-					}
-				}
-				Data.episodeChanged = true;
 			}
 			
 		});
@@ -167,14 +150,50 @@ public class EpisodePanel extends JPanel {
 		dfm.clear();
 		
 		currentEpisode = name;
+		Data.currentEpisodeFile = new File(name + ".episode");
 		Data.episodeChanged = false;
 		
 		lblEpisodeName.setText(currentEpisode);
 	}
 	
+	private void removeLevel(int index) {
+		if (index != -1) {
+			Data.episodeFiles.get(index).delete();
+			
+			Data.episodeFiles.remove(index);
+			dfm.remove(index);
+			
+			for (int i = index; i < Data.episodeFiles.size(); i++) {
+				PK2Map map = new PK2Map(Data.episodeFiles.get(i).getAbsolutePath());
+				map.levelNumber--;
+				map.saveFile();
+			}
+			
+			if (!Data.episodeFiles.isEmpty() && list.getSelectedIndex() > 0) {
+				if (Data.episodeFiles.size() - 1 >= 0) {
+					Data.currentFile = Data.episodeFiles.get(Data.episodeFiles.size() - 1);
+					pkg.loadLevel(Data.currentFile.getAbsolutePath());
+					list.setSelectedIndex(Data.episodeFiles.size() - 1);
+					
+					if (Data.episodeFiles.size() == 0) {
+						pkg.createEmptyLevel();
+					}
+				}
+			}
+			
+			Data.episodeChanged = true;
+		}
+	}
+	
+	public void setSelectedLevel(int index) {
+		if (index >= 0) {
+			list.setSelectedIndex(index);
+		}
+	}
+	
 	public void saveEpisode() {
 		try {
-			BufferedWriter w = new BufferedWriter(new FileWriter(Data.currentEpisodeFile));
+			BufferedWriter w = new BufferedWriter(new FileWriter(Data.currentEpisodePath + File.separatorChar + Data.currentEpisodeFile.getName()));
 			
 			w.write(currentEpisode + "\n");
 			w.write(Data.currentEpisodePath + "\n");
@@ -185,6 +204,8 @@ public class EpisodePanel extends JPanel {
 			
 			w.flush();
 			w.close();
+			
+			Data.episodeChanged = false;
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -212,10 +233,24 @@ public class EpisodePanel extends JPanel {
 				
 				dfm.addElement(filepath[filepath.length - 1]);
 			}
+		
+			// Sorting the list
+			/*
+			PK2Map lastMap = null;
+			for (int j = 0; j < 4; j++) {
+				for (int i = 1; i < files.size(); i++) {
+					lastMap = files.get(i - 1);
+					
+					if (lastMap.levelNumber > files.get(i).levelNumber) {
+						files.set(i - 1, files.get(i));
+						files.set(i, lastMap);
+					}
+				}
+			}*/
 			
 			r.close();
 		} catch (FileNotFoundException e) {
-			JOptionPane.showMessageDialog(null, "Coudl'nt find episode file '" + file.getName() + "'.", "Error", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(null, "Could'nt find episode file '" + file.getName() + "'.", "Error", JOptionPane.ERROR_MESSAGE);
 			
 			FileWriter w;
 			try {
@@ -246,11 +281,6 @@ public class EpisodePanel extends JPanel {
 					e.printStackTrace();
 				}
 			}
-			
-			/*
-			PK2Map map = new PK2Map(file.getAbsolutePath()); // This is way too slow, need to find a better way
-			map.levelNumber = Data.episodeFiles.size() + 1;
-			map.saveFile();*/
 			
 			Data.episodeFiles.add(file);
 			

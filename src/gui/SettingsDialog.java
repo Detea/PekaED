@@ -45,7 +45,7 @@ public class SettingsDialog extends JDialog {
 		setIconImage(img);
 		
 		setTitle("Settings");
-		setBounds(100, 100, 566, 219);
+		setBounds(100, 100, 549, 219);
 		getContentPane().setLayout(new BorderLayout());
 		
 		JButton okButton = new JButton("OK");
