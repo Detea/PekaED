@@ -171,7 +171,7 @@ public class PekaEDGUI {
 					Data.currentEpisodePath = fc.getSelectedFile().getAbsolutePath();
 					
 					File episodeFile = new File(fc.getSelectedFile().getAbsolutePath() + File.separatorChar + fc.getSelectedFile().getName() + ".episode");
-					
+		
 					try {
 						BufferedWriter w = new BufferedWriter(new FileWriter(episodeFile));
 						
@@ -731,7 +731,7 @@ public class PekaEDGUI {
 						// Maybe store path to last used episode in settings file?
 						
 						try {
-							DataOutputStream dos = new DataOutputStream(new FileOutputStream("lastepisode"));
+							DataOutputStream dos = new DataOutputStream(new FileOutputStream("/lastepisode"));
 							
 							dos.writeUTF(Data.currentEpisodePath + File.separatorChar + Data.currentEpisodeFile.getName());
 							
@@ -741,7 +741,6 @@ public class PekaEDGUI {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
 						}
-						
 					}
 					
 					System.exit(0);
@@ -817,11 +816,10 @@ public class PekaEDGUI {
 		
 		frame.setIconImage(img);
 		
-		frame.setSize(1280, 720);
 		frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
 		frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		
-		//frame.pack();
+		frame.pack();
 		frame.setVisible(true);
 	}
 	
@@ -985,7 +983,11 @@ public class PekaEDGUI {
 	}
 	
 	private boolean showAddToEpisodeSave() {
-		JFileChooser fc = new JFileChooser(Data.currentEpisodePath);
+		JFileChooser fc = new JFileChooser("Add level to current episode...");
+		
+		if (Data.currentEpisodeFile != null) {
+			fc.setCurrentDirectory(new File(Data.currentEpisodePath));
+		}
 		
 		fc.setDialogTitle("Save level");
 		

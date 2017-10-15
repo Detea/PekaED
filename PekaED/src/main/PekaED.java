@@ -37,11 +37,15 @@ public class PekaED {
 					new PekaEDGUI().setup();
 				}
 			} catch (FileNotFoundException e1) {
-				JOptionPane.showMessageDialog(null, "Could'nt find settings file.\n" + e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+				//JOptionPane.showMessageDialog(null, "Could'nt find settings file.\n" + e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 				//e1.printStackTrace();
+				
+				new SetPathDialog();
 			} catch (IOException e1) {
-				JOptionPane.showMessageDialog(null, "Could'nt read settings file.\n" + e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+				//JOptionPane.showMessageDialog(null, "Could'nt read settings file.\n" + e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 				//e1.printStackTrace();
+				
+				new SetPathDialog();
 			}
 		} else {
 			new SetPathDialog();
