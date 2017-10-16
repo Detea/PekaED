@@ -19,7 +19,7 @@ public class Data {
 	
 	public static int sx, sy, sw, sh; // SelectionX, SelectionY, SelectionWidth, SelectionHeight
 	
-	public static int EPISODE_LEVEL_LIMIT = 50;
+	public static int EPISODE_LEVEL_LIMIT = 100;
 	
 	public static int currentLayer = 2;
 	
