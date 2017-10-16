@@ -25,6 +25,7 @@ public class PekaED {
 				Settings.setPaths();
 				
 				Settings.loadEpisodeOnStartup = dis.readBoolean();
+				Settings.startInEnhancedMode = dis.readBoolean();
 				Constants.ENHANCED_LEVEL_LIMIT = dis.readInt();
 				
 				File pathFile = new File(Settings.BASE_PATH);

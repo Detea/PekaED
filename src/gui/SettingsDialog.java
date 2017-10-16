@@ -91,6 +91,19 @@ public class SettingsDialog extends JDialog {
 		JSpinner spinner = new JSpinner();
 		spinner.setBounds(322, 57, 56, 20);
 		contentPanel.add(spinner);
+		
+		JRadioButton rdbtnEnhancedMode = new JRadioButton("Enhanced mode");
+		rdbtnEnhancedMode.setBounds(143, 81, 109, 23);
+		contentPanel.add(rdbtnEnhancedMode);
+		
+		JRadioButton rdbtnLegacyMode = new JRadioButton("Legacy mode");
+		rdbtnLegacyMode.setBounds(143, 107, 109, 23);
+		
+		ButtonGroup bgMode = new ButtonGroup();
+		bgMode.add(rdbtnEnhancedMode);
+		bgMode.add(rdbtnLegacyMode);
+		
+		contentPanel.add(rdbtnLegacyMode);
 		{
 			JPanel buttonPane = new JPanel();
 			buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
@@ -121,6 +134,12 @@ public class SettingsDialog extends JDialog {
 			rdbtnLoadLastEpisode.setSelected(true);
 		} else {
 			rdbtnCreateEmptyLevel.setSelected(true);
+		}
+		
+		if (Settings.startInEnhancedMode) {
+			rdbtnEnhancedMode.setSelected(true);
+		} else {
+			rdbtnLegacyMode.setSelected(true);
 		}
 		
 		if (Data.mode == Constants.MODE_LEGACY) {
@@ -156,6 +175,7 @@ public class SettingsDialog extends JDialog {
 				Settings.BASE_PATH = textField.getText();
 				
 				Settings.loadEpisodeOnStartup = rdbtnLoadLastEpisode.isSelected();
+				Settings.startInEnhancedMode = rdbtnEnhancedMode.isSelected();
 				
 				if (Data.mode == Constants.MODE_ENHANCED) {
 					Constants.ENHANCED_LEVEL_LIMIT = (int) spinner.getValue();
@@ -166,6 +186,7 @@ public class SettingsDialog extends JDialog {
 					
 					dos.writeUTF(Settings.BASE_PATH);
 					dos.writeBoolean(Settings.loadEpisodeOnStartup);
+					dos.writeBoolean(Settings.startInEnhancedMode);
 					dos.writeInt(Constants.ENHANCED_LEVEL_LIMIT);
 					
 					dos.flush();

@@ -2,6 +2,7 @@ package gui;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -27,6 +28,8 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 	
 	BufferedImage background, tileset;
 	ArrayList<BufferedImage> tiles = new ArrayList<BufferedImage>();
+
+	private Image bgImg;
 	
 	public LevelPanel() {
 		setBackground(Color.LIGHT_GRAY);
@@ -205,6 +208,17 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 		if (!Settings.BASE_PATH.isEmpty()) {
 			try {
 				background = ImageIO.read(new File(Settings.SCENERY_PATH + str));
+				
+				/*
+				bgImg = new BufferedImage(8192, 8192, BufferedImage.TYPE_INT_ARGB);
+				
+				Graphics g = bgImg.getGraphics();
+				
+				for (int i = 0; i < (PK2Map.MAP_WIDTH * 32) / background.getWidth() + 1; i++) {
+					for (int j = 0; j < (PK2Map.MAP_HEIGHT * 32) / background.getHeight() + 1; j++) {
+						g.drawImage(background, i * background.getWidth(), j * background.getHeight(), null);
+					}
+				}*/
 			} catch (IOException e) {
 				JOptionPane.showMessageDialog(this, "Could'nt read background file.\n'" + str + "'", "Error", JOptionPane.OK_OPTION);
 				

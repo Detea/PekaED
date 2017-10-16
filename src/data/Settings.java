@@ -18,6 +18,7 @@ public class Settings {
 	public static String DEFAULT_MUSIC = "song01.xm";
 
 	public static boolean loadEpisodeOnStartup = false;
+	public static boolean startInEnhancedMode = false;
 	
 	// Using File.separatorChar so that this program is platform independent
 	public static void setPaths() {

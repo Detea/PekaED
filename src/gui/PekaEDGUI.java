@@ -1,6 +1,7 @@
 package gui;
 
 import java.awt.BorderLayout;
+import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Event;
 import java.awt.Image;
@@ -19,6 +20,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Vector;
 
 import javax.imageio.ImageIO;
@@ -50,9 +53,6 @@ import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.plaf.ActionMapUIResource;
-
-import java.lang.System;
-import java.io.IOException;
 
 import data.Constants;
 import data.Data;
@@ -255,6 +255,7 @@ public class PekaEDGUI {
 		JMenu mExtras = new JMenu("Extras");
 		JMenuItem mieSettings = new JMenuItem("Settings");
 		JMenuItem mieAbout = new JMenuItem("About");
+		JMenuItem mieHelp = new JMenuItem("Help");
 		
 		mieSettings.addActionListener(new ActionListener() {
 
@@ -274,8 +275,28 @@ public class PekaEDGUI {
 		
 		});
 		
+		mieHelp.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				if (Desktop.isDesktopSupported()) {
+					try {
+						Desktop.getDesktop().browse(new URI("https://detea.github.io/pekaed"));
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					} catch (URISyntaxException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+				}
+			}
+			
+		});
+		
 		mExtras.add(mieSettings);
 		mExtras.add(mieAbout);
+		mExtras.add(mieHelp);
 		
 		menuBar.add(mFile);
 		menuBar.add(mExtras);
@@ -287,19 +308,19 @@ public class PekaEDGUI {
 		JButton bLoadMap = new JButton();
 		JButton bSaveMap = new JButton();
 		JButton bSaveAsMap = new JButton();
-                JButton bTestLevel = new JButton();
+        JButton bTestLevel = new JButton();
 		
 		bNewMap.setToolTipText("New Level");
 		bLoadMap.setToolTipText("Load Level");
 		bSaveMap.setToolTipText("Save Level");
 		bSaveAsMap.setToolTipText("Save Level As...");
-                bTestLevel.setToolTipText("Test Level");
+        bTestLevel.setToolTipText("Test Level");
 	
 		bNewMap.setIcon(new ImageIcon(getClass().getResource("/document-new.png")));
 		bLoadMap.setIcon(new ImageIcon(getClass().getResource("/document-open.png")));
 		bSaveMap.setIcon(new ImageIcon(getClass().getResource("/document-save.png")));
 		bSaveAsMap.setIcon(new ImageIcon(getClass().getResource("/document-save-as.png")));
-                bTestLevel.setIcon(new ImageIcon(getClass().getResource("/play.png")));
+        bTestLevel.setIcon(new ImageIcon(getClass().getResource("/play.png")));
 		
 		bNewMap.addActionListener(new ActionListener() {
 
@@ -353,35 +374,36 @@ public class PekaEDGUI {
 			
 		});
                 
-                bTestLevel.addActionListener(new ActionListener(){
+		bTestLevel.addActionListener(new ActionListener(){
                     
-                        @Override
+			@Override
 			public void actionPerformed(ActionEvent arg0) {
-                                if(Data.currentFile != null){
-                                    if (Data.fileChanged) {
+				if(Data.currentFile != null){
+					if (Data.fileChanged) {
+						if (showSaveWarning()) {
+							saveLevel(Data.currentFile);
+							
+							Data.fileChanged = false;
+						} else return;
+					}
+
+					testLevel();
+				} else {
 					if (showSaveWarning()) {
 						saveLevel(Data.currentFile);
 					} else return;
-                                    }
 
-                                    String cmd =  Settings.BASE_PATH + File.separatorChar + "pk2.exe";
-                                    String args = "dev" + " test \"" + Data.currentFile.getParentFile().getName() + "/" + Data.currentFile.getName() + "\"";
-                                    try{
-                                        Runtime runTime = Runtime.getRuntime();
-                                        Process process = runTime.exec(cmd + " " + args);
-                                    } catch (IOException e) {
-                                       e.printStackTrace();
-                                    }
-                                }
+					testLevel();
+				}
 			}
-                    
-                });
+
+		});
 		
 		toolbar.add(bNewMap);
 		toolbar.add(bLoadMap);
 		toolbar.add(bSaveMap);
 		toolbar.add(bSaveAsMap);
-                toolbar.add(bTestLevel);
+		toolbar.add(bTestLevel);
 		
 		JComboBox<String> cbLayers = new JComboBox<String>();
 		cbLayers.addItem("Both");
@@ -489,18 +511,20 @@ public class PekaEDGUI {
 		modeList.addElement("Enhanced");
 		JComboBox<String> cbMode = new JComboBox<String>(modeList);
 		cbMode.setMaximumSize(new Dimension(100, 25));
+
+		if (Settings.startInEnhancedMode) {
+			setEditorMode(1);
+			cbMode.setSelectedIndex(1);
+		} else {
+			setEditorMode(0);
+			cbMode.setSelectedIndex(0);
+		}
 		
 		cbMode.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				if (cbMode.getSelectedIndex() == 0) {
-					Data.mode = Constants.MODE_LEGACY;
-					Data.EPISODE_LEVEL_LIMIT = Constants.LEGACY_LEVEL_LIMIT;
-				} else if (cbMode.getSelectedIndex() == 1) {
-					Data.mode = Constants.MODE_ENHANCED;
-					Data.EPISODE_LEVEL_LIMIT = Constants.ENHANCED_LEVEL_LIMIT;
-				}
+				setEditorMode(cbMode.getSelectedIndex());
 			}
 			
 		});
@@ -762,7 +786,7 @@ public class PekaEDGUI {
 						// Maybe store path to last used episode in settings file?
 						
 						try {
-							DataOutputStream dos = new DataOutputStream(new FileOutputStream("/lastepisode"));
+							DataOutputStream dos = new DataOutputStream(new FileOutputStream("lastepisode"));
 							
 							dos.writeUTF(Data.currentEpisodePath + File.separatorChar + Data.currentEpisodeFile.getName());
 							
@@ -852,6 +876,27 @@ public class PekaEDGUI {
 		
 		frame.pack();
 		frame.setVisible(true);
+	}
+	
+	private void setEditorMode(int mode) {
+		if (mode == 0) {
+			Data.mode = Constants.MODE_LEGACY;
+			Data.EPISODE_LEVEL_LIMIT = Constants.LEGACY_LEVEL_LIMIT;
+		} else if (mode == 1) {
+			Data.mode = Constants.MODE_ENHANCED;
+			Data.EPISODE_LEVEL_LIMIT = Constants.ENHANCED_LEVEL_LIMIT;
+		}
+	}
+	
+	private void testLevel() {
+		String cmd =  Settings.BASE_PATH + File.separatorChar + "pk2.exe";
+		String args = "dev test " + File.separatorChar + Data.currentFile.getParentFile().getName() + File.separatorChar + Data.currentFile.getName();
+		try{
+			Runtime runTime = Runtime.getRuntime();
+			Process process = runTime.exec(cmd + " " + args);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	private void importEpisode() {
