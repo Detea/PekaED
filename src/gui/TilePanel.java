@@ -105,6 +105,14 @@ public class TilePanel extends JPanel implements MouseListener, MouseMotionListe
 			Data.multiSelectLevel = false;
 		}
 		
+		if (Data.sx + Data.sw > (tileset.getWidth() / 32)) {
+			Data.sw = (tileset.getWidth() / 32) - Data.sx;
+		}
+		
+		if (Data.sy + Data.sh > (tileset.getHeight() / 32)) {
+			Data.sh = (tileset.getHeight() / 32) - Data.sy;
+		}
+		
 		repaint();
 	}
 
