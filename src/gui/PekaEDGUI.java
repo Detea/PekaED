@@ -892,7 +892,7 @@ public class PekaEDGUI {
 		System.out.println(Data.currentFile.getParentFile().getName() + File.separatorChar + Data.currentFile.getName());
 		
 		String cmd =  Settings.BASE_PATH + File.separatorChar + "pk2.exe";
-		String args = "dev test " + Data.currentFile.getParentFile().getName() + "///" + Data.currentFile.getName();
+		String args = "dev test \"" + Data.currentFile.getParentFile().getName() + "/" + Data.currentFile.getName() + "\"";
 		try{
 			Runtime runTime = Runtime.getRuntime();
 			Process process = runTime.exec(cmd + " " + args);
