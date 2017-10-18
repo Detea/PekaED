@@ -1,5 +1,5 @@
 A simple Pekka Kana 2 level editor.
-##[Manual]##(https://detea.github.io/pekaed/)
+## [Manual] ##(https://detea.github.io/pekaed/)
 
 ![PekaED in action](https://i.imgur.com/9jYOu9a.png)
 
