@@ -68,7 +68,7 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 				for (int i = 0; i < PK2Map.MAP_WIDTH; i++) {
 					for (int j = 0; j < PK2Map.MAP_HEIGHT; j++) {
 						if ((PK2Map.MAP_WIDTH * i + j) < Data.map.sprites.length && Data.map.sprites[PK2Map.MAP_WIDTH * i + j] != 255) {
-							if (!Data.map.spriteList.isEmpty()) {
+							if (!Data.map.spriteList.isEmpty() && Data.map.spriteList.get(Data.map.sprites[PK2Map.MAP_WIDTH * i + j]).image != null) {
 								g.drawImage(Data.map.spriteList.get(Data.map.sprites[PK2Map.MAP_WIDTH * i + j]).image, ((i * 32) - (Data.map.spriteList.get(Data.map.sprites[PK2Map.MAP_WIDTH * i + j]).image.getWidth() / 2) + 16), ((j * 32) - (Data.map.spriteList.get(Data.map.sprites[PK2Map.MAP_WIDTH * i + j]).image.getHeight() - 32)), null);
 							}
 						}
@@ -277,9 +277,9 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 						}
 					} else {
 						if (Data.selectedTileForeground != 255) {
-							Data.map.setTile(e.getX(), e.getY(), Data.selectedTileForeground);
+							Data.map.setForegroundTile(e.getX(), e.getY(), Data.selectedTileForeground);
 						} else if (Data.selectedTileBackground != 255) {
-							Data.map.setTile(e.getX(), e.getY(), Data.selectedTileBackground);
+							Data.map.setBackgroundTile(e.getX(), e.getY(), Data.selectedTileBackground);
 						} else if (Data.selectedSprite != 255) {
 							Data.map.sprites[PK2Map.MAP_WIDTH * (mx / 32) + (my / 32)] = Data.selectedSprite;
 						}
@@ -374,9 +374,9 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 						}
 					} else {
 						if (Data.selectedTileForeground != 255) {
-							Data.map.setTile(e.getX(), e.getY(), Data.selectedTileForeground);
+							Data.map.setForegroundTile(e.getX(), e.getY(), Data.selectedTileForeground);
 						} else if (Data.selectedTileBackground != 255) {
-							Data.map.setTile(e.getX(), e.getY(), Data.selectedTileBackground);
+							Data.map.setBackgroundTile(e.getX(), e.getY(), Data.selectedTileBackground);
 						} else if (Data.selectedSprite != 255) {
 							Data.map.sprites[PK2Map.MAP_WIDTH * (mx / 32) + (my / 32)] = Data.selectedSprite;
 						}
@@ -479,6 +479,11 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 	public void run() {
 		while (true) {
 			repaint();
+			
+			// Change this
+			if (Data.mmp != null) {
+				Data.mmp.repaint();
+			}
 			
 			try {
 				Thread.sleep(17);
