@@ -479,12 +479,7 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 	public void run() {
 		while (true) {
 			repaint();
-			
-			// Change this
-			if (Data.mmp != null) {
-				Data.mmp.repaint();
-			}
-			
+
 			try {
 				Thread.sleep(17);
 			} catch (InterruptedException e) {
