@@ -18,7 +18,7 @@ import data.Settings;
 
 public class PK2Map {
 	public static final int MAP_WIDTH = 256;
-	public static final int MAP_HEIGHT = 224;
+	public static final int MAP_HEIGHT = 256; // Normally this should be 224, but with a height of 224 some levels won't load. This is pretty hacky, so something could go wrong because of this.
 	public static final int MAP_SIZE = MAP_WIDTH * MAP_HEIGHT;
 	public static final int MAP_MAX_PROTOTYPES = 100;
 	
@@ -151,17 +151,19 @@ public class PK2Map {
 			readAmount(amount, dis);
 			x = Integer.parseInt(cleanString(amount));
 			
-			y = readCleanConvert(amount, dis);
-			
-			icon = readCleanConvert(amount, dis);
+			readAmount(amount, dis);
+			y = Integer.parseInt(cleanString(amount));
 			
 			readAmount(amount, dis);
-			int protAmount = Integer.parseInt(cleanString(amount));	
+			icon = Integer.parseInt(cleanString(amount));
 			
+			readAmount(amount, dis);
+			int protAmount = Integer.parseInt(cleanString(amount));
+		
 			for (int i = 0; i < protAmount; i++) {
 				char[] protNames = new char[13];
 				readAmount(protNames, dis);
-				prototypes[i] = protNames;				
+				prototypes[i] = protNames;
 			}
 			
 			int width, height;
@@ -173,9 +175,7 @@ public class PK2Map {
 			
 			for (int y = startY; y <= startY + height; y++) {
 				for (int x = startX; x <= startX + width; x++) {
-					if (MAP_WIDTH * x + y < MAP_SIZE) {
-						layers[Constants.LAYER_BACKGROUND][MAP_WIDTH * x + y] = (int) (dis.readByte() & 0xFF); 
-					}
+					layers[Constants.LAYER_BACKGROUND][MAP_WIDTH * x + y] = (int) (dis.readByte() & 0xFF);
 				}
 			}
 			
@@ -186,9 +186,7 @@ public class PK2Map {
 		
 			for (int y = startY; y <= startY + height; y++) {
 				for (int x = startX; x <= startX + width; x++) {
-					if (MAP_WIDTH * x + y < MAP_SIZE) {
-						layers[Constants.LAYER_FOREGROUND][MAP_WIDTH * x + y] = (int) (dis.readByte() & 0xFF);
-					}
+					layers[Constants.LAYER_FOREGROUND][MAP_WIDTH * x + y] = (int) (dis.readByte() & 0xFF);
 				}
 			}
 			
@@ -361,7 +359,7 @@ public class PK2Map {
 			String str = cleanString(array);
 			
 			if (!str.isEmpty()) {
-				in = Integer.parseInt(cleanString(array));
+				in = Integer.parseInt(str);
 			}
 		}
 		
@@ -612,7 +610,9 @@ public class PK2Map {
 	}
 
 	public void setForegroundTile(int x, int y, int tile) {
-		layers[Constants.LAYER_FOREGROUND][MAP_WIDTH * (x / 32) + (y / 32)] = tile;
+		if ((MAP_WIDTH * (x / 32) + (y / 32)) < MAP_SIZE) {
+			layers[Constants.LAYER_FOREGROUND][MAP_WIDTH * (x / 32) + (y / 32)] = tile;
+		}
 	}
 	
 	public void setBackgroundTile(int x, int y, int tile) {
