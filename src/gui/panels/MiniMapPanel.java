@@ -118,13 +118,13 @@ public class MiniMapPanel extends JPanel implements MouseListener, MouseMotionLi
 		if (vx - (vw / 2) < 0) {
 			vx = vw / 2;
 		} else if (vx + (vw / 2) > PK2Map.MAP_WIDTH) {
-			vx = 226 - (vw / 2);
+			vx = PK2Map.MAP_WIDTH - (vw / 2);
 		}
 		
 		if (vy - (vh / 2) < 0) {
 			vy = vh / 2;
 		} else if (vy + (vh / 2) > PK2Map.MAP_HEIGHT) {
-			vy = 226 - (vh / 2);
+			vy = PK2Map.MAP_HEIGHT - (vh / 2);
 		}
 
 		pkg.scrollPane2.getVerticalScrollBar().setValue((vy - (vh / 2)) * 32);
