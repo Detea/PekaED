@@ -18,8 +18,8 @@ import data.Settings;
 
 public class PK2Map {
 	public static final int MAP_WIDTH = 256;
-	public static final int MAP_HEIGHT = 256; // Normally this should be 224, but with a height of 224 some levels won't load. This is pretty hacky, so something could go wrong because of this.
-	public static final int MAP_SIZE = MAP_WIDTH * MAP_HEIGHT;
+	public static final int MAP_HEIGHT = 224;
+	public static final int MAP_SIZE = MAP_WIDTH * (MAP_HEIGHT + 32);
 	public static final int MAP_MAX_PROTOTYPES = 100;
 	
 	public char[] version = {0x31, 0x2E, 0x33, 0x00, 0xCD};
@@ -610,7 +610,7 @@ public class PK2Map {
 	}
 
 	public void setForegroundTile(int x, int y, int tile) {
-		if ((MAP_WIDTH * (x / 32) + (y / 32)) < MAP_SIZE) {
+		if ((MAP_WIDTH * (x / 32) + (y / 32)) < MAP_SIZE) { // check if x & y > 0 && < width/height
 			layers[Constants.LAYER_FOREGROUND][MAP_WIDTH * (x / 32) + (y / 32)] = tile;
 		}
 	}

@@ -1,4 +1,4 @@
-package gui;
+package gui.panels;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -479,6 +479,11 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 	public void run() {
 		while (true) {
 			repaint();
+			
+			// Change this
+			if (Data.mmp != null) {
+				Data.mmp.repaint();
+			}
 
 			try {
 				Thread.sleep(17);

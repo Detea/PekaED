@@ -1,4 +1,4 @@
-package gui;
+package gui.panels;
 
 
 import java.awt.event.ActionEvent;
@@ -17,6 +17,7 @@ import javax.swing.filechooser.FileFilter;
 
 import data.Data;
 import data.Settings;
+import gui.windows.SetMapPositionDialog;
 import pekkakana.PK2Map;
 
 public class MapSettingsPanel extends JPanel {

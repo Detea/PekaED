@@ -3,8 +3,11 @@ package data;
 import java.io.File;
 import java.util.ArrayList;
 
-import gui.LevelPanel;
-import gui.TilePanel;
+import javax.swing.JScrollPane;
+
+import gui.panels.LevelPanel;
+import gui.panels.MiniMapPanel;
+import gui.panels.TilePanel;
 import pekkakana.PK2Map;
 
 public class Data {
@@ -46,6 +49,7 @@ public class Data {
 	
 	public static TilePanel tp;
 	public static LevelPanel lp;
+	public static MiniMapPanel mmp;
 	
 	public static boolean fileChanged = false, episodeChanged = false;
 }

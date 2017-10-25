@@ -10,8 +10,8 @@ import javax.swing.JOptionPane;
 
 import data.Constants;
 import data.Settings;
-import gui.PekaEDGUI;
-import gui.SetPathDialog;
+import gui.windows.PekaEDGUI;
+import gui.windows.SetPathDialog;
 
 public class PekaED {
 	public static void main(String[] args) {

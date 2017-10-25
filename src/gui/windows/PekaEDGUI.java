@@ -1,4 +1,4 @@
-package gui;
+package gui.windows;
 
 import java.awt.BorderLayout;
 import java.awt.Desktop;
@@ -33,6 +33,7 @@ import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -57,6 +58,12 @@ import javax.swing.plaf.ActionMapUIResource;
 import data.Constants;
 import data.Data;
 import data.Settings;
+import gui.panels.EpisodePanel;
+import gui.panels.LevelPanel;
+import gui.panels.MapSettingsPanel;
+import gui.panels.MiniMapPanel;
+import gui.panels.SpritePanel;
+import gui.panels.TilePanel;
 import pekkakana.PK2Map;
 import pekkakana.PK2Sprite;
 
@@ -70,7 +77,9 @@ public class PekaEDGUI {
 	private SpritePanel sp;
 	private EpisodePanel ep;
 	
-	private JScrollPane scrollPane2;
+	public JScrollPane scrollPane2;
+	
+	private MiniMapPanel mmp;
 	
 	public void setup() {
 		frame = new JFrame("PekaED");
@@ -546,7 +555,7 @@ public class PekaEDGUI {
 		JScrollPane scrollPane1 = new JScrollPane(tp, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		scrollPane2 = new JScrollPane(lp, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, scrollPane1, scrollPane2);
-	
+		
 		splitPane.setDividerLocation(320);
 		
 		frame.add(toolbar, BorderLayout.NORTH);
@@ -869,6 +878,9 @@ public class PekaEDGUI {
 			}
 		}
 		
+		mmp = new MiniMapPanel(this);
+		Data.mmp = mmp;
+		
 		frame.setIconImage(img);
 		
 		frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -876,6 +888,15 @@ public class PekaEDGUI {
 		
 		frame.pack();
 		frame.setVisible(true);
+		
+		JDialog dialog = new JDialog();
+		dialog.add(mmp);
+		dialog.setTitle("Mini map");
+		dialog.setIconImage(img);
+		dialog.setSize(new Dimension(PK2Map.MAP_WIDTH, PK2Map.MAP_HEIGHT + 48));
+		dialog.setAlwaysOnTop(true);
+		dialog.setLocation(frame.getWidth() - dialog.getWidth() - 30, frame.getHeight() - dialog.getHeight());
+		dialog.setVisible(true);
 	}
 	
 	private void setEditorMode(int mode) {
@@ -889,8 +910,6 @@ public class PekaEDGUI {
 	}
 	
 	private void testLevel() {
-		System.out.println(Data.currentFile.getParentFile().getName() + File.separatorChar + Data.currentFile.getName());
-		
 		String cmd =  Settings.BASE_PATH + File.separatorChar + "pk2.exe";
 		String args = "dev test \"" + Data.currentFile.getParentFile().getName() + "/" + Data.currentFile.getName() + "\"";
 		try{

@@ -1,4 +1,4 @@
-package gui;
+package gui.panels;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -29,6 +29,7 @@ import javax.swing.JScrollPane;
 import javax.swing.filechooser.FileFilter;
 
 import data.Data;
+import gui.windows.PekaEDGUI;
 import pekkakana.PK2Map;
 
 public class EpisodePanel extends JPanel {
