@@ -60,7 +60,7 @@ public class MiniMapPanel extends JPanel implements MouseListener, MouseMotionLi
 			g.setColor(new Color(0xFFFFFFFF - Data.lp.tiles.get(Data.map.getTileAt(mx * 32, my * 32, Constants.LAYER_FOREGROUND)).getRGB(0, 0)));
 			g.drawRect(mx - 24, my - 16, 48, 32);
 		} else {
-			g.setColor(Color.gray);
+			g.setColor(Color.white);
 			g.drawRect(mx - 24, my - 16, 48, 32);
 		}*/
 	}
@@ -72,13 +72,13 @@ public class MiniMapPanel extends JPanel implements MouseListener, MouseMotionLi
 		
 		if (vx - (vw / 2) < 0) {
 			vx = vw / 2;
-		} else if (vx + (vw / 2) > PK2Map.MAP_WIDTH) { // replace 226 with correct value
+		} else if (vx + (vw / 2) > PK2Map.MAP_WIDTH) {
 			vx = PK2Map.MAP_WIDTH - (vw / 2);
 		}
 		
 		if (vy - (vh / 2) < 0) {
 			vy = vh / 2;
-		} else if (vy + (vh / 2) > PK2Map.MAP_HEIGHT) { // replace 226 with correct value
+		} else if (vy + (vh / 2) > PK2Map.MAP_HEIGHT) {
 			vy = PK2Map.MAP_HEIGHT - (vh / 2);
 		}
 		
@@ -117,13 +117,13 @@ public class MiniMapPanel extends JPanel implements MouseListener, MouseMotionLi
 		
 		if (vx - (vw / 2) < 0) {
 			vx = vw / 2;
-		} else if (vx + (vw / 2) > 226) { // replace 226 with correct value
+		} else if (vx + (vw / 2) > PK2Map.MAP_WIDTH) {
 			vx = 226 - (vw / 2);
 		}
 		
 		if (vy - (vh / 2) < 0) {
 			vy = vh / 2;
-		} else if (vy + (vh / 2) > 224) { // replace 226 with correct value
+		} else if (vy + (vh / 2) > PK2Map.MAP_HEIGHT) {
 			vy = 226 - (vh / 2);
 		}
 
