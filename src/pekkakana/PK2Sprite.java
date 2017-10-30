@@ -42,7 +42,7 @@ public class PK2Sprite {
 	public int frameHeight;
 	public int frameDistance;
 	
-	public char[] name = new char[32];
+	public char[] name = new char[33];
 	public int width, height;
 	
 	double weight;
@@ -57,6 +57,8 @@ public class PK2Sprite {
 	int score;
 	
 	int[] AI = new int[10];
+	
+	int color;
 	
 	public BufferedImage image;
 	
@@ -136,7 +138,32 @@ public class PK2Sprite {
 			frameDistance = Integer.reverseBytes(dis.readInt());
 			
 			// read the sprite's name
-			readAmount(name, dis);
+			//readAmount(name, dis);
+			for (int i = 0; i < 32; i++) {
+				name[i] = (char) dis.readByte();
+			}
+			
+			int width = dis.readInt();
+			int height = dis.readInt();
+			double weight = dis.readDouble();
+			boolean enemy = dis.readBoolean();
+			int energy = dis.readInt();
+			int damage = dis.readInt();
+			byte damage_type = dis.readByte();
+			byte immunity = dis.readByte();
+			int score = dis.readInt();
+			
+			for (int i = 0; i < 10; i++) {
+				dis.readInt();
+			}
+			
+			int max_jump = dis.readByte();
+			double max_speed = dis.readDouble();
+			int loading_time = dis.readInt();
+			
+			//color = (int) (dis.readByte() & 0xFF);
+			
+			//System.out.println((dis.readByte() & 0xFF) + " - " + file);
 		} catch (FileNotFoundException e) {
 			//System.out.println("Can't find file: " + file);
 			//e.printStackTrace();
@@ -171,10 +198,11 @@ public class PK2Sprite {
 		    int oldRGB = new Color(148, 209, 222).getRGB();
 		    int oldRGB2 = new Color(128, 205, 214).getRGB();
 		    int oldRGB3 = new Color(155, 232, 224).getRGB();
+		    int oldRGB4 = new Color(114, 200, 228).getRGB();
 		 
 		    for (int i = 0; i < image.getWidth(); i++) {
 		    	for (int j = 0; j < image.getHeight(); j++) {
-		    		if (image.getRGB(i, j) != oldRGB && image.getRGB(i, j) != oldRGB2 && image.getRGB(i, j) != oldRGB3) {
+		    		if (image.getRGB(i, j) != oldRGB && image.getRGB(i, j) != oldRGB2 && image.getRGB(i, j) != oldRGB3 && image.getRGB(i, j) != oldRGB4) {
 		    			result.setRGB(i, j, image.getRGB(i, j));
 		    		}
 		    	}
@@ -189,11 +217,15 @@ public class PK2Sprite {
 	private String cleanString(char[] array) {
 		StringBuilder sb = new StringBuilder();
 		
-		int i = 0;
-		while (array[i] != 0x0) {		
-			sb.append(array[i]);
-			
-			i++;
+		try {
+			int i = 0;
+			while (array[i] != 0x0) {
+				sb.append(array[i]);
+				
+				i++;
+			}
+		} catch (Exception ex) {
+			System.out.println(filename);
 		}
 		
 		return sb.toString();

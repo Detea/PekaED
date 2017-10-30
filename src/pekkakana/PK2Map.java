@@ -371,7 +371,7 @@ public class PK2Map {
 		
 		int i = 0;
 		while (array[i] != 0x0) {
-			if (array[i] > 0x7E) // hack?
+			if (array[i] > 0xCC)
 				break;
 			
 			sb.append(array[i]);
@@ -395,6 +395,17 @@ public class PK2Map {
 				layers[Constants.LAYER_FOREGROUND][MAP_WIDTH * (x / 32) + (y / 32)] = 255;
 				layers[Constants.LAYER_BACKGROUND][MAP_WIDTH * (x / 32) + (y / 32)] = 255;
 			}
+		}
+	}
+	
+	public void setTile(int x, int y) {
+		if (Data.currentLayer == Constants.LAYER_FOREGROUND) {
+			layers[Constants.LAYER_FOREGROUND][MAP_WIDTH * (x / 32) + (y / 32)] = Data.selectedTileForeground;
+		} else if (Data.currentLayer == Constants.LAYER_BACKGROUND) {
+			layers[Constants.LAYER_BACKGROUND][MAP_WIDTH * (x / 32) + (y / 32)] = Data.selectedTileBackground;
+		} else if (Data.currentLayer == Constants.LAYER_BOTH){
+			layers[Constants.LAYER_FOREGROUND][MAP_WIDTH * (x / 32) + (y / 32)] = Data.selectedTileForeground;
+			layers[Constants.LAYER_BACKGROUND][MAP_WIDTH * (x / 32) + (y / 32)] = Data.selectedTileBackground;
 		}
 	}
 

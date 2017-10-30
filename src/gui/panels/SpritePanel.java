@@ -2,6 +2,7 @@ package gui.panels;
 
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridLayout;
@@ -42,7 +43,6 @@ public class SpritePanel extends JPanel {
 		
 		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		table.setShowGrid(false);
-		table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 		table.setDefaultEditor(Object.class, new TableCellEditor() {
 
 			@Override
@@ -194,9 +194,9 @@ public class SpritePanel extends JPanel {
 		buttonPanel.add(btnAdd);
 		buttonPanel.add(btnRemove);
 		buttonPanel.add(btnSetP);
-		
-		table.setPreferredSize(new Dimension(260, 400));
-		table.setPreferredScrollableViewportSize(new Dimension(250, 400));
+
+		table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+		table.setPreferredScrollableViewportSize(new Dimension(250, 500));
 		
 		JScrollPane tblScroll = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		

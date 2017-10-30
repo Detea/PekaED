@@ -99,6 +99,9 @@ public class PekaEDGUI {
 		lp = new LevelPanel();
 		tp = new TilePanel();
 		
+		mmp = new MiniMapPanel();
+		Data.mmp = mmp;
+		
 		msp = new MapSettingsPanel();
 		sp = new SpritePanel();
 		
@@ -427,14 +430,17 @@ public class PekaEDGUI {
 				switch (cbLayers.getSelectedIndex()) {
 					case 0:
 						Data.currentLayer = 2;
+						Data.lp.repaint();
 						break;
 						
 					case 1:
 						Data.currentLayer = 0;
+						Data.lp.repaint();
 						break;
 						
 					case 2:
 						Data.currentLayer = 1;
+						Data.lp.repaint();
 						break;
 				}
 			}
@@ -659,6 +665,8 @@ public class PekaEDGUI {
 			public void actionPerformed(ActionEvent arg0) {
 				cbLayers.setSelectedIndex(0);
 				Data.currentLayer = 2;
+				
+				Data.lp.repaint();
 			}
 			
 		});
@@ -669,6 +677,8 @@ public class PekaEDGUI {
 			public void actionPerformed(ActionEvent arg0) {
 				cbLayers.setSelectedIndex(1);
 				Data.currentLayer = 0;
+				
+				Data.lp.repaint();
 			}
 			
 		});
@@ -679,6 +689,8 @@ public class PekaEDGUI {
 			public void actionPerformed(ActionEvent arg0) {
 				cbLayers.setSelectedIndex(2);
 				Data.currentLayer = 1;
+				
+				Data.lp.repaint();
 			}
 			
 		});
@@ -837,8 +849,6 @@ public class PekaEDGUI {
 			
 		});
 		
-		newLevel();
-		
 		Data.lp = lp;
 		Data.tp = tp;
 		
@@ -878,9 +888,6 @@ public class PekaEDGUI {
 			}
 		}
 		
-		mmp = new MiniMapPanel(this);
-		Data.mmp = mmp;
-		
 		frame.setIconImage(img);
 		
 		frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -888,6 +895,11 @@ public class PekaEDGUI {
 		
 		frame.pack();
 		frame.setVisible(true);
+		
+		lp.setPekaGUI(this);
+		mmp.setPekaGUI(this);
+		
+		newLevel();
 		
 		JDialog dialog = new JDialog();
 		dialog.add(mmp);
@@ -963,6 +975,9 @@ public class PekaEDGUI {
 		msp.setMap();
 		sp.setMap();
 		
+		lp.repaint();
+		mmp.repaint();
+		
 		Rectangle r = Data.map.calculateUsedArea(Data.map.layers[Constants.LAYER_BACKGROUND]);
 		
 		scrollPane2.getVerticalScrollBar().setValue(r.y * 32);
@@ -1021,6 +1036,9 @@ public class PekaEDGUI {
 		
 		tp.setTileset(Data.map.getTileset());
 		lp.setMap();
+		
+		lp.repaint();
+		mmp.repaint();
 		
 		if (Data.currentEpisodeFile != null) {
 			int res = JOptionPane.showConfirmDialog(frame, "Do you want to add this file to the episode '" + ep.currentEpisode + "'?", "Add file to episode?", JOptionPane.YES_NO_OPTION);

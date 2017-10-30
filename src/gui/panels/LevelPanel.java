@@ -7,6 +7,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -18,18 +19,24 @@ import javax.swing.JPanel;
 import data.Constants;
 import data.Data;
 import data.Settings;
+import gui.windows.PekaEDGUI;
 import pekkakana.PK2Map;
 
 public class LevelPanel extends JPanel implements MouseListener, MouseMotionListener, Runnable {
 	
-	Thread thread;
+	private Thread thread;
 	
-	int mx, my, layer, mouseButton;
+	private int mx, my, layer, mouseButton;
 	
-	BufferedImage background, tileset;
-	ArrayList<BufferedImage> tiles = new ArrayList<BufferedImage>();
+	private BufferedImage background, tileset;
+	public ArrayList<BufferedImage> tiles = new ArrayList<BufferedImage>();
+	public ArrayList<BufferedImage> inactiveTiles = new ArrayList<BufferedImage>();
 
 	private Image bgImg;
+	
+	private PekaEDGUI pkg;
+	
+	public boolean drawing = true;
 	
 	public LevelPanel() {
 		setBackground(Color.LIGHT_GRAY);
@@ -41,9 +48,14 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 		
 		setTileset(Settings.DEFAULT_TILESET);
 		setBackground(Settings.DEFAULT_BACKGROUND);
-		
+	
+		/*
 		thread = new Thread(this);
-		thread.start();
+		thread.start();*/
+	}
+	
+	public void setPekaGUI(PekaEDGUI pkg) {
+		this.pkg = pkg;
 	}
 
 	public void paintComponent(Graphics g) {
@@ -59,6 +71,12 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 			if (Data.currentLayer == Constants.LAYER_BACKGROUND || Data.currentLayer == Constants.LAYER_BOTH) {
 				for (int i = 0; i < PK2Map.MAP_WIDTH; i++) {
 					for (int j = 0; j < PK2Map.MAP_HEIGHT; j++) {
+						if (Data.currentLayer != Constants.LAYER_BOTH) {
+							if (Data.map.getTileAt(i * 32, j * 32, Constants.LAYER_FOREGROUND) != 255) {
+								g.drawImage(inactiveTiles.get(Data.map.getTileAt(i * 32, j * 32, Constants.LAYER_FOREGROUND)), i * 32, j * 32, null);
+							}
+						}
+						
 						drawTile(g, i * 32, j * 32, Data.map.getTileAt(i * 32, j * 32, Constants.LAYER_BACKGROUND));
 					}
 				}
@@ -76,9 +94,26 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 				}
 			}
 			
+			/*
+			if (300 > pkg.scrollPane2.getViewport().getViewRect().x && 600 < pkg.scrollPane2.getViewport().getViewRect().x + pkg.scrollPane2.getViewport().getViewRect().width &&
+					300 > pkg.scrollPane2.getViewport().getViewRect().y && 600 < pkg.scrollPane2.getViewport().getViewRect().y + pkg.scrollPane2.getViewport().getViewRect().height) {
+				g.setColor(Color.RED);
+				g.fillRect(300, 300, 300, 300);
+				
+				drawing = true;
+			} else {
+				drawing = false;
+			}*/
+			
 			if (Data.currentLayer == Constants.LAYER_FOREGROUND || Data.currentLayer == Constants.LAYER_BOTH) {
 				for (int i = 0; i < PK2Map.MAP_WIDTH; i++) {
 					for (int j = 0; j < PK2Map.MAP_HEIGHT; j++) {
+						if (Data.currentLayer != Constants.LAYER_BOTH) {
+							if (Data.map.getTileAt(i * 32, j * 32, Constants.LAYER_BACKGROUND) != 255) {
+								g.drawImage(inactiveTiles.get(Data.map.getTileAt(i * 32, j * 32, Constants.LAYER_BACKGROUND)), i * 32, j * 32, null);
+							}
+						}
+						
 						drawTile(g, i * 32, j * 32, Data.map.getTileAt(i * 32, j * 32, Constants.LAYER_FOREGROUND));
 					}
 				}
@@ -182,12 +217,23 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 				
 			    tileset = result;
 			    
+			    BufferedImage ts = new BufferedImage(tileset.getWidth(), tileset.getHeight(), BufferedImage.TYPE_INT_ARGB);
+			    Graphics g = ts.getGraphics();
+			    g.drawImage(result, 0, 0, null);
+			    
+			    int[] pixel = ((DataBufferInt) ts.getRaster().getDataBuffer()).getData();
+			    for (int i = 0; i < pixel.length; i++) {
+			    	pixel[i] &= 0x40FFFFFF; // Set transparency to 1/4 of the original
+			    }
+			    
 				// chop the tileset up and add the tiles to a list
 				tiles.clear(); // Clear the tiles list, in case another level was already loaded
+				inactiveTiles.clear();
 				
 				int x = 0, y = 0;
 				while (y < result.getHeight()) {
 					tiles.add(result.getSubimage(x, y, 32, 32));
+					inactiveTiles.add(ts.getSubimage(x, y, 32, 32));
 					
 					x += 32;
 					
@@ -276,12 +322,10 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 							}
 						}
 					} else {
-						if (Data.selectedTileForeground != 255) {
-							Data.map.setForegroundTile(e.getX(), e.getY(), Data.selectedTileForeground);
-						} else if (Data.selectedTileBackground != 255) {
-							Data.map.setBackgroundTile(e.getX(), e.getY(), Data.selectedTileBackground);
-						} else if (Data.selectedSprite != 255) {
+						if (Data.selectedSprite != 255) {
 							Data.map.sprites[PK2Map.MAP_WIDTH * (mx / 32) + (my / 32)] = Data.selectedSprite;
+						} else {
+							Data.map.setTile(mx, my);
 						}
 					}
 					break;
@@ -321,6 +365,13 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 				// Needed to know when the user is dragging, so that the program knows to draw the black/white rectangle
 				Data.dragging = true;
 			}
+			
+			repaint();
+			
+			// Change this
+			if (Data.mmp != null) {
+				Data.mmp.repaint();
+			}
 		}
 	}
 
@@ -328,6 +379,10 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 	public void mouseMoved(MouseEvent e) {
 		mx = e.getX();
 		my = e.getY();
+		
+		if (!Data.multiSelectionBackground.isEmpty() || !Data.multiSelectionForeground.isEmpty() || Data.selectedTileBackground != 255 || Data.selectedTileForeground != 255 || Data.selectedSprite != 255) {
+			repaint();
+		}
 	}
 
 	@Override
@@ -431,6 +486,13 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 					Data.selectedSprite = Data.map.sprites[PK2Map.MAP_WIDTH * (mx / 32) + (my / 32)];
 				}
 			}
+			
+			repaint();
+			
+			// Change this
+			if (Data.mmp != null) {
+				Data.mmp.repaint();
+			}
 		}
 	}
 
@@ -459,6 +521,8 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 				}
 			}
 			
+			repaint();
+			
 			Data.dragging = false; // User is not dragging anymore, no need to draw the black/white selection rectangle.
 		}
 	}
@@ -477,7 +541,7 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 
 	@Override
 	public void run() {
-		while (true) {
+		/*while (true) {
 			repaint();
 			
 			// Change this
@@ -486,10 +550,10 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 			}
 
 			try {
-				Thread.sleep(17);
+				Thread.sleep(34);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-		}
+		}*/
 	}
 }

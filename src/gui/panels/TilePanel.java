@@ -169,6 +169,8 @@ public class TilePanel extends JPanel implements MouseListener, MouseMotionListe
 				Data.selectedTileBackground = y * (320 / 32) + x;
 			}
 			
+			Data.selectedSprite = 255;
+			
 			x *= 32;
 			y *= 32;
 			
