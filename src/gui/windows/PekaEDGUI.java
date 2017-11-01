@@ -79,6 +79,8 @@ public class PekaEDGUI {
 	
 	public JScrollPane scrollPane2;
 	
+	public JToggleButton btBrush, btEraser;
+	
 	private MiniMapPanel mmp;
 	
 	public void setup() {
@@ -97,7 +99,7 @@ public class PekaEDGUI {
 		}
 		
 		lp = new LevelPanel();
-		tp = new TilePanel();
+		tp = new TilePanel(this);
 		
 		mmp = new MiniMapPanel();
 		Data.mmp = mmp;
@@ -451,9 +453,9 @@ public class PekaEDGUI {
 		
 		toolbar.addSeparator();
 		
-		JToggleButton btBrush = new JToggleButton("Brush");
+		btBrush = new JToggleButton("Brush");
 		JToggleButton btFloodFill = new JToggleButton("FloodFil");
-		JToggleButton btEraser = new JToggleButton("Eraser");
+		btEraser = new JToggleButton("Eraser");
 		
 		btBrush.setMnemonic('W');
 		btEraser.setMnemonic('E');
@@ -909,6 +911,17 @@ public class PekaEDGUI {
 		dialog.setAlwaysOnTop(true);
 		dialog.setLocation(frame.getWidth() - dialog.getWidth() - 30, frame.getHeight() - dialog.getHeight());
 		dialog.setVisible(true);
+	}
+	
+	public void setToolButton() {
+		if (Data.selectedTool == Data.TOOL_BRUSH) {
+			btBrush.setSelected(true);
+			btEraser.setSelected(false);
+			btBrush.requestFocus();
+		} else if (Data.selectedTool == Data.TOOL_ERASER) {
+			btBrush.setSelected(false);
+			btEraser.setSelected(true);
+		}
 	}
 	
 	private void setEditorMode(int mode) {

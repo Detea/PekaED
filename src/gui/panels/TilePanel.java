@@ -16,17 +16,21 @@ import javax.swing.JPanel;
 import data.Constants;
 import data.Data;
 import data.Settings;
+import gui.windows.PekaEDGUI;
 
 public class TilePanel extends JPanel implements MouseListener, MouseMotionListener {
 
 	BufferedImage tileset;	
 	int x, y, w, h;
+	private PekaEDGUI pk;
 	
-	public TilePanel() {
+	public TilePanel(PekaEDGUI pk) {
 		addMouseListener(this);
 		addMouseMotionListener(this);
 		
 		setBackground(Color.lightGray);
+		
+		this.pk = pk;
 	}
 	
 	public void paintComponent(Graphics g) {
@@ -170,6 +174,8 @@ public class TilePanel extends JPanel implements MouseListener, MouseMotionListe
 			}
 			
 			Data.selectedSprite = 255;
+			Data.selectedTool = Data.TOOL_BRUSH;
+			pk.setToolButton();
 			
 			x *= 32;
 			y *= 32;
