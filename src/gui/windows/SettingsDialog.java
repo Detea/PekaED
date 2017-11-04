@@ -174,6 +174,8 @@ public class SettingsDialog extends JDialog {
 			public void actionPerformed(ActionEvent e) {
 				Settings.BASE_PATH = textField.getText();
 				
+				Settings.setPaths();
+				
 				Settings.loadEpisodeOnStartup = rdbtnLoadLastEpisode.isSelected();
 				Settings.startInEnhancedMode = rdbtnEnhancedMode.isSelected();
 				
