@@ -2,6 +2,7 @@ package gui.panels;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -27,6 +28,7 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 	private Thread thread;
 	
 	private int mx, my, layer, mouseButton;
+	private int viewX, viewY, viewW, viewH;
 	
 	private BufferedImage background, tileset;
 	public ArrayList<BufferedImage> tiles = new ArrayList<BufferedImage>();
@@ -62,55 +64,54 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 		super.paintComponent(g);
 		
 		if (Data.map != null) {
+			// + 1 enough? Maybe ((viewX + viewW) / 32) + ((viewX + viewW) % 32)? This will be the exact amount.
+			viewX = (pkg.scrollPane2.getViewport().getViewRect().x / 32);
+			viewY = (pkg.scrollPane2.getViewport().getViewRect().y / 32);
+			viewW = pkg.scrollPane2.getViewport().getViewRect().width / 32;
+			viewH = pkg.scrollPane2.getViewport().getViewRect().height / 32;
+			
+			// Optimize this!!
 			for (int i = 0; i < (PK2Map.MAP_WIDTH * 32) / background.getWidth() + 1; i++) {
 				for (int j = 0; j < (PK2Map.MAP_HEIGHT * 32) / background.getHeight() + 1; j++) {
 					g.drawImage(background, i * background.getWidth(), j * background.getHeight(), null);
 				}
 			}
 			
+			Graphics2D g2d = (Graphics2D) g;
+			//g2d.scale(Data.scale, Data.scale);
+			
 			if (Data.currentLayer == Constants.LAYER_BACKGROUND || Data.currentLayer == Constants.LAYER_BOTH) {
-				for (int i = 0; i < PK2Map.MAP_WIDTH; i++) {
-					for (int j = 0; j < PK2Map.MAP_HEIGHT; j++) {
+				for (int i = viewX; i < (viewX + viewW) + 1; i++) {
+					for (int j = viewY; j < (viewY + viewH) + 1; j++) {
 						if (Data.currentLayer != Constants.LAYER_BOTH) {
 							if (Data.map.getTileAt(i * 32, j * 32, Constants.LAYER_FOREGROUND) != 255) {
-								g.drawImage(inactiveTiles.get(Data.map.getTileAt(i * 32, j * 32, Constants.LAYER_FOREGROUND)), i * 32, j * 32, null);
+								g2d.drawImage(inactiveTiles.get(Data.map.getTileAt(i * 32, j * 32, Constants.LAYER_FOREGROUND)), i * 32, j * 32, null);
 							}
 						}
 						
-						drawTile(g, i * 32, j * 32, Data.map.getTileAt(i * 32, j * 32, Constants.LAYER_BACKGROUND));
+						drawTile(g2d, i * 32, j * 32, Data.map.getTileAt(i * 32, j * 32, Constants.LAYER_BACKGROUND));
 					}
 				}
 			}
 			
 			if (Data.showSprites) {
-				for (int i = 0; i < PK2Map.MAP_WIDTH; i++) {
-					for (int j = 0; j < PK2Map.MAP_HEIGHT; j++) {
+				for (int i = viewX; i < (viewX + viewW) + 1; i++) {
+					for (int j = viewY; j < (viewY + viewH) + 8; j++) { // 8 is an arbitrary value. This should be the size of the biggest sprites divided by 32
 						if ((PK2Map.MAP_WIDTH * i + j) < Data.map.sprites.length && Data.map.sprites[PK2Map.MAP_WIDTH * i + j] != 255) {
 							if (!Data.map.spriteList.isEmpty() && Data.map.spriteList.get(Data.map.sprites[PK2Map.MAP_WIDTH * i + j]).image != null) {
-								g.drawImage(Data.map.spriteList.get(Data.map.sprites[PK2Map.MAP_WIDTH * i + j]).image, ((i * 32) - (Data.map.spriteList.get(Data.map.sprites[PK2Map.MAP_WIDTH * i + j]).image.getWidth() / 2) + 16), ((j * 32) - (Data.map.spriteList.get(Data.map.sprites[PK2Map.MAP_WIDTH * i + j]).image.getHeight() - 32)), null);
+								g2d.drawImage(Data.map.spriteList.get(Data.map.sprites[PK2Map.MAP_WIDTH * i + j]).image, ((i * 32) - (Data.map.spriteList.get(Data.map.sprites[PK2Map.MAP_WIDTH * i + j]).image.getWidth() / 2) + 16), ((j * 32) - (Data.map.spriteList.get(Data.map.sprites[PK2Map.MAP_WIDTH * i + j]).image.getHeight() - 32)), null);
 							}
 						}
 					}
 				}
 			}
 			
-			/*
-			if (300 > pkg.scrollPane2.getViewport().getViewRect().x && 600 < pkg.scrollPane2.getViewport().getViewRect().x + pkg.scrollPane2.getViewport().getViewRect().width &&
-					300 > pkg.scrollPane2.getViewport().getViewRect().y && 600 < pkg.scrollPane2.getViewport().getViewRect().y + pkg.scrollPane2.getViewport().getViewRect().height) {
-				g.setColor(Color.RED);
-				g.fillRect(300, 300, 300, 300);
-				
-				drawing = true;
-			} else {
-				drawing = false;
-			}*/
-			
 			if (Data.currentLayer == Constants.LAYER_FOREGROUND || Data.currentLayer == Constants.LAYER_BOTH) {
-				for (int i = 0; i < PK2Map.MAP_WIDTH; i++) {
-					for (int j = 0; j < PK2Map.MAP_HEIGHT; j++) {
+				for (int i = viewX; i < (viewX + viewW) + 1; i++) {
+					for (int j = viewY; j < (viewY + viewH) + 1; j++) {
 						if (Data.currentLayer != Constants.LAYER_BOTH) {
 							if (Data.map.getTileAt(i * 32, j * 32, Constants.LAYER_BACKGROUND) != 255) {
-								g.drawImage(inactiveTiles.get(Data.map.getTileAt(i * 32, j * 32, Constants.LAYER_BACKGROUND)), i * 32, j * 32, null);
+								g2d.drawImage(inactiveTiles.get(Data.map.getTileAt(i * 32, j * 32, Constants.LAYER_BACKGROUND)), i * 32, j * 32, null);
 							}
 						}
 						
