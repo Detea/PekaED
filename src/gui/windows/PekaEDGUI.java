@@ -47,10 +47,13 @@ import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
+import javax.swing.JViewport;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.plaf.ActionMapUIResource;
@@ -564,6 +567,10 @@ public class PekaEDGUI {
 		scrollPane2 = new JScrollPane(lp, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, scrollPane1, scrollPane2);
 		
+		scrollPane2.getViewport().setScrollMode(JViewport.SIMPLE_SCROLL_MODE);
+		scrollPane2.getVerticalScrollBar().setUnitIncrement(32);
+		scrollPane2.getHorizontalScrollBar().setUnitIncrement(32);
+		
 		splitPane.setDividerLocation(320);
 		
 		frame.add(toolbar, BorderLayout.NORTH);
@@ -744,6 +751,30 @@ public class PekaEDGUI {
 			
 		});
 		
+		actionMap.put("zoomInAction", new AbstractAction() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				Data.scale += 0.1;
+				
+				Data.lp.repaint();
+			}
+			
+		});
+		
+		actionMap.put("zoomOutAction", new AbstractAction() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				if (Data.scale - 0.1 > 0) {
+					Data.scale -= 0.1;
+					
+					Data.lp.repaint();
+				}
+			}
+			
+		});
+		
 		InputMap keyMap = new ComponentInputMap((JComponent) frame.getContentPane());
 		keyMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_S, Event.CTRL_MASK), "saveAction");
 		keyMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_O, Event.CTRL_MASK), "loadAction");
@@ -753,6 +784,9 @@ public class PekaEDGUI {
 		keyMap.put(KeyStroke.getKeyStroke("1"), "layerAction1");
 		keyMap.put(KeyStroke.getKeyStroke("2"), "layerAction2");
 		keyMap.put(KeyStroke.getKeyStroke("3"), "layerAction3");
+		
+		keyMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_PLUS, Event.CTRL_MASK), "zoomInAction");
+		keyMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_MINUS, Event.CTRL_MASK), "zoomOutAction");
 		
 		keyMap.put(KeyStroke.getKeyStroke("E"), "selectBrush");
 		keyMap.put(KeyStroke.getKeyStroke("R"), "selectEraser");
@@ -901,7 +935,7 @@ public class PekaEDGUI {
 		lp.setPekaGUI(this);
 		mmp.setPekaGUI(this);
 		
-		newLevel();
+		//newLevel();
 		
 		JDialog dialog = new JDialog();
 		dialog.add(mmp);
@@ -993,8 +1027,8 @@ public class PekaEDGUI {
 		
 		Rectangle r = Data.map.calculateUsedArea(Data.map.layers[Constants.LAYER_BACKGROUND]);
 		
-		scrollPane2.getVerticalScrollBar().setValue(r.y * 32);
-		scrollPane2.getHorizontalScrollBar().setValue(r.x * 32);
+		scrollPane2.getVerticalScrollBar().setValue((r.y - (r.height / 2)) * 32);
+		scrollPane2.getHorizontalScrollBar().setValue((r.x - (r.width / 2)) * 32);
 		
 		Data.fileChanged = false;
 
