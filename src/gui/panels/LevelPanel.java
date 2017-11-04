@@ -64,16 +64,15 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 		super.paintComponent(g);
 		
 		if (Data.map != null) {
-			// + 1 enough? Maybe ((viewX + viewW) / 32) + ((viewX + viewW) % 32)? This will be the exact amount.
-			viewX = (pkg.scrollPane2.getViewport().getViewRect().x / 32);
-			viewY = (pkg.scrollPane2.getViewport().getViewRect().y / 32);
+			viewX = pkg.scrollPane2.getViewport().getViewRect().x / 32;
+			viewY = pkg.scrollPane2.getViewport().getViewRect().y / 32;
 			viewW = pkg.scrollPane2.getViewport().getViewRect().width / 32;
 			viewH = pkg.scrollPane2.getViewport().getViewRect().height / 32;
 			
-			// Optimize this!!
-			for (int i = 0; i < (PK2Map.MAP_WIDTH * 32) / background.getWidth() + 1; i++) {
-				for (int j = 0; j < (PK2Map.MAP_HEIGHT * 32) / background.getHeight() + 1; j++) {
-					g.drawImage(background, i * background.getWidth(), j * background.getHeight(), null);
+			// Doesn't work quite right, when using the scrollbars manually. Mousewheel and mini map work fine...
+			for (int i = 0; i < (((viewW * 32) / background.getWidth())) + 1; i++) {
+				for (int j = 0; j < (((viewH * 32) / background.getHeight())) + 1; j++) {
+					g.drawImage(background, (viewX * 32) + (i * background.getWidth()), (viewY * 32) + (j * background.getHeight()), null);
 				}
 			}
 			
@@ -81,8 +80,8 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 			//g2d.scale(Data.scale, Data.scale);
 			
 			if (Data.currentLayer == Constants.LAYER_BACKGROUND || Data.currentLayer == Constants.LAYER_BOTH) {
-				for (int i = viewX; i < (viewX + viewW) + 1; i++) {
-					for (int j = viewY; j < (viewY + viewH) + 1; j++) {
+				for (int i = viewX; i < (viewX + viewW) + 2; i++) {
+					for (int j = viewY; j < (viewY + viewH) + 2; j++) {
 						if (Data.currentLayer != Constants.LAYER_BOTH) {
 							if (Data.map.getTileAt(i * 32, j * 32, Constants.LAYER_FOREGROUND) != 255) {
 								g2d.drawImage(inactiveTiles.get(Data.map.getTileAt(i * 32, j * 32, Constants.LAYER_FOREGROUND)), i * 32, j * 32, null);
@@ -95,7 +94,7 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 			}
 			
 			if (Data.showSprites) {
-				for (int i = viewX; i < (viewX + viewW) + 1; i++) {
+				for (int i = viewX; i < (viewX + viewW) + 2; i++) {
 					for (int j = viewY; j < (viewY + viewH) + 8; j++) { // 8 is an arbitrary value. This should be the size of the biggest sprites divided by 32
 						if ((PK2Map.MAP_WIDTH * i + j) < Data.map.sprites.length && Data.map.sprites[PK2Map.MAP_WIDTH * i + j] != 255) {
 							if (!Data.map.spriteList.isEmpty() && Data.map.spriteList.get(Data.map.sprites[PK2Map.MAP_WIDTH * i + j]).image != null) {
@@ -107,8 +106,8 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 			}
 			
 			if (Data.currentLayer == Constants.LAYER_FOREGROUND || Data.currentLayer == Constants.LAYER_BOTH) {
-				for (int i = viewX; i < (viewX + viewW) + 1; i++) {
-					for (int j = viewY; j < (viewY + viewH) + 1; j++) {
+				for (int i = viewX; i < (viewX + viewW) + 2; i++) {
+					for (int j = viewY; j < (viewY + viewH) + 2; j++) {
 						if (Data.currentLayer != Constants.LAYER_BOTH) {
 							if (Data.map.getTileAt(i * 32, j * 32, Constants.LAYER_BACKGROUND) != 255) {
 								g2d.drawImage(inactiveTiles.get(Data.map.getTileAt(i * 32, j * 32, Constants.LAYER_BACKGROUND)), i * 32, j * 32, null);
