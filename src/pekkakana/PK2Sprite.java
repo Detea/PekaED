@@ -1,11 +1,13 @@
 package pekkakana;
 import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.HashMap;
 
 import javax.imageio.ImageIO;
 
@@ -24,6 +26,8 @@ public class PK2Sprite {
 	private char[] version13 = {'1', '.', '3', '\0'};
 	private char[] version12 = {'1', '.', '2', '\0'};
 	private char[] version11 = {'1', '.', '1', '\0'};
+	
+	HashMap<Integer, Color> cl = new HashMap<Integer, Color>();
 	
 	public String filename = "";
 	
@@ -64,7 +68,7 @@ public class PK2Sprite {
 	
 	public PK2Sprite(String file) {
 		filename = file;
-		
+
 		loadFile(file);
 		loadBufferedImage();
 	}
@@ -143,27 +147,10 @@ public class PK2Sprite {
 				name[i] = (char) dis.readByte();
 			}
 			
-			int width = dis.readInt();
-			int height = dis.readInt();
-			double weight = dis.readDouble();
-			boolean enemy = dis.readBoolean();
-			int energy = dis.readInt();
-			int damage = dis.readInt();
-			byte damage_type = dis.readByte();
-			byte immunity = dis.readByte();
-			int score = dis.readInt();
+			char[] ch = new char[0x5C]; // Hacky, but it works...
+			readAmount(ch, dis);
 			
-			for (int i = 0; i < 10; i++) {
-				dis.readInt();
-			}
-			
-			int max_jump = dis.readByte();
-			double max_speed = dis.readDouble();
-			int loading_time = dis.readInt();
-			
-			//color = (int) (dis.readByte() & 0xFF);
-			
-			//System.out.println((dis.readByte() & 0xFF) + " - " + file);
+			color = dis.readByte() & 0xFF;
 		} catch (FileNotFoundException e) {
 			//System.out.println("Can't find file: " + file);
 			//e.printStackTrace();
@@ -207,6 +194,28 @@ public class PK2Sprite {
 		    		}
 		    	}
 		    }
+		    
+		   if (color != 255) {
+			  /*
+			   * if (this->vari != VARI_NORMAALI){ //Change sprite colors
+					PisteDraw2_Image_GetSize(bufferi,w,h);
+			
+					PisteDraw2_DrawImage_Start(bufferi,*&buffer,leveys);
+			
+					for (x=0;x<w;x++)
+						for (y=0;y<h;y++)
+							if ((vari = buffer[x+y*leveys]) != 255){
+								vari %= 32;
+								vari += this->vari;
+								buffer[x+y*leveys] = vari;
+							}
+			
+					PisteDraw2_DrawImage_End(bufferi);
+				}
+				
+				TODO Tint sprite
+			   */
+		   }
 		    
 		    image = result;
 		} catch (IOException e) {
