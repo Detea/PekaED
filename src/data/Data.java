@@ -18,6 +18,8 @@ public class Data {
 	public static int selectedTool = 0;
 	public static int selectedTile = 0, selectedSprite = 255;
 	
+	public static double scale = 1;
+	
 	public static int selectedTileForeground = 0, selectedTileBackground = 0;
 	
 	public static int sx, sy, sw, sh; // SelectionX, SelectionY, SelectionWidth, SelectionHeight

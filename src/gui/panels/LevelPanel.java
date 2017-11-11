@@ -94,8 +94,8 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 			}
 			
 			if (Data.showSprites) {
-				for (int i = viewX; i < (viewX + viewW) + 2; i++) {
-					for (int j = viewY; j < (viewY + viewH) + 8; j++) { // 8 is an arbitrary value. This should be the size of the biggest sprites divided by 32
+				for (int i = viewX; i < (viewX + viewW) + 16; i++) {
+					for (int j = viewY; j < (viewY + viewH) + 16; j++) { // 8 is an arbitrary value. This should be the size of the biggest sprites divided by 32
 						if ((PK2Map.MAP_WIDTH * i + j) < Data.map.sprites.length && Data.map.sprites[PK2Map.MAP_WIDTH * i + j] != 255) {
 							if (!Data.map.spriteList.isEmpty() && Data.map.spriteList.get(Data.map.sprites[PK2Map.MAP_WIDTH * i + j]).image != null) {
 								g2d.drawImage(Data.map.spriteList.get(Data.map.sprites[PK2Map.MAP_WIDTH * i + j]).image, ((i * 32) - (Data.map.spriteList.get(Data.map.sprites[PK2Map.MAP_WIDTH * i + j]).image.getWidth() / 2) + 16), ((j * 32) - (Data.map.spriteList.get(Data.map.sprites[PK2Map.MAP_WIDTH * i + j]).image.getHeight() - 32)), null);

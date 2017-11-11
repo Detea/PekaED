@@ -56,15 +56,6 @@ public class MiniMapPanel extends JPanel implements MouseListener, MouseMotionLi
 		
 		g.setColor(Color.white);
 		g.drawRect(vx - (vw / 2), vy - (vh / 2), vw, vh);
-		
-		/*
-		if (Data.map.getTileAt(mx * 32, my * 32, Constants.LAYER_FOREGROUND) != 255) {
-			g.setColor(new Color(0xFFFFFFFF - Data.lp.tiles.get(Data.map.getTileAt(mx * 32, my * 32, Constants.LAYER_FOREGROUND)).getRGB(0, 0)));
-			g.drawRect(mx - 24, my - 16, 48, 32);
-		} else {
-			g.setColor(Color.white);
-			g.drawRect(mx - 24, my - 16, 48, 32);
-		}*/
 	}
 
 	@Override
@@ -84,8 +75,8 @@ public class MiniMapPanel extends JPanel implements MouseListener, MouseMotionLi
 			vy = (PK2Map.MAP_HEIGHT + 16) - (vh / 2);
 		}
 		
-		pkg.scrollPane2.getVerticalScrollBar().setValue((vy - (vh / 2)) * 32);
-		pkg.scrollPane2.getHorizontalScrollBar().setValue((vx - (vw / 2)) * 32);
+		pkg.scrollPane2.getVerticalScrollBar().setValue((int) ((vy - (vh / 2)) * (32 * Data.scale)));
+		pkg.scrollPane2.getHorizontalScrollBar().setValue((int) ((vx - (vw / 2)) * (32 * Data.scale)));
 		
 		repaint();
 		
