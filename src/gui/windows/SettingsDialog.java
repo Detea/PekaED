@@ -45,7 +45,7 @@ public class SettingsDialog extends JDialog {
 		setIconImage(img);
 		
 		setTitle("Settings");
-		setBounds(100, 100, 549, 219);
+		setBounds(100, 100, 549, 238);
 		getContentPane().setLayout(new BorderLayout());
 		
 		JButton okButton = new JButton("OK");
@@ -69,15 +69,15 @@ public class SettingsDialog extends JDialog {
 		contentPanel.add(btnBrowse);
 		
 		JLabel lblOnStartup = new JLabel("On startup:");
-		lblOnStartup.setBounds(10, 60, 68, 14);
+		lblOnStartup.setBounds(10, 89, 68, 14);
 		contentPanel.add(lblOnStartup);
 		
 		JRadioButton rdbtnLoadLastEpisode = new JRadioButton("Load last episode");
-		rdbtnLoadLastEpisode.setBounds(10, 81, 109, 23);
+		rdbtnLoadLastEpisode.setBounds(10, 110, 109, 23);
 		contentPanel.add(rdbtnLoadLastEpisode);
 		
 		JRadioButton rdbtnCreateEmptyLevel = new JRadioButton("Create empty level");
-		rdbtnCreateEmptyLevel.setBounds(10, 107, 124, 23);
+		rdbtnCreateEmptyLevel.setBounds(10, 136, 124, 23);
 		contentPanel.add(rdbtnCreateEmptyLevel);
 		
 		ButtonGroup rbGroup = new ButtonGroup();
@@ -85,19 +85,19 @@ public class SettingsDialog extends JDialog {
 		rbGroup.add(rdbtnCreateEmptyLevel);
 		
 		JLabel lblLevelLimitOf = new JLabel("Level limit per episode:");
-		lblLevelLimitOf.setBounds(208, 60, 114, 14);
+		lblLevelLimitOf.setBounds(10, 40, 114, 25);
 		contentPanel.add(lblLevelLimitOf);
 		
 		JSpinner spinner = new JSpinner();
-		spinner.setBounds(322, 57, 56, 20);
+		spinner.setBounds(120, 42, 60, 20);
 		contentPanel.add(spinner);
 		
 		JRadioButton rdbtnEnhancedMode = new JRadioButton("Enhanced mode");
-		rdbtnEnhancedMode.setBounds(143, 81, 109, 23);
+		rdbtnEnhancedMode.setBounds(143, 110, 109, 23);
 		contentPanel.add(rdbtnEnhancedMode);
 		
 		JRadioButton rdbtnLegacyMode = new JRadioButton("Legacy mode");
-		rdbtnLegacyMode.setBounds(143, 107, 109, 23);
+		rdbtnLegacyMode.setBounds(143, 136, 109, 23);
 		
 		ButtonGroup bgMode = new ButtonGroup();
 		bgMode.add(rdbtnEnhancedMode);
