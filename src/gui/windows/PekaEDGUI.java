@@ -925,7 +925,7 @@ public class PekaEDGUI {
 			}
 
 			@Override
-			public void componentResized(ComponentEvent arg0) {
+			public void componentResized(ComponentEvent c) {
 				mmp.resizeViewportRect();
 			}
 
@@ -988,16 +988,6 @@ public class PekaEDGUI {
 		mmp.setPekaGUI(this);
 		
 		newLevel();
-		
-		/*
-		JDialog dialog = new JDialog();
-		dialog.add(mmp);
-		dialog.setTitle("Mini map");
-		dialog.setIconImage(img);
-		dialog.setSize(new Dimension(PK2Map.MAP_WIDTH, PK2Map.MAP_HEIGHT + 48));
-		dialog.setAlwaysOnTop(true);
-		dialog.setLocation(frame.getWidth() - dialog.getWidth() - 30, frame.getHeight() - dialog.getHeight());
-		dialog.setVisible(true);*/
 	}
 	
 	public void setToolButton() {
