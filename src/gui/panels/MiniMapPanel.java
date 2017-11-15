@@ -29,19 +29,24 @@ public class MiniMapPanel extends JPanel implements MouseListener, MouseMotionLi
 		
 		setPreferredSize(new Dimension(PK2Map.MAP_WIDTH, PK2Map.MAP_HEIGHT));
 		
-		vw = 48;
-		vh = 32;
+		vw = 0;
+		vh = 0;
+		vx = 0;
+		vy = 0;
 	}
 	
 	public void setPekaGUI(PekaEDGUI pkg) {
 		this.pkg = pkg;
+		
+		vw = pkg.scrollPane2.getViewport().getVisibleRect().width / 32;
+		vh = pkg.scrollPane2.getViewport().getVisibleRect().height / 32;
 	}
 	
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		
 		g.setColor(Color.DARK_GRAY);
-		g.fillRect(0, 0, PK2Map.MAP_WIDTH + 8, PK2Map.MAP_HEIGHT + 16);
+		g.fillRect(0, 0, PK2Map.MAP_WIDTH, PK2Map.MAP_HEIGHT);
 		
 		for (int i = 0; i < PK2Map.MAP_WIDTH; i++) {
 			for (int j = 0; j < PK2Map.MAP_HEIGHT; j++) {
@@ -69,17 +74,17 @@ public class MiniMapPanel extends JPanel implements MouseListener, MouseMotionLi
 		if (vx - (vw / 2) < 0) {
 			vx = vw / 2;
 		} else if (vx + (vw / 2) > PK2Map.MAP_WIDTH) {
-			vx = (PK2Map.MAP_WIDTH + 8) - (vw / 2);
+			vx = PK2Map.MAP_WIDTH - (vw / 2);
 		}
 		
 		if (vy - (vh / 2) < 0) {
 			vy = vh / 2;
 		} else if (vy + (vh / 2) > PK2Map.MAP_HEIGHT) {
-			vy = (PK2Map.MAP_HEIGHT + 16) - (vh / 2);
+			vy = PK2Map.MAP_HEIGHT - (vh / 2);
 		}
 		
-		pkg.scrollPane2.getVerticalScrollBar().setValue((int) ((vy - (vh / 2)) * (32 * Data.scale)));
-		pkg.scrollPane2.getHorizontalScrollBar().setValue((int) ((vx - (vw / 2)) * (32 * Data.scale)));
+		pkg.scrollPane2.getVerticalScrollBar().setValue((vy - (vh / 2)) * 32);
+		pkg.scrollPane2.getHorizontalScrollBar().setValue((vx - (vw / 2)) * 32);
 		
 		repaint();
 		
@@ -124,7 +129,7 @@ public class MiniMapPanel extends JPanel implements MouseListener, MouseMotionLi
 		if (vy - (vh / 2) < 0) {
 			vy = vh / 2;
 		} else if (vy + (vh / 2) > PK2Map.MAP_HEIGHT) {
-			vy = (PK2Map.MAP_HEIGHT + 16) - (vh / 2);
+			vy = PK2Map.MAP_HEIGHT - (vh / 2);
 		}
 
 		pkg.scrollPane2.getVerticalScrollBar().setValue((vy - (vh / 2)) * 32);
