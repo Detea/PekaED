@@ -29,6 +29,7 @@ import javax.swing.JScrollPane;
 import javax.swing.filechooser.FileFilter;
 
 import data.Data;
+import data.Settings;
 import gui.windows.PekaEDGUI;
 import pekkakana.PK2Map;
 
@@ -57,7 +58,7 @@ public class EpisodePanel extends JPanel {
 			public void mouseClicked(MouseEvent e) {
 				if (e.getClickCount() == 2) {
 					if (Data.currentEpisodeFile != null && !dfm.isEmpty()) {
-						if (Data.fileChanged) {
+						if (Data.currentFile != null & Data.fileChanged) {
 							Data.map.saveFile();
 						}
 						
@@ -82,29 +83,31 @@ public class EpisodePanel extends JPanel {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				JFileChooser fc = new JFileChooser();
-				fc.setDialogTitle("Import a level into an episode...");
-				fc.setMultiSelectionEnabled(true);
-				
-				fc.setFileFilter(new FileFilter() {
-
-					@Override
-					public boolean accept(File f) {
-						return f.isDirectory() || f.getName().endsWith("map");
-					}
-
-					@Override
-					public String getDescription() {
-						return "Pekka Kana 2 level file";
-					}
+				if (Data.currentEpisodeFile != null) {
+					JFileChooser fc = new JFileChooser(Settings.EPISODES_PATH);
+					fc.setDialogTitle("Import a level into an episode...");
+					fc.setMultiSelectionEnabled(true);
 					
-				});
-				
-				int res = fc.showOpenDialog(null);
-				
-				if (res == JFileChooser.APPROVE_OPTION) {
-					for (File f : fc.getSelectedFiles()) {
-						importLevel(f);
+					fc.setFileFilter(new FileFilter() {
+
+						@Override
+						public boolean accept(File f) {
+							return f.isDirectory() || f.getName().endsWith("map");
+						}
+
+						@Override
+						public String getDescription() {
+							return "Pekka Kana 2 level file";
+						}
+						
+					});
+					
+					int res = fc.showOpenDialog(null);
+					
+					if (res == JFileChooser.APPROVE_OPTION) {
+						for (File f : fc.getSelectedFiles()) {
+							importLevel(f);
+						}
 					}
 				}
 			}
