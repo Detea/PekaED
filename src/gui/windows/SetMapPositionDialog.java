@@ -1,4 +1,4 @@
-package gui;
+package gui.windows;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -49,7 +49,6 @@ public class SetMapPositionDialog extends JDialog {
 			
 			addMouseListener(this);
 			
-			// ...wtf
 			ci.addActionListener(new ActionListener() {
 
 				@Override
@@ -63,7 +62,6 @@ public class SetMapPositionDialog extends JDialog {
 				bg = ImageIO.read(new File(Settings.BASE_PATH + File.separatorChar + "gfx" + File.separatorChar + "MAP.bmp"));
 				iconSheet = ImageIO.read(new File(Settings.BASE_PATH + File.separatorChar + "gfx" + File.separatorChar + "PK2STUFF.bmp"));
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			
@@ -98,20 +96,14 @@ public class SetMapPositionDialog extends JDialog {
 		
 		@Override
 		public void mouseClicked(MouseEvent arg0) {
-			// TODO Auto-generated method stub
-			
 		}
 
 		@Override
 		public void mouseEntered(MouseEvent arg0) {
-			// TODO Auto-generated method stub
-			
 		}
 
 		@Override
 		public void mouseExited(MouseEvent arg0) {
-			// TODO Auto-generated method stub
-			
 		}
 
 		@Override
@@ -123,9 +115,7 @@ public class SetMapPositionDialog extends JDialog {
 		}
 
 		@Override
-		public void mouseReleased(MouseEvent arg0) {
-			// TODO Auto-generated method stub
-			
+		public void mouseReleased(MouseEvent arg0) {	
 		}
 		
 	}

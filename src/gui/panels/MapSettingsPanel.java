@@ -1,4 +1,4 @@
-package gui;
+package gui.panels;
 
 
 import java.awt.event.ActionEvent;
@@ -15,8 +15,10 @@ import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.filechooser.FileFilter;
 
+import data.Constants;
 import data.Data;
 import data.Settings;
+import gui.windows.SetMapPositionDialog;
 import pekkakana.PK2Map;
 
 public class MapSettingsPanel extends JPanel {
@@ -164,12 +166,24 @@ public class MapSettingsPanel extends JPanel {
 
 					@Override
 					public boolean accept(File e) {
-						return e.isDirectory() | e.getName().toLowerCase().endsWith(".xm") | e.getName().toLowerCase().endsWith(".mod") | e.getName().toLowerCase().endsWith(".it") | e.getName().toLowerCase().endsWith(".s3m") && e.getName().length() < 13;
+						boolean acceptCondition = e.getName().toLowerCase().endsWith(".xm") | e.getName().toLowerCase().endsWith(".mod") | e.getName().toLowerCase().endsWith(".it") | e.getName().toLowerCase().endsWith(".s3m");
+						
+						if (Data.mode == Constants.MODE_ENHANCED) {
+							acceptCondition |= e.getName().toLowerCase().endsWith(".ogg") | e.getName().toLowerCase().endsWith(".mp3");
+						}
+						
+						return e.isDirectory() | acceptCondition && e.getName().length() < 13;
 					}
 
 					@Override
 					public String getDescription() {
-						return "Music file (.xm | .mod | .it | .s3m)";
+						String fileExtensions = ".xm | .mod | .it | .s3m";
+						
+						if (Data.mode == Constants.MODE_ENHANCED) {
+							fileExtensions += " | .ogg | .mp3";
+						}
+						
+						return "Music file (" + fileExtensions + ")";
 					}
 					
 				});

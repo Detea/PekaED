@@ -7,6 +7,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
 
 import javax.swing.JOptionPane;
@@ -18,10 +19,10 @@ import data.Settings;
 public class PK2Map {
 	public static final int MAP_WIDTH = 256;
 	public static final int MAP_HEIGHT = 224;
-	public static final int MAP_SIZE = MAP_WIDTH * MAP_HEIGHT;
+	public static final int MAP_SIZE = MAP_WIDTH * (MAP_HEIGHT + 32);
 	public static final int MAP_MAX_PROTOTYPES = 100;
 	
-	public char[] version = {'1', '.', '3', '\0'};
+	public char[] version = {0x31, 0x2E, 0x33, 0x00, 0xCD};
 	public char[] tilesetImageFile = new char[13];
 	public char[] backgroundImageFile = new char[13];
 	public char[] musicFile = new char[13];
@@ -55,11 +56,15 @@ public class PK2Map {
 	public int x, y;	// The maps coordinates on the overworld map
 	public int icon;	// The maps icon on the overworld map
 	
+	public File file;
+	
 	public ArrayList<PK2Sprite> spriteList = new ArrayList<PK2Sprite>();
 	
 	public PK2Map(String file) {
 		loadFile(file);
 		loadSpriteList();
+		
+		this.file = new File(file);
 	}
 	
 	public PK2Map() {
@@ -108,8 +113,6 @@ public class PK2Map {
 			
 			readAmount(version, dis);
 			
-			dis.readByte();
-			
 			readAmount(tilesetImageFile, dis);
 			readAmount(backgroundImageFile, dis);
 			readAmount(musicFile, dis);
@@ -148,17 +151,19 @@ public class PK2Map {
 			readAmount(amount, dis);
 			x = Integer.parseInt(cleanString(amount));
 			
-			y = readCleanConvert(amount, dis);
-			
-			icon = readCleanConvert(amount, dis);
+			readAmount(amount, dis);
+			y = Integer.parseInt(cleanString(amount));
 			
 			readAmount(amount, dis);
-			int protAmount = Integer.parseInt(cleanString(amount));	
+			icon = Integer.parseInt(cleanString(amount));
 			
+			readAmount(amount, dis);
+			int protAmount = Integer.parseInt(cleanString(amount));
+		
 			for (int i = 0; i < protAmount; i++) {
 				char[] protNames = new char[13];
 				readAmount(protNames, dis);
-				prototypes[i] = protNames;				
+				prototypes[i] = protNames;
 			}
 			
 			int width, height;
@@ -170,9 +175,7 @@ public class PK2Map {
 			
 			for (int y = startY; y <= startY + height; y++) {
 				for (int x = startX; x <= startX + width; x++) {
-					if (MAP_WIDTH * x + y < MAP_SIZE) {
-						layers[Constants.LAYER_BACKGROUND][MAP_WIDTH * x + y] = (int) (dis.readByte() & 0xFF); 
-					}
+					layers[Constants.LAYER_BACKGROUND][MAP_WIDTH * x + y] = (int) (dis.readByte() & 0xFF);
 				}
 			}
 			
@@ -183,9 +186,7 @@ public class PK2Map {
 		
 			for (int y = startY; y <= startY + height; y++) {
 				for (int x = startX; x <= startX + width; x++) {
-					if (MAP_WIDTH * x + y < MAP_SIZE) {
-						layers[Constants.LAYER_FOREGROUND][MAP_WIDTH * x + y] = (int) (dis.readByte() & 0xFF);
-					}
+					layers[Constants.LAYER_FOREGROUND][MAP_WIDTH * x + y] = (int) (dis.readByte() & 0xFF);
 				}
 			}
 			
@@ -209,50 +210,52 @@ public class PK2Map {
 		}
 	}
 	
-	public void saveFile(File f) {
+	public void saveFile() {
 		try {
-			DataOutputStream dos = new DataOutputStream(new FileOutputStream(f));
-
-			writeArray(Data.map.version, dos);
+			if (!file.getName().endsWith("map")) {
+				file = new File(file.getAbsolutePath() + ".map");
+			}
 			
-			dos.writeByte(0xCD);
+			DataOutputStream dos = new DataOutputStream(new FileOutputStream(file));
 			
-			writeArray(Data.map.tilesetImageFile, dos);
-			writeArray(Data.map.backgroundImageFile, dos);
-			writeArray(Data.map.musicFile, dos);
-			writeArray(Data.map.mapName, dos);
-			writeArray(Data.map.authorName, dos);
+			writeArray(version, dos);
+			
+			writeArray(tilesetImageFile, dos);
+			writeArray(backgroundImageFile, dos);
+			writeArray(musicFile, dos);
+			writeArray(mapName, dos);
+			writeArray(authorName, dos);
 			
 			char[] ca = new char[8];
-			setAndWrite(ca, Integer.toString(Data.map.levelNumber), dos);
-			setAndWrite(ca, Integer.toString(Data.map.weather), dos);
-			setAndWrite(ca, Integer.toString(Data.map.switch1Time), dos);
-			setAndWrite(ca, Integer.toString(Data.map.switch2Time), dos);
-			setAndWrite(ca, Integer.toString(Data.map.switch3Time), dos);
-			setAndWrite(ca, Integer.toString(Data.map.time), dos);
-			setAndWrite(ca, Integer.toString(Data.map.extra), dos);
-			setAndWrite(ca, Integer.toString(Data.map.background), dos);
-			setAndWrite(ca, Integer.toString(Data.map.playerSprite), dos);
-			setAndWrite(ca, Integer.toString(Data.map.x), dos);
-			setAndWrite(ca, Integer.toString(Data.map.y), dos);
-			setAndWrite(ca, Integer.toString(Data.map.icon), dos);
+			setAndWrite(ca, Integer.toString(levelNumber), dos);
+			setAndWrite(ca, Integer.toString(weather), dos);
+			setAndWrite(ca, Integer.toString(switch1Time), dos);
+			setAndWrite(ca, Integer.toString(switch2Time), dos);
+			setAndWrite(ca, Integer.toString(switch3Time), dos);
+			setAndWrite(ca, Integer.toString(time), dos);
+			setAndWrite(ca, Integer.toString(extra), dos);
+			setAndWrite(ca, Integer.toString(background), dos);
+			setAndWrite(ca, Integer.toString(playerSprite), dos);
+			setAndWrite(ca, Integer.toString(x), dos);
+			setAndWrite(ca, Integer.toString(y), dos);
+			setAndWrite(ca, Integer.toString(icon), dos);
 			
 			int prototypeAmount = 0;
-			for (int i = 0; i < Data.map.prototypes.length; i++) {
-				if (Data.map.prototypes[i][0] != 0x0) {
+			for (int i = 0; i < prototypes.length; i++) {
+				if (prototypes[i][0] != 0x0) {
 					prototypeAmount++;
 				}
 			}
 			
 			setAndWrite(ca, Integer.toString(prototypeAmount), dos);
 			
-			for (int i = 0; i < Data.map.prototypes.length; i++) {
-				if (Data.map.prototypes[i][0] != 0x0) {
-					writeArray(Data.map.prototypes[i], dos);
+			for (int i = 0; i < prototypes.length; i++) {
+				if (prototypes[i][0] != 0x0) {
+					writeArray(prototypes[i], dos);
 				}
 			}
 			
-			Rectangle r = calculateUsedArea(Data.map.backgroundTiles);
+			Rectangle r = calculateUsedArea(backgroundTiles);
 			
 			int width = r.width - r.x;
 			int height = r.height - r.y;
@@ -272,7 +275,7 @@ public class PK2Map {
 			}
 			
 			r.setRect(0, 0, 0, 0);
-			r = calculateUsedArea(Data.map.foregroundTiles);
+			r = calculateUsedArea(foregroundTiles);
 			
 			width = r.width - r.x;
 			height = r.height - r.y;
@@ -291,7 +294,7 @@ public class PK2Map {
 				}
 			}
 			
-			r = calculateUsedArea(Data.map.sprites);
+			r = calculateUsedArea(sprites);
 			
 			width = r.width - r.x;
 			height = r.height - r.y;
@@ -306,21 +309,20 @@ public class PK2Map {
 			
 			for (int y = start_y; y <= start_y + height; y++ ) {
 				for (int x = start_x; x <= start_x + width; x++) {
-					dos.writeByte((byte) Data.map.sprites[PK2Map.MAP_WIDTH * x + y]);
+					dos.writeByte((byte) sprites[MAP_WIDTH * x + y]);
 				}
 			}
 			
 			dos.flush();
 			dos.close();
 			
-			Data.currentFile = f;
 			Data.fileChanged = false;
 		} catch (FileNotFoundException e) {
-			JOptionPane.showMessageDialog(null, "File '" + f.getName() + "' not found.", "Error", JOptionPane.OK_OPTION);
+			JOptionPane.showMessageDialog(null, "File '" + file.getName() + "' not found.", "Error", JOptionPane.OK_OPTION);
 			
 			e.printStackTrace();
 		} catch (IOException e) {
-			JOptionPane.showMessageDialog(null, "Something went wrong while trying to write file '" + f.getName() + "\nError: " + e.getMessage(), "Error", JOptionPane.OK_OPTION);
+			JOptionPane.showMessageDialog(null, "Something went wrong while trying to write file '" + file.getName() + "\nError: " + e.getMessage(), "Error", JOptionPane.OK_OPTION);
 			
 			e.printStackTrace();
 		}
@@ -357,7 +359,7 @@ public class PK2Map {
 			String str = cleanString(array);
 			
 			if (!str.isEmpty()) {
-				in = Integer.parseInt(cleanString(array));
+				in = Integer.parseInt(str);
 			}
 		}
 		
@@ -369,7 +371,7 @@ public class PK2Map {
 		
 		int i = 0;
 		while (array[i] != 0x0) {
-			if (array[i] > 0x7E) // hack?
+			if (array[i] > 0xCC)
 				break;
 			
 			sb.append(array[i]);
@@ -395,6 +397,17 @@ public class PK2Map {
 			}
 		}
 	}
+	
+	public void setTile(int x, int y) {
+		if (Data.currentLayer == Constants.LAYER_FOREGROUND) {
+			layers[Constants.LAYER_FOREGROUND][MAP_WIDTH * (x / 32) + (y / 32)] = Data.selectedTileForeground;
+		} else if (Data.currentLayer == Constants.LAYER_BACKGROUND) {
+			layers[Constants.LAYER_BACKGROUND][MAP_WIDTH * (x / 32) + (y / 32)] = Data.selectedTileBackground;
+		} else if (Data.currentLayer == Constants.LAYER_BOTH){
+			layers[Constants.LAYER_FOREGROUND][MAP_WIDTH * (x / 32) + (y / 32)] = Data.selectedTileForeground;
+			layers[Constants.LAYER_BACKGROUND][MAP_WIDTH * (x / 32) + (y / 32)] = Data.selectedTileBackground;
+		}
+	}
 
 	public int getTileAt(int x, int y, int layer) {
 		if ((MAP_WIDTH * (x / 32) + (y / 32)) < MAP_SIZE) {
@@ -407,6 +420,35 @@ public class PK2Map {
 		
 		return 255;
 	}
+	
+	/*
+	public void readLevelNumberFromFile(File file) {
+		RandomAccessFile r = null;
+		
+		try {
+			r = new RandomAccessFile(file, "r");
+			
+			r.skipBytes(124);
+			
+			char[] ln = new char[8];
+			for (int i = 0; i < 8; i++) {
+				ln[i] = (char) (r.readByte());
+			}
+			
+			levelNumber = Integer.parseInt(cleanString(ln));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			try {
+				r.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}*/
 	
 	public String getTileset() {
 		return cleanString(tilesetImageFile);
@@ -526,7 +568,7 @@ public class PK2Map {
 	 * This methods looks for the space where tiles are placed.
 	 * That way you can store only the placed tiles and don't have to save the whole map.
 	 */
-	private Rectangle calculateUsedArea(int[] array) {
+	public Rectangle calculateUsedArea(int[] array) {
 		Rectangle r = new Rectangle(0, 0, 0, 0);
 		
 		int x, y;
@@ -568,7 +610,7 @@ public class PK2Map {
 	}
 	
 	private void setAndWrite(char[] ca, String s, DataOutputStream dos) throws IOException {
-		Data.map.setCharString(ca, s);
+		setCharString(ca, s);
 		writeArray(ca, dos);
 	}
 	
@@ -576,5 +618,15 @@ public class PK2Map {
 		for (int i = 0; i < array.length; i++) {
 			dos.writeByte(array[i]);
 		}
+	}
+
+	public void setForegroundTile(int x, int y, int tile) {
+		if ((MAP_WIDTH * (x / 32) + (y / 32)) < MAP_SIZE) { // check if x & y > 0 && < width/height
+			layers[Constants.LAYER_FOREGROUND][MAP_WIDTH * (x / 32) + (y / 32)] = tile;
+		}
+	}
+	
+	public void setBackgroundTile(int x, int y, int tile) {
+		layers[Constants.LAYER_BACKGROUND][MAP_WIDTH * (x / 32) + (y / 32)] = tile;
 	}
 }
