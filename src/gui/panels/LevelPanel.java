@@ -7,6 +7,8 @@ import java.awt.Image;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.io.File;
@@ -23,7 +25,7 @@ import data.Settings;
 import gui.windows.PekaEDGUI;
 import pekkakana.PK2Map;
 
-public class LevelPanel extends JPanel implements MouseListener, MouseMotionListener, Runnable {
+public class LevelPanel extends JPanel implements MouseListener, MouseMotionListener, MouseWheelListener, Runnable {
 	
 	private Thread thread;
 	
@@ -45,6 +47,7 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 		
 		addMouseListener(this);
 		addMouseMotionListener(this);
+		addMouseWheelListener(this);
 		
 		setPreferredSize(new Dimension(PK2Map.MAP_WIDTH * 32, PK2Map.MAP_HEIGHT * 32));
 		
@@ -76,8 +79,9 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 				}
 			}
 			
+			// @Todo: Deal with the offset, that's caused by zooming
 			Graphics2D g2d = (Graphics2D) g;
-			//g2d.scale(Data.scale, Data.scale);
+			g2d.scale(Data.scale, Data.scale);
 			
 			if (Data.currentLayer == Constants.LAYER_BACKGROUND || Data.currentLayer == Constants.LAYER_BOTH) {
 				for (int i = viewX; i < (viewX + viewW) + 2; i++) {
@@ -364,6 +368,9 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 				
 				// Needed to know when the user is dragging, so that the program knows to draw the black/white rectangle
 				Data.dragging = true;
+			} else if (mouseButton == MouseEvent.BUTTON2) {
+				pkg.scrollPane2.getHorizontalScrollBar().setValue(((mx - viewX) - viewW));
+				pkg.scrollPane2.getVerticalScrollBar().setValue(my / 32);
 			}
 			
 			repaint();
@@ -555,5 +562,9 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 				e.printStackTrace();
 			}
 		}*/
+	}
+
+	@Override
+	public void mouseWheelMoved(MouseWheelEvent e) {
 	}
 }
