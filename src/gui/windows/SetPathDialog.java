@@ -127,6 +127,7 @@ public class SetPathDialog extends JDialog {
 								
 								dos.writeUTF(Settings.BASE_PATH);
 								dos.writeBoolean(false);
+								dos.writeBoolean(false);
 								dos.writeInt(100);
 								
 								dos.flush();
