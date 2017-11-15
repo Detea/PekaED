@@ -45,25 +45,27 @@ public class MiniMapPanel extends JPanel implements MouseListener, MouseMotionLi
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		
-		g.setColor(Color.DARK_GRAY);
-		g.fillRect(0, 0, PK2Map.MAP_WIDTH, PK2Map.MAP_HEIGHT);
-		
-		for (int i = 0; i < PK2Map.MAP_WIDTH; i++) {
-			for (int j = 0; j < PK2Map.MAP_HEIGHT; j++) {
-				if (Data.map.getTileAt(i * 32, j * 32, Constants.LAYER_BACKGROUND) != 255) {
-					g.setColor(new Color(Data.lp.tiles.get(Data.map.getTileAt(i * 32, j * 32, Constants.LAYER_BACKGROUND)).getRGB(0, 0)));
-					g.fillRect(i, j, 1, 1);
-				}
-				
-				if (Data.map.getTileAt(i * 32, j * 32, Constants.LAYER_FOREGROUND) != 255) {
-					g.setColor(new Color(Data.lp.tiles.get(Data.map.getTileAt(i * 32, j * 32, Constants.LAYER_FOREGROUND)).getRGB(0, 0)));
-					g.fillRect(i, j, 1, 1);
+		if (Data.map != null) {
+			g.setColor(Color.DARK_GRAY);
+			g.fillRect(0, 0, PK2Map.MAP_WIDTH, PK2Map.MAP_HEIGHT);
+			
+			for (int i = 0; i < PK2Map.MAP_WIDTH; i++) {
+				for (int j = 0; j < PK2Map.MAP_HEIGHT; j++) {
+					if (Data.map.getTileAt(i * 32, j * 32, Constants.LAYER_BACKGROUND) != 255) {
+						g.setColor(new Color(Data.lp.tiles.get(Data.map.getTileAt(i * 32, j * 32, Constants.LAYER_BACKGROUND)).getRGB(0, 0)));
+						g.fillRect(i, j, 1, 1);
+					}
+					
+					if (Data.map.getTileAt(i * 32, j * 32, Constants.LAYER_FOREGROUND) != 255) {
+						g.setColor(new Color(Data.lp.tiles.get(Data.map.getTileAt(i * 32, j * 32, Constants.LAYER_FOREGROUND)).getRGB(0, 0)));
+						g.fillRect(i, j, 1, 1);
+					}
 				}
 			}
+			
+			g.setColor(Color.white);
+			g.drawRect(vx - (vw / 2), vy - (vh / 2), vw, vh);
 		}
-		
-		g.setColor(Color.white);
-		g.drawRect(vx - (vw / 2), vy - (vh / 2), vw, vh);
 	}
 
 	@Override
