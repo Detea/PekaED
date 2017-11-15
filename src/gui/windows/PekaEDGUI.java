@@ -27,13 +27,13 @@ import java.util.Vector;
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
+import javax.swing.BoxLayout;
 import javax.swing.ComponentInputMap;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -41,6 +41,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
@@ -52,8 +53,6 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.plaf.ActionMapUIResource;
@@ -179,7 +178,7 @@ public class PekaEDGUI {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				JFileChooser fc = new JFileChooser();
+				JFileChooser fc = new JFileChooser(Settings.EPISODES_PATH);
 				fc.setDialogTitle("Create a new episode...");
 				fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 				
@@ -561,7 +560,9 @@ public class PekaEDGUI {
 		tabbedPane.addTab("Sprites", sp);
 		tabbedPane.addTab("Episode", ep);
 		
-		tabbedPane.setPreferredSize(new Dimension(256, 600));
+		//tabbedPane.setPreferredSize(new Dimension(256, 600));
+		tabbedPane.setMinimumSize(new Dimension(280, 500));
+		tabbedPane.setPreferredSize(new Dimension(280, 500));
 		
 		JScrollPane scrollPane1 = new JScrollPane(tp, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		scrollPane2 = new JScrollPane(lp, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -572,10 +573,16 @@ public class PekaEDGUI {
 		scrollPane2.getHorizontalScrollBar().setUnitIncrement(32);
 		
 		splitPane.setDividerLocation(320);
+
+		// Use GridBagLayout. The size of the mini map should be respected.
+		JPanel sidePanel = new JPanel();
+		sidePanel.setLayout(new BoxLayout(sidePanel, BoxLayout.Y_AXIS));
+		sidePanel.add(tabbedPane);
+		sidePanel.add(mmp);
 		
 		frame.add(toolbar, BorderLayout.NORTH);
 		frame.add(splitPane, BorderLayout.CENTER);
-		frame.add(tabbedPane, BorderLayout.EAST);
+		frame.add(sidePanel, BorderLayout.EAST);
 		
 		ActionMap actionMap = new ActionMapUIResource();
 		actionMap.put("saveAction", new AbstractAction() {
@@ -935,8 +942,9 @@ public class PekaEDGUI {
 		lp.setPekaGUI(this);
 		mmp.setPekaGUI(this);
 		
-		//newLevel();
+		newLevel();
 		
+		/*
 		JDialog dialog = new JDialog();
 		dialog.add(mmp);
 		dialog.setTitle("Mini map");
@@ -944,7 +952,7 @@ public class PekaEDGUI {
 		dialog.setSize(new Dimension(PK2Map.MAP_WIDTH, PK2Map.MAP_HEIGHT + 48));
 		dialog.setAlwaysOnTop(true);
 		dialog.setLocation(frame.getWidth() - dialog.getWidth() - 30, frame.getHeight() - dialog.getHeight());
-		dialog.setVisible(true);
+		dialog.setVisible(true);*/
 	}
 	
 	public void setToolButton() {
