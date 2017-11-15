@@ -28,18 +28,18 @@ public class MiniMapPanel extends JPanel implements MouseListener, MouseMotionLi
 		addMouseMotionListener(this);
 		
 		setPreferredSize(new Dimension(PK2Map.MAP_WIDTH, PK2Map.MAP_HEIGHT));
-		
-		vw = 0;
-		vh = 0;
-		vx = 0;
-		vy = 0;
 	}
 	
 	public void setPekaGUI(PekaEDGUI pkg) {
 		this.pkg = pkg;
 		
+		resizeViewportRect();
+	}
+	
+	public void resizeViewportRect() {
 		vw = pkg.scrollPane2.getViewport().getVisibleRect().width / 32;
 		vh = pkg.scrollPane2.getViewport().getVisibleRect().height / 32;
+
 	}
 	
 	public void paintComponent(Graphics g) {

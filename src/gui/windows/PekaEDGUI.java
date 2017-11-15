@@ -4,10 +4,14 @@ import java.awt.BorderLayout;
 import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Event;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
@@ -27,7 +31,6 @@ import java.util.Vector;
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
-import javax.swing.BoxLayout;
 import javax.swing.ComponentInputMap;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
@@ -574,11 +577,26 @@ public class PekaEDGUI {
 		
 		splitPane.setDividerLocation(320);
 
-		// Use GridBagLayout. The size of the mini map should be respected.
+		// Use GridBagLayout.
+		
+		GridBagLayout gbl = new GridBagLayout();
+		
 		JPanel sidePanel = new JPanel();
-		sidePanel.setLayout(new BoxLayout(sidePanel, BoxLayout.Y_AXIS));
+		sidePanel.setLayout(gbl);
+		GridBagConstraints c = new GridBagConstraints();
 		sidePanel.add(tabbedPane);
+		c.fill = GridBagConstraints.VERTICAL;
+		c.gridx = 1;
+		c.gridy = 0;
+		c.weighty = 1.0;
+		gbl.setConstraints(tabbedPane, c);
+	
 		sidePanel.add(mmp);
+		c.fill = GridBagConstraints.NONE;
+		c.gridx = 1;
+		c.gridy = 1;
+		c.weighty = 0.5;
+		gbl.setConstraints(mmp, c);
 		
 		frame.add(toolbar, BorderLayout.NORTH);
 		frame.add(splitPane, BorderLayout.CENTER);
@@ -886,6 +904,33 @@ public class PekaEDGUI {
 
 			@Override
 			public void windowOpened(WindowEvent arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+		});
+		
+		frame.addComponentListener(new ComponentListener() {
+
+			@Override
+			public void componentHidden(ComponentEvent arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void componentMoved(ComponentEvent arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void componentResized(ComponentEvent arg0) {
+				mmp.resizeViewportRect();
+			}
+
+			@Override
+			public void componentShown(ComponentEvent arg0) {
 				// TODO Auto-generated method stub
 				
 			}
