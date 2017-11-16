@@ -16,6 +16,9 @@ public class Settings {
 	public static String DEFAULT_TILESET = "TILES01.bmp";
 	public static String DEFAULT_BACKGROUND = "CASTLE.bmp";
 	public static String DEFAULT_MUSIC = "song01.xm";
+
+	public static boolean loadEpisodeOnStartup = false;
+	public static boolean startInEnhancedMode = false;
 	
 	// Using File.separatorChar so that this program is platform independent
 	public static void setPaths() {
@@ -23,7 +26,7 @@ public class Settings {
 		TILES_PATH = BASE_PATH  + File.separatorChar + "gfx" + File.separatorChar + "tiles" + File.separatorChar;
 		SCENERY_PATH = BASE_PATH + File.separatorChar + "gfx" + File.separatorChar + "scenery" + File.separatorChar;
 		SPRITE_PATH = BASE_PATH + File.separatorChar + "sprites" + File.separatorChar;
-		MUSIC_PATH = BASE_PATH + File.separatorChar + "music";
+		MUSIC_PATH = BASE_PATH + File.separatorChar + "music" + File.separatorChar;
 		GFX_PATH = BASE_PATH + File.separatorChar + "gfx" + File.separatorChar;
 	}
 }

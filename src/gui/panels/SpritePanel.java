@@ -1,7 +1,8 @@
-package gui;
+package gui.panels;
 
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridLayout;
@@ -25,27 +26,23 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 
+import data.Constants;
 import data.Data;
 import data.Settings;
-import pekkakana.PK2Map;
 import pekkakana.PK2Sprite;
 
 public class SpritePanel extends JPanel {
 
-	PK2Map map;
 	DefaultTableModel dfm;
 	JTable table;
 	
 	public SpritePanel() {
-		this.map = Data.map;
-		
 		dfm = new DefaultTableModel();
 		
 		table = new JTable(dfm);
 		
 		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		table.setShowGrid(false);
-		table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 		table.setDefaultEditor(Object.class, new TableCellEditor() {
 
 			@Override
@@ -197,9 +194,9 @@ public class SpritePanel extends JPanel {
 		buttonPanel.add(btnAdd);
 		buttonPanel.add(btnRemove);
 		buttonPanel.add(btnSetP);
-		
-		table.setPreferredSize(new Dimension(260, 400));
-		table.setPreferredScrollableViewportSize(new Dimension(250, 400));
+
+		table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+		table.setPreferredScrollableViewportSize(new Dimension(250, 500));
 		
 		JScrollPane tblScroll = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		
@@ -207,43 +204,41 @@ public class SpritePanel extends JPanel {
 		add(buttonPanel, BorderLayout.SOUTH);
 	}
 	
-	public void setMap(PK2Map map) {
-		this.map = map;
-		
+	public void setMap() {
 		setList();
 		
 		dfm.fireTableDataChanged();
 	}
 	
 	public void addSprite() {
-		JFileChooser fc = new JFileChooser(Settings.BASE_PATH + File.separatorChar + "sprites");
-		
-		fc.setDialogTitle("Select a sprite to load");
-		fc.setFileFilter(new FileNameExtensionFilter("Pekka Kana 2 Sprite file", "spr"));
-		
-		int res = fc.showOpenDialog(null);
-		
-		if (res == JFileChooser.APPROVE_OPTION) {
-			if (fc.getSelectedFile().exists()) {
-				PK2Sprite s = new PK2Sprite(fc.getSelectedFile().getName());
-				
-				Vector v = new Vector();
-				v.addElement(" " + s.getName() + " (" + fc.getSelectedFile().getName() + ")");
-				
-				v.addElement(false);
-				
-				dfm.addRow(v);
-				
-				Data.map.addSprite(s, fc.getSelectedFile().getName());
-				
-				table.setRowSelectionInterval(dfm.getRowCount() - 1, dfm.getRowCount() - 1);
-				
-				Data.selectedSprite = table.getSelectedRow();
-				Data.selectedTile = 255;
-				Data.selectedTileForeground = 255;
-				Data.selectedTileBackground = 255;
-			} else {
-				JOptionPane.showMessageDialog(null, "Coulnd't find file '" + fc.getSelectedFile().getName() + "'.", "Error", JOptionPane.OK_OPTION);
+		if (Data.map.spriteList.size() < Constants.SPRITE_LIMIT) {
+			JFileChooser fc = new JFileChooser(Settings.BASE_PATH + File.separatorChar + "sprites");
+			
+			fc.setDialogTitle("Select a sprite to load");
+			fc.setFileFilter(new FileNameExtensionFilter("Pekka Kana 2 Sprite file", "spr"));
+			
+			int res = fc.showOpenDialog(null);
+			
+			if (res == JFileChooser.APPROVE_OPTION) {
+				if (fc.getSelectedFile().exists()) {
+					PK2Sprite s = new PK2Sprite(fc.getSelectedFile().getName());
+					
+					Vector v = new Vector();
+					v.addElement(" " + s.getName() + " (" + fc.getSelectedFile().getName() + ")");
+					
+					dfm.addRow(v);
+					
+					Data.map.addSprite(s, fc.getSelectedFile().getName());
+					
+					table.setRowSelectionInterval(dfm.getRowCount() - 1, dfm.getRowCount() - 1);
+					
+					Data.selectedSprite = table.getSelectedRow();
+					Data.selectedTile = 255;
+					Data.selectedTileForeground = 255;
+					Data.selectedTileBackground = 255;
+				} else {
+					JOptionPane.showMessageDialog(null, "Coulnd't find file '" + fc.getSelectedFile().getName() + "'.", "Error", JOptionPane.OK_OPTION);
+				}
 			}
 		}
 	}
@@ -261,8 +256,6 @@ public class SpritePanel extends JPanel {
 			
 			if (Data.map.spriteList.get(i).type == 1 && Data.map.playerSprite == i) {
 				v.addElement("true");
-			} else {
-				v.addElement("false");
 			}
 			
 			dfm.addRow(v);
