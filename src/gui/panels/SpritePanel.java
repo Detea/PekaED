@@ -1,10 +1,10 @@
 package gui.panels;
 
 
-import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -14,6 +14,7 @@ import java.io.File;
 import java.util.EventObject;
 import java.util.Vector;
 
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -196,12 +197,12 @@ public class SpritePanel extends JPanel {
 		buttonPanel.add(btnSetP);
 
 		table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-		table.setPreferredScrollableViewportSize(new Dimension(250, 500));
 		
 		JScrollPane tblScroll = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		
-		add(tblScroll, BorderLayout.CENTER);
-		add(buttonPanel, BorderLayout.SOUTH);
+		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+		add(tblScroll);
+		add(buttonPanel);
 	}
 	
 	public void setMap() {
