@@ -986,7 +986,7 @@ public class PekaEDGUI {
 		lp.setPekaGUI(this);
 		mmp.setPekaGUI(this);
 		
-		newLevel();
+		createEmptyLevel();
 	}
 	
 	public void setToolButton() {
