@@ -69,8 +69,6 @@ public class EpisodePanel extends JPanel {
 			}
 		});
 		
-		scrollPane.setPreferredSize(new Dimension(250, 500));
-		
 		JLabel lblEpisode = new JLabel("Episode: ");
 		lblEpisodeName = new JLabel("");
 		
@@ -143,9 +141,10 @@ public class EpisodePanel extends JPanel {
 		bottomPanel.add(btnImport);
 		bottomPanel.add(btnRemove);
 		
-		add(topPanel, BorderLayout.NORTH);
-		add(scrollPane, BorderLayout.CENTER);
-		add(bottomPanel, BorderLayout.SOUTH);
+		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+		add(topPanel);
+		add(scrollPane);
+		add(bottomPanel);
 	}
 	
 	public void newEpisode(String name) {
