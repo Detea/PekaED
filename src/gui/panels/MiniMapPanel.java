@@ -27,6 +27,7 @@ public class MiniMapPanel extends JPanel implements MouseListener, MouseMotionLi
 		addMouseListener(this);
 		addMouseMotionListener(this);
 		
+		setMinimumSize(new Dimension(PK2Map.MAP_WIDTH, PK2Map.MAP_HEIGHT));
 		setPreferredSize(new Dimension(PK2Map.MAP_WIDTH, PK2Map.MAP_HEIGHT));
 	}
 	
