@@ -563,9 +563,8 @@ public class PekaEDGUI {
 		tabbedPane.addTab("Sprites", sp);
 		tabbedPane.addTab("Episode", ep);
 		
-		//tabbedPane.setPreferredSize(new Dimension(256, 600));
-		tabbedPane.setMinimumSize(new Dimension(280, 500));
-		tabbedPane.setPreferredSize(new Dimension(280, 500));
+		tabbedPane.setMinimumSize(new Dimension(280, 400));
+		tabbedPane.setPreferredSize(new Dimension(280, 400));
 		
 		JScrollPane scrollPane1 = new JScrollPane(tp, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		scrollPane2 = new JScrollPane(lp, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
