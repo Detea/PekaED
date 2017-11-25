@@ -38,8 +38,6 @@ public class EpisodePanel extends JPanel {
 	private DefaultListModel dfm;
 	private JLabel lblEpisodeName;
 	
-	public String currentEpisode;
-	
 	private JList list;
 	
 	private PekaEDGUI pkg;
@@ -63,7 +61,7 @@ public class EpisodePanel extends JPanel {
 						}
 						
 						pkg.loadLevel((String) Data.currentEpisodePath + File.separatorChar + dfm.getElementAt(list.getSelectedIndex()));
-						pkg.setFrameTitle((String) Data.currentEpisodePath + File.separatorChar + dfm.getElementAt(list.getSelectedIndex()));
+						pkg.setFrameTitle();
 					}
 				}
 			}
@@ -152,11 +150,11 @@ public class EpisodePanel extends JPanel {
 		
 		dfm.clear();
 		
-		currentEpisode = name;
+		Data.currentEpisodeName = name;
 		Data.currentEpisodeFile = new File(name + ".episode");
 		Data.episodeChanged = false;
 		
-		lblEpisodeName.setText(currentEpisode);
+		lblEpisodeName.setText(Data.currentEpisodeName);
 	}
 	
 	private void removeLevel(int index) {
@@ -198,7 +196,7 @@ public class EpisodePanel extends JPanel {
 		try {
 			BufferedWriter w = new BufferedWriter(new FileWriter(Data.currentEpisodePath + File.separatorChar + Data.currentEpisodeFile.getName()));
 			
-			w.write(currentEpisode + "\n");
+			w.write(Data.currentEpisodeName + "\n");
 			w.write(Data.currentEpisodePath + "\n");
 			
 			for (File f : Data.episodeFiles) {
@@ -221,8 +219,8 @@ public class EpisodePanel extends JPanel {
 			
 			Data.currentEpisodeFile = file;
 			
-			currentEpisode = r.readLine();
-			lblEpisodeName.setText(currentEpisode);
+			Data.currentEpisodeName = r.readLine();
+			lblEpisodeName.setText(Data.currentEpisodeName);
 			
 			Data.currentEpisodePath = r.readLine();
 			

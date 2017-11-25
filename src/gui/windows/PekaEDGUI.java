@@ -214,6 +214,8 @@ public class PekaEDGUI {
 					
 					ep.newEpisode(fc.getSelectedFile().getName());
 					
+					setFrameTitle();
+					
 					tabbedPane.setSelectedIndex(2);
 				}
 			}
@@ -510,7 +512,6 @@ public class PekaEDGUI {
 		toolbar.add(btBrush);
 		toolbar.add(btEraser);
 		//toolbar.add(btFloodFill);
-		
 	
 		JToggleButton btShowSprites = new JToggleButton("Show Sprites");
 
@@ -579,8 +580,6 @@ public class PekaEDGUI {
 		
 		splitPane.setDividerLocation(320);
 
-		// Use GridBagLayout.
-		
 		GridBagLayout gbl = new GridBagLayout();
 		
 		JPanel sidePanel = new JPanel();
@@ -976,7 +975,8 @@ public class PekaEDGUI {
 						
 						if (!Data.episodeFiles.isEmpty()) {
 							loadLevel(Data.episodeFiles.get(Data.episodeFiles.size() - 1).getAbsolutePath());
-							setFrameTitle(Data.episodeFiles.get(Data.episodeFiles.size() - 1).getAbsolutePath());
+							
+							setFrameTitle();
 						}
 					}
 				}
@@ -987,6 +987,8 @@ public class PekaEDGUI {
 				// log this
 				//e1.printStackTrace();
 			}
+		} else {
+			createEmptyLevel();
 		}
 		
 		frame.setIconImage(img);
@@ -999,8 +1001,6 @@ public class PekaEDGUI {
 		
 		lp.setPekaGUI(this);
 		mmp.setPekaGUI(this);
-		
-		createEmptyLevel();
 	}
 	
 	public void setToolButton() {
@@ -1025,7 +1025,7 @@ public class PekaEDGUI {
 	}
 	
 	private void testLevel() {
-		String cmd =  Settings.BASE_PATH + File.separatorChar + "pk2.exe";
+		String cmd = Settings.BASE_PATH + File.separatorChar + "pk2.exe";
 		String args = "dev test \"" + Data.currentFile.getParentFile().getName() + "/" + Data.currentFile.getName() + "\"";
 		try{
 			Runtime runTime = Runtime.getRuntime();
@@ -1088,7 +1088,7 @@ public class PekaEDGUI {
 		
 		Data.fileChanged = false;
 
-		setFrameTitle(Data.currentFile.getName());
+		setFrameTitle();
 	}
 	
 	private void saveLevelAs() {
@@ -1118,7 +1118,7 @@ public class PekaEDGUI {
 		tp.setTileset(Data.map.getTileset());
 		lp.setMap();
 		
-		setFrameTitle("Untitled");
+		setFrameTitle();
 	}
 	
 	public void newLevel() {
@@ -1144,17 +1144,18 @@ public class PekaEDGUI {
 		mmp.repaint();
 		
 		if (Data.currentEpisodeFile != null) {
-			int res = JOptionPane.showConfirmDialog(frame, "Do you want to add this file to the episode '" + ep.currentEpisode + "'?", "Add file to episode?", JOptionPane.YES_NO_OPTION);
+			int res = JOptionPane.showConfirmDialog(frame, "Do you want to add this file to the episode '" + Data.currentEpisodeName + "'?", "Add file to episode?", JOptionPane.YES_NO_OPTION);
 			
 			if (res == JOptionPane.YES_OPTION) {
 				if (showAddToEpisodeSave()) {
 					Data.map.saveFile();
 					ep.importLevel(Data.currentFile);
 					ep.setSelectedLevel(Data.episodeFiles.size() - 1);
+					Data.currentFile = new File(Data.episodeFiles.get(Data.episodeFiles.size() - 1).getAbsolutePath());
 					
-					setFrameTitle(Data.episodeFiles.get(Data.episodeFiles.size() - 1).getAbsolutePath());
+					setFrameTitle();
 				} else {
-					setFrameTitle("Untitled");
+					setFrameTitle();
 				}
 			}
 		}
@@ -1177,7 +1178,7 @@ public class PekaEDGUI {
 		
 		Data.currentFile = file;
 		
-		setFrameTitle(file.getAbsolutePath());
+		setFrameTitle();
 	}
 	
 	private boolean showSaveWarning() {
@@ -1269,7 +1270,13 @@ public class PekaEDGUI {
 		return false;
 	}
 	
-	public void setFrameTitle(String title) {
-		frame.setTitle(title + " - PekaED");
+	public void setFrameTitle() {
+		if (Data.currentEpisodeFile != null && Data.currentFile != null) {
+			frame.setTitle(Data.currentEpisodeName + " - " + Data.currentFile.getName() + " - PekaED");
+		} else if (Data.currentFile != null) {
+			frame.setTitle(Data.currentFile.getName() + " - PekaED");
+		} else {
+			frame.setTitle("Untitled - PekaED");
+		}
 	}
 }

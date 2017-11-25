@@ -54,4 +54,5 @@ public class Data {
 	public static MiniMapPanel mmp;
 	
 	public static boolean fileChanged = false, episodeChanged = false;
+	public static String currentEpisodeName;
 }
