@@ -82,6 +82,8 @@ public class PekaEDGUI {
 	private SpritePanel sp;
 	private EpisodePanel ep;
 	
+	private SettingsDialog settingsDialog;
+	
 	public JScrollPane scrollPane2;
 	
 	public JToggleButton btBrush, btEraser;
@@ -105,6 +107,8 @@ public class PekaEDGUI {
 		
 		lp = new LevelPanel();
 		tp = new TilePanel(this);
+		
+		settingsDialog = new SettingsDialog();
 		
 		mmp = new MiniMapPanel();
 		Data.mmp = mmp;
@@ -280,7 +284,7 @@ public class PekaEDGUI {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				new SettingsDialog(); // The user can open the settings dialog multiple times, may not want that
+				settingsDialog.setVisible(true);
 			}
 		
 		});
@@ -329,11 +333,11 @@ public class PekaEDGUI {
 		JButton bSaveAsMap = new JButton();
         JButton bTestLevel = new JButton();
 		
-		bNewMap.setToolTipText("New Level");
-		bLoadMap.setToolTipText("Load Level");
-		bSaveMap.setToolTipText("Save Level");
-		bSaveAsMap.setToolTipText("Save Level As...");
-        bTestLevel.setToolTipText("Test Level");
+		bNewMap.setToolTipText("New Level (Ctrl+N)");
+		bLoadMap.setToolTipText("Load Level (Ctrl+O)");
+		bSaveMap.setToolTipText("Save Level (Ctrl+S)");
+		bSaveAsMap.setToolTipText("Save Level As... (Ctrl+Shift+S)");
+        bTestLevel.setToolTipText("Test Level (F5)");
 	
 		bNewMap.setIcon(new ImageIcon(getClass().getResource("/document-new.png")));
 		bLoadMap.setIcon(new ImageIcon(getClass().getResource("/document-open.png")));
@@ -570,7 +574,7 @@ public class PekaEDGUI {
 		scrollPane2 = new JScrollPane(lp, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, scrollPane1, scrollPane2);
 		
-		scrollPane2.getViewport().setScrollMode(JViewport.SIMPLE_SCROLL_MODE);
+		//scrollPane2.getViewport().setScrollMode(JViewport.SIMPLE_SCROLL_MODE);
 		scrollPane2.getVerticalScrollBar().setUnitIncrement(32);
 		scrollPane2.getHorizontalScrollBar().setUnitIncrement(32);
 		
