@@ -72,11 +72,11 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 			viewW = pkg.scrollPane2.getViewport().getViewRect().width / 32;
 			viewH = pkg.scrollPane2.getViewport().getViewRect().height / 32;
 			
-			// Doesn't work quite right, when using the scrollbars manually. Mousewheel and mini map work fine...
-			for (int i = 0; i < (((viewW * 32) / background.getWidth())) + 1; i++) {
-				for (int j = 0; j < (((viewH * 32) / background.getHeight())) + 1; j++) {
-					g.drawImage(background, (viewX * 32) + (i * background.getWidth()), (viewY * 32) + (j * background.getHeight()), null);
-				}
+			// Not the best solution, but it works. This should be improved.
+			for (int i = 0; i < (PK2Map.MAP_WIDTH * 32) / background.getWidth() + 1; i++) {
+				 for (int j = 0; j < (PK2Map.MAP_HEIGHT * 32) / background.getHeight() + 1; j++) {
+					 g.drawImage(background, i * background.getWidth(), j * background.getHeight(), null);
+				 }
 			}
 			
 			// @Todo: Deal with the offset, that's caused by zooming

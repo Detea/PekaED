@@ -1001,6 +1001,9 @@ public class PekaEDGUI {
 		
 		lp.setPekaGUI(this);
 		mmp.setPekaGUI(this);
+	
+		// Needed, because some computers can't handle the drawing of the background images
+		System.setProperty("sun.java2d.noddraw", "true");
 	}
 	
 	public void setToolButton() {
