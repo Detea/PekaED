@@ -51,7 +51,6 @@ import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
-import javax.swing.JViewport;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -803,6 +802,15 @@ public class PekaEDGUI {
 			
 		});
 		
+		actionMap.put("testLevel", new AbstractAction() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				testLevel();
+			}
+			
+		});
+		
 		InputMap keyMap = new ComponentInputMap((JComponent) frame.getContentPane());
 		keyMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_S, Event.CTRL_MASK), "saveAction");
 		keyMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_O, Event.CTRL_MASK), "loadAction");
@@ -815,6 +823,8 @@ public class PekaEDGUI {
 		
 		keyMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_PLUS, Event.CTRL_MASK), "zoomInAction");
 		keyMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_MINUS, Event.CTRL_MASK), "zoomOutAction");
+		
+		keyMap.put(KeyStroke.getKeyStroke("F5"), "testLevel");
 		
 		keyMap.put(KeyStroke.getKeyStroke("E"), "selectBrush");
 		keyMap.put(KeyStroke.getKeyStroke("R"), "selectEraser");
