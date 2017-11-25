@@ -294,7 +294,7 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 				switch (Data.selectedTool) {
 				case Data.TOOL_BRUSH:
 					if (!Data.multiSelectionForeground.isEmpty() || !Data.multiSelectionBackground.isEmpty()) {
-						if (!Data.multiSelectionForeground.isEmpty()) {
+						if (!Data.multiSelectionForeground.isEmpty() && (Data.currentLayer == Constants.LAYER_FOREGROUND || Data.currentLayer == Constants.LAYER_BOTH)) {
 							int x = 0, y = 0, i = 0;
 							while (i < Data.multiSelectionForeground.size()) {
 								Data.map.setForegroundTile(((mx + 16) + (x * 32)) - ((Data.sw * 32) / 2), ((my + 16) + (y * 32)) - ((Data.sh * 32) / 2), Data.multiSelectionForeground.get(i));
@@ -310,7 +310,7 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 							}
 						}
 						
-						if (!Data.multiSelectionBackground.isEmpty()) {
+						if (!Data.multiSelectionBackground.isEmpty() && Data.currentLayer == Constants.LAYER_BACKGROUND || Data.currentLayer == Constants.LAYER_BOTH) {
 							int x = 0, y = 0, i = 0;
 							while (i < Data.multiSelectionBackground.size()) {
 								Data.map.setBackgroundTile(((mx + 16) + (x * 32)) - ((Data.sw * 32) / 2), ((my + 16) + (y * 32)) - ((Data.sh * 32) / 2), Data.multiSelectionBackground.get(i));
@@ -403,7 +403,7 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 				switch (Data.selectedTool) {
 				case Data.TOOL_BRUSH:
 					if (!Data.multiSelectionForeground.isEmpty() || !Data.multiSelectionBackground.isEmpty()) {
-						if (!Data.multiSelectionForeground.isEmpty()) {
+						if (!Data.multiSelectionForeground.isEmpty() && (Data.currentLayer == Constants.LAYER_FOREGROUND || Data.currentLayer == Constants.LAYER_BOTH)) {
 							int x = 0, y = 0, i = 0;
 							while (i < Data.multiSelectionForeground.size()) {
 								Data.map.setForegroundTile(((mx + 16) + (x * 32)) - ((Data.sw * 32) / 2), ((my + 16) + (y * 32)) - ((Data.sh * 32) / 2), Data.multiSelectionForeground.get(i));
@@ -419,7 +419,7 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 							}
 						}
 						
-						if (!Data.multiSelectionBackground.isEmpty()) {
+						if (!Data.multiSelectionBackground.isEmpty() && (Data.currentLayer == Constants.LAYER_BACKGROUND || Data.currentLayer == Constants.LAYER_BOTH)) {
 							int x = 0, y = 0, i = 0;
 							while (i < Data.multiSelectionBackground.size()) {
 								Data.map.setBackgroundTile(((mx + 16) + (x * 32)) - ((Data.sw * 32) / 2), ((my + 16) + (y * 32)) - ((Data.sh * 32) / 2), Data.multiSelectionBackground.get(i));
