@@ -107,13 +107,13 @@ public class PekaEDGUI {
 		lp = new LevelPanel();
 		tp = new TilePanel(this);
 		
-		settingsDialog = new SettingsDialog();
-		
 		mmp = new MiniMapPanel();
 		Data.mmp = mmp;
 		
 		msp = new MapSettingsPanel();
 		sp = new SpritePanel();
+		
+		settingsDialog = new SettingsDialog();
 		
 		// Needed for loadLevel(). Could have used the Data class, but this code is already messy enough as is.
 		ep = new EpisodePanel(this);
@@ -285,7 +285,7 @@ public class PekaEDGUI {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				settingsDialog.setVisible(true);
+				settingsDialog.showDialog();
 			}
 		
 		});
@@ -1001,7 +1001,7 @@ public class PekaEDGUI {
 		
 		lp.setPekaGUI(this);
 		mmp.setPekaGUI(this);
-	
+		
 		// Needed, because some computers can't handle the drawing of the background images
 		System.setProperty("sun.java2d.noddraw", "true");
 	}

@@ -5,11 +5,14 @@ import java.awt.FlowLayout;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.io.DataOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
+import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -19,6 +22,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.border.EmptyBorder;
 
 import data.Constants;
@@ -29,9 +33,13 @@ public class SettingsDialog extends JDialog {
 
 	private final JPanel contentPanel = new JPanel();
 	private JTextField textField;
-	/**
-	 * Create the dialog.
-	 */
+	private JRadioButton rdbtnLoadLastEpisode, rdbtnCreateEmptyLevel;
+	private JRadioButton rdbtnEnhancedMode, rdbtnLegacyMode;
+	
+	private JSpinner spinner;
+	
+	private int lastEpisodeLimit = 100;
+	
 	public SettingsDialog() {
 		Image img = null;
 		
@@ -72,11 +80,11 @@ public class SettingsDialog extends JDialog {
 		lblOnStartup.setBounds(10, 89, 68, 14);
 		contentPanel.add(lblOnStartup);
 		
-		JRadioButton rdbtnLoadLastEpisode = new JRadioButton("Load last episode");
+		rdbtnLoadLastEpisode = new JRadioButton("Load last episode");
 		rdbtnLoadLastEpisode.setBounds(10, 110, 109, 23);
 		contentPanel.add(rdbtnLoadLastEpisode);
 		
-		JRadioButton rdbtnCreateEmptyLevel = new JRadioButton("Create empty level");
+		rdbtnCreateEmptyLevel = new JRadioButton("Create empty level");
 		rdbtnCreateEmptyLevel.setBounds(10, 136, 124, 23);
 		contentPanel.add(rdbtnCreateEmptyLevel);
 		
@@ -88,15 +96,17 @@ public class SettingsDialog extends JDialog {
 		lblLevelLimitOf.setBounds(10, 40, 114, 25);
 		contentPanel.add(lblLevelLimitOf);
 		
-		JSpinner spinner = new JSpinner();
+		spinner = new JSpinner();
+		spinner.setModel(new SpinnerNumberModel(new Integer(1), new Integer(1), null, new Integer(1)));
+		
 		spinner.setBounds(120, 42, 60, 20);
 		contentPanel.add(spinner);
 		
-		JRadioButton rdbtnEnhancedMode = new JRadioButton("Enhanced mode");
+		rdbtnEnhancedMode = new JRadioButton("Enhanced mode");
 		rdbtnEnhancedMode.setBounds(143, 110, 109, 23);
 		contentPanel.add(rdbtnEnhancedMode);
 		
-		JRadioButton rdbtnLegacyMode = new JRadioButton("Legacy mode");
+		rdbtnLegacyMode = new JRadioButton("Legacy mode");
 		rdbtnLegacyMode.setBounds(143, 136, 109, 23);
 		
 		ButtonGroup bgMode = new ButtonGroup();
@@ -118,6 +128,8 @@ public class SettingsDialog extends JDialog {
 				// This could be done under the addActionListener for okButton, but it is really short
 				cancelButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
+						spinner.setValue(lastEpisodeLimit);
+						
 						dispose();
 					}
 				});
@@ -140,14 +152,6 @@ public class SettingsDialog extends JDialog {
 			rdbtnEnhancedMode.setSelected(true);
 		} else {
 			rdbtnLegacyMode.setSelected(true);
-		}
-		
-		if (Data.mode == Constants.MODE_LEGACY) {
-			spinner.setValue(Constants.LEGACY_LEVEL_LIMIT);
-			spinner.setEnabled(false);
-		} else {
-			spinner.setValue(Constants.ENHANCED_LEVEL_LIMIT);
-			spinner.setEnabled(true);
 		}
 		
 		btnBrowse.addActionListener(new ActionListener() {
@@ -202,6 +206,77 @@ public class SettingsDialog extends JDialog {
 			
 		});
 		
+		addWindowListener(new WindowListener() {
+
+			@Override
+			public void windowActivated(WindowEvent arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void windowClosed(WindowEvent arg0) {
+				
+			}
+
+			@Override
+			public void windowClosing(WindowEvent arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void windowDeactivated(WindowEvent arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void windowDeiconified(WindowEvent arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void windowIconified(WindowEvent arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void windowOpened(WindowEvent arg0) {
+				
+			}
+			
+		});
+		
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+	}
+	
+	public void showDialog() {
+		textField.setText(Settings.BASE_PATH);
+		
+		if (Settings.startInEnhancedMode) {
+			rdbtnEnhancedMode.setSelected(true);
+		} else {
+			rdbtnLegacyMode.setSelected(true);
+		}
+		
+		if (Settings.loadEpisodeOnStartup) {
+			rdbtnLoadLastEpisode.setSelected(true);
+		} else {
+			rdbtnCreateEmptyLevel.setSelected(true);
+		}
+		
+		if (Data.mode == Constants.MODE_LEGACY) {
+			spinner.setValue(Constants.LEGACY_LEVEL_LIMIT);
+			spinner.setEnabled(false);
+		} else {
+			spinner.setValue(Constants.ENHANCED_LEVEL_LIMIT);
+			spinner.setEnabled(true);
+		}
+		
+		revalidate();
+		setVisible(true);
 	}
 }
