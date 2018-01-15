@@ -133,6 +133,11 @@ public class PekaEDGUI {
 		
 		JMenuItem mifImportEpisode = new JMenuItem("Import Episode");
 		
+		mifNewLevel.setAccelerator(KeyStroke.getKeyStroke('N', KeyEvent.CTRL_DOWN_MASK));
+		mifOpenLevel.setAccelerator(KeyStroke.getKeyStroke('O', KeyEvent.CTRL_DOWN_MASK));
+		mifSaveLevel.setAccelerator(KeyStroke.getKeyStroke('S', KeyEvent.CTRL_DOWN_MASK));
+		mifSaveLevelAs.setAccelerator(KeyStroke.getKeyStroke('S', KeyEvent.CTRL_DOWN_MASK + KeyEvent.SHIFT_DOWN_MASK));
+		
 		mFile.add(mifNewLevel);
 		mFile.add(mifOpenLevel);
 		mFile.add(mifSaveLevel);
