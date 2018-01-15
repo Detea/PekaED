@@ -850,24 +850,24 @@ public class PekaEDGUI {
 			public void windowClosing(WindowEvent e) {
 				boolean quit = false;
 				
-				if (Data.fileChanged) {
-					quit = showSaveWarning();
-				} else {
-					quit = true;
-				}
-				
 				if (Data.episodeChanged) {
 					int res = JOptionPane.showConfirmDialog(frame, "Episode has changed. Do you want to save the changes?", "Save episode?", JOptionPane.YES_NO_CANCEL_OPTION);
 					
 					if (res == JOptionPane.YES_OPTION) {
 						ep.saveEpisode();
-						quit = true;
 						
+						quit = true;
 					} else if (res == JOptionPane.NO_OPTION) {
 						quit = true;
-					} else {
+					} else if (res == JOptionPane.CANCEL_OPTION) {
 						quit = false;
 					}
+				} else {
+					quit = true;
+				}
+				
+				if (Data.fileChanged) {
+					quit = showSaveWarning();
 				} else {
 					quit = true;
 				}
@@ -1001,9 +1001,6 @@ public class PekaEDGUI {
 		
 		lp.setPekaGUI(this);
 		mmp.setPekaGUI(this);
-		
-		// Needed, because some computers can't handle the drawing of the background images
-		System.setProperty("sun.java2d.noddraw", "true");
 	}
 	
 	public void setToolButton() {
@@ -1199,6 +1196,8 @@ public class PekaEDGUI {
 			quit = true;
 		} else if (op == JOptionPane.NO_OPTION) {
 			quit = true;
+		} else if (op == JOptionPane.CANCEL_OPTION) {
+			quit = false;
 		}
 		
 		return quit;
