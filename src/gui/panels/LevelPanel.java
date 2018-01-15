@@ -41,6 +41,8 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 	private PekaEDGUI pkg;
 	
 	public boolean drawing = true;
+
+	private int dx, dy;
 	
 	public LevelPanel() {
 		setBackground(Color.LIGHT_GRAY);
@@ -159,7 +161,7 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 							i++;
 						}
 					}
-				} else {
+				} else if(!Data.multiSelectLevel && !Data.multiSelectTiles) {
 					/*
 					 * This draws the selected tiles.
 					 * They are both getting drawn, because if the user has selected a transparent tile, the tile behind it
@@ -183,13 +185,13 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 			
 			if (Data.dragging) {
 				g.setColor(Color.black);
-				g.drawRect(Data.sx * 32, Data.sy * 32, Data.sw * 32, Data.sh * 32);
+				g.drawRect(dx * 32, dy * 32, Data.sw * 32, Data.sh * 32);
 				
 				g.setColor(Color.white);
-				g.drawRect(Data.sx * 32 + 1, Data.sy * 32 + 1, Data.sw * 32 - 2, Data.sh * 32 - 2);
+				g.drawRect(dx * 32 + 1, dy * 32 + 1, Data.sw * 32 - 2, Data.sh * 32 - 2);
 				
 				g.setColor(Color.black);
-				g.drawRect(Data.sx * 32, Data.sy * 32, Data.sw * 32, Data.sh * 32);
+				g.drawRect(dx * 32,dy * 32, Data.sw * 32, Data.sh * 32);
 			}
 		}
 	}
@@ -343,28 +345,36 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 					break;
 				}
 			} else if (mouseButton == MouseEvent.BUTTON3) {
-				// Set the variables that are needed for the multiple selection of tiles
-				Data.sw = ((e.getX() / 32) - Data.sx) + 1;
-				Data.sh = ((e.getY() / 32) - Data.sy) + 1;
+				int mx = e.getX() / 32;
+				int my = e.getY() / 32;
 				
-				/*
-				 *  Ensure that the values aren't negative.
-				 *  They'd be negative, if the user drags to the top and left before dragging to the right/bottom
-				 *  
-				 *  That would be possible, but this is currently not supported
-				 */
-				if (Data.sw <= 0) {
-					Data.sw = 1;
+				if (mx < Data.sx) {
+					Data.sw = Data.sx - mx;
+					
+					dx = mx;
+				} else {
+					Data.sw = mx - Data.sx;
+					
+					dx = Data.sx;
 				}
 				
-				if (Data.sh <= 0) {
-					Data.sh = 1;
+				if (my < Data.sy) {
+					Data.sh = Data.sy - my;
+					
+					dy = my;
+				} else {
+					Data.sh = my - Data.sy;
+					
+					dy = Data.sy;
 				}
 				
-				if (Data.sw > 1 || Data.sh > 1) {
-					Data.multiSelectLevel = true;
-					Data.multiSelectTiles = false;
-				}
+				Data.selectedTile = -1;
+				
+				Data.sw += 1;
+				Data.sh += 1;
+				
+				Data.multiSelectLevel = true;
+				Data.multiSelectTiles = false;
 				
 				// Needed to know when the user is dragging, so that the program knows to draw the black/white rectangle
 				Data.dragging = true;
@@ -507,23 +517,21 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 	public void mouseReleased(MouseEvent e) {
 		// The following code is responsible for adding the selected tiles to the respective lists, depending on the current layer.
 		if (Data.dragging) {
-			if (Data.sw > 1 || Data.sh > 1) {
-				for (int i = Data.sx; i < Data.sx + Data.sw; i++) {
-					for (int j = Data.sy; j < Data.sy + Data.sh; j++) {
-						switch (Data.currentLayer) {
-							case Constants.LAYER_BOTH:
-								Data.multiSelectionForeground.add(Data.map.getTileAt(i * 32, j * 32, Constants.LAYER_FOREGROUND));
-								Data.multiSelectionBackground.add(Data.map.getTileAt(i * 32, j * 32, Constants.LAYER_BACKGROUND));
-								break;
-								
-							case Constants.LAYER_FOREGROUND:
-								Data.multiSelectionForeground.add(Data.map.getTileAt(i * 32, j * 32, Constants.LAYER_FOREGROUND));
-								break;
-								
-							case Constants.LAYER_BACKGROUND:
-								Data.multiSelectionBackground.add(Data.map.getTileAt(i * 32, j * 32, Constants.LAYER_BACKGROUND));
-								break;
-						}
+			for (int i = dx; i < dx + Data.sw; i++) {
+				for (int j = dy; j < dy + Data.sh; j++) {
+					switch (Data.currentLayer) {
+						case Constants.LAYER_BOTH:
+							Data.multiSelectionForeground.add(Data.map.getTileAt(i * 32, j * 32, Constants.LAYER_FOREGROUND));
+							Data.multiSelectionBackground.add(Data.map.getTileAt(i * 32, j * 32, Constants.LAYER_BACKGROUND));
+							break;
+							
+						case Constants.LAYER_FOREGROUND:
+							Data.multiSelectionForeground.add(Data.map.getTileAt(i * 32, j * 32, Constants.LAYER_FOREGROUND));
+							break;
+							
+						case Constants.LAYER_BACKGROUND:
+							Data.multiSelectionBackground.add(Data.map.getTileAt(i * 32, j * 32, Constants.LAYER_BACKGROUND));
+							break;
 					}
 				}
 			}

@@ -21,7 +21,7 @@ import gui.windows.PekaEDGUI;
 public class TilePanel extends JPanel implements MouseListener, MouseMotionListener {
 
 	BufferedImage tileset;	
-	int x, y, w, h;
+	int x, y, w, h, dx, dy;
 	private PekaEDGUI pk;
 	
 	public TilePanel(PekaEDGUI pk) {
@@ -40,13 +40,13 @@ public class TilePanel extends JPanel implements MouseListener, MouseMotionListe
 		
 		if (Data.multiSelectTiles) {
 			g.setColor(Color.black);
-			g.drawRect(Data.sx * 32, Data.sy * 32, Data.sw * 32, Data.sh * 32);
+			g.drawRect(dx * 32, dy * 32, Data.sw * 32, Data.sh * 32);
 			
 			g.setColor(Color.white);
-			g.drawRect(Data.sx * 32 + 1, Data.sy * 32 + 1, Data.sw * 32 - 2, Data.sh * 32 - 2);
+			g.drawRect(dx * 32 + 1, dy * 32 + 1, Data.sw * 32 - 2, Data.sh * 32 - 2);
 			
 			g.setColor(Color.black);
-			g.drawRect(Data.sx * 32, Data.sy * 32, Data.sw * 32, Data.sh * 32);
+			g.drawRect(dx * 32, dy * 32, Data.sw * 32, Data.sh * 32);
 		} else if (!Data.multiSelectTiles) {
 			g.setColor(Color.BLACK);
 			g.drawRect(x, y, 31, 31);
@@ -93,27 +93,40 @@ public class TilePanel extends JPanel implements MouseListener, MouseMotionListe
 	
 	@Override
 	public void mouseDragged(MouseEvent e) {
-		Data.sw = ((e.getX() / 32) - Data.sx) + 1;
-		Data.sh = ((e.getY() / 32) - Data.sy) + 1;
+		int mx = (e.getX() / 32);
+		int my = (e.getY() / 32);
 		
-		if (Data.sw <= 0) {
-			Data.sw = 1;
+		Data.multiSelectTiles = true;
+		Data.multiSelectLevel = false;
+		
+		if (mx < Data.sx) {
+			Data.sw = Data.sx - mx;
+			
+			dx = mx;
+		} else {
+			Data.sw = mx - Data.sx;
+			
+			dx = Data.sx;
 		}
 		
-		if (Data.sh <= 0) {
-			Data.sh = 1;
+		if (my < Data.sy) {
+			Data.sh = Data.sy - my;
+			
+			dy = my;
+		} else {
+			Data.sh = my - Data.sy;
+			
+			dy = Data.sy;
 		}
 		
-		if (Data.sw > 1 | Data.sh > 1) {
-			Data.multiSelectTiles = true;
-			Data.multiSelectLevel = false;
-		}
+		Data.sw += 1;
+		Data.sh += 1;
 		
-		if (Data.sx + Data.sw > (tileset.getWidth() / 32)) {
+		if (dx + Data.sw > (tileset.getWidth() / 32)) {
 			Data.sw = (tileset.getWidth() / 32) - Data.sx;
 		}
 		
-		if (Data.sy + Data.sh > (tileset.getHeight() / 32)) {
+		if (dy + Data.sh > (tileset.getHeight() / 32)) {
 			Data.sh = (tileset.getHeight() / 32) - Data.sy;
 		}
 		
@@ -153,6 +166,9 @@ public class TilePanel extends JPanel implements MouseListener, MouseMotionListe
 			w = 32;
 			h = 32;
 			
+			dx = x;
+			dy = y;
+			
 			Data.multiSelectionForeground.clear();
 			Data.multiSelectionBackground.clear();
 			Data.multiSelectTiles = false;
@@ -187,8 +203,8 @@ public class TilePanel extends JPanel implements MouseListener, MouseMotionListe
 	@Override
 	public void mouseReleased(MouseEvent e) {
 		if (Data.multiSelectTiles) {
-			for (int x = Data.sx; x < Data.sx + Data.sw; x++) {
-				for (int y = Data.sy; y < Data.sy + Data.sh; y++) {
+			for (int x = dx; x < dx + Data.sw; x++) {
+				for (int y = dy; y < dy + Data.sh; y++) {
 					if (Data.currentLayer == Constants.LAYER_FOREGROUND || Data.currentLayer == Constants.LAYER_BOTH) {
 						if (!Data.multiSelectionForeground.contains(y * (320 / 32) + x)) { // is this line necessary?
 							Data.multiSelectionForeground.add(y * (320 / 32) + x);
