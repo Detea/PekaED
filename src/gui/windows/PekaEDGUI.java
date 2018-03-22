@@ -1021,6 +1021,9 @@ public class PekaEDGUI {
 		frame.pack();
 		frame.setVisible(true);
 		
+		frame.setSize(new Dimension(1280, 720));
+		frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+		
 		lp.setPekaGUI(this);
 		mmp.setPekaGUI(this);
 	}
@@ -1133,8 +1136,6 @@ public class PekaEDGUI {
 	}
 	
 	public void newLevel() {
-		Data.fileChanged = false;
-		
 		PK2Sprite psprite = new PK2Sprite("rooster.spr");
 		Data.map = new PK2Map();
 		Data.map.addSprite(psprite, psprite.filename);
@@ -1173,7 +1174,7 @@ public class PekaEDGUI {
 			}
 		}
 		
-		
+		Data.fileChanged = false;
 	}
 	
 	private void saveLevel(File file) {
