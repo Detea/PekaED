@@ -356,7 +356,7 @@ public class PekaEDGUI {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (Data.fileChanged) {
-					if (showSaveWarning()) {
+					if (showSaveWarning() != 2) {
 						newLevel();
 					}
 				} else {
@@ -371,7 +371,7 @@ public class PekaEDGUI {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (Data.fileChanged) {
-					if (showSaveWarning()) {
+					if (showSaveWarning() != 2) {
 						showLoadDialog();
 					}
 				} else {
@@ -408,21 +408,29 @@ public class PekaEDGUI {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				if(Data.currentFile != null){
+					int saveRes = showSaveWarning();
+					
 					if (Data.fileChanged) {
-						if (showSaveWarning()) {
+						if (saveRes == 0) {
 							saveLevel(Data.currentFile);
 							
 							Data.fileChanged = false;
-						} else return;
+						}
 					}
 
-					testLevel();
+					if (saveRes != 2) {
+						testLevel();
+					}
 				} else {
-					if (showSaveWarning()) {
+					int saveRes = showSaveWarning();
+					
+					if (saveRes == 0) {
 						saveLevel(Data.currentFile);
-					} else return;
+					};
 
-					testLevel();
+					if (saveRes != 2) {
+						testLevel();
+					}
 				}
 			}
 
@@ -438,6 +446,10 @@ public class PekaEDGUI {
 		cbLayers.addItem("Both");
 		cbLayers.addItem("Foreground");
 		cbLayers.addItem("Background");
+		
+		cbLayers.setSelectedIndex(1);
+		
+		Data.currentLayer = 0;
 		
 		cbLayers.setMaximumSize(new Dimension(100, 25));
 		cbLayers.addActionListener(new ActionListener() {
@@ -788,6 +800,8 @@ public class PekaEDGUI {
 			public void actionPerformed(ActionEvent arg0) {
 				Data.scale += 0.1;
 				
+				System.out.println(scrollPane2.getViewport().getView().getWidth() + " - " + (scrollPane2.getViewport().getView().getWidth() * Data.scale));
+				
 				Data.lp.repaint();
 			}
 			
@@ -799,6 +813,8 @@ public class PekaEDGUI {
 			public void actionPerformed(ActionEvent arg0) {
 				if (Data.scale - 0.1 > 0) {
 					Data.scale -= 0.1;
+					
+					System.out.println(scrollPane2.getViewport().getView().getWidth() + " - " + (scrollPane2.getViewport().getView().getWidth() * Data.scale));
 					
 					Data.lp.repaint();
 				}
@@ -855,24 +871,26 @@ public class PekaEDGUI {
 			public void windowClosing(WindowEvent e) {
 				boolean quit = false;
 				
-				if (Data.episodeChanged) {
-					int res = JOptionPane.showConfirmDialog(frame, "Episode has changed. Do you want to save the changes?", "Save episode?", JOptionPane.YES_NO_CANCEL_OPTION);
-					
-					if (res == JOptionPane.YES_OPTION) {
-						ep.saveEpisode();
+				if (Data.currentEpisodeFile != null) {
+					if (Data.episodeChanged) {
+						int res = JOptionPane.showConfirmDialog(frame, "Episode has changed. Do you want to save the changes?", "Save episode?", JOptionPane.YES_NO_CANCEL_OPTION);
 						
+						if (res == JOptionPane.YES_OPTION) {
+							ep.saveEpisode();
+							
+							quit = true;
+						} else if (res == JOptionPane.NO_OPTION) {
+							quit = true;
+						} else if (res == JOptionPane.CANCEL_OPTION) {
+							quit = false;
+						}
+					} else {
 						quit = true;
-					} else if (res == JOptionPane.NO_OPTION) {
-						quit = true;
-					} else if (res == JOptionPane.CANCEL_OPTION) {
-						quit = false;
 					}
-				} else {
-					quit = true;
 				}
 				
 				if (Data.fileChanged) {
-					quit = showSaveWarning();
+					if (showSaveWarning() != 2) quit = true;
 				} else {
 					quit = true;
 				}
@@ -993,7 +1011,7 @@ public class PekaEDGUI {
 				//e1.printStackTrace();
 			}
 		} else {
-			createEmptyLevel();
+			newLevel();
 		}
 		
 		frame.setIconImage(img);
@@ -1115,17 +1133,6 @@ public class PekaEDGUI {
 		}
 	}
 	
-	public void createEmptyLevel() {
-		Data.map = new PK2Map();
-		msp.setMap();
-		sp.setMap();
-		
-		tp.setTileset(Data.map.getTileset());
-		lp.setMap();
-		
-		setFrameTitle();
-	}
-	
 	public void newLevel() {
 		Data.fileChanged = false;
 		
@@ -1136,6 +1143,8 @@ public class PekaEDGUI {
 		sp.setList();
 		
 		Data.currentFile = null;
+		
+		setFrameTitle();
 		
 		Data.selectedTile = 0;
 		
@@ -1186,10 +1195,12 @@ public class PekaEDGUI {
 		setFrameTitle();
 	}
 	
-	private boolean showSaveWarning() {
+	private int showSaveWarning() {
 		int op = JOptionPane.showConfirmDialog(frame, "File has changed. Do you want to save?", "Save changes?", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
 		
-		boolean quit = false;
+		// Replacing the numbers with constants would be cleaner
+		
+		int quit = 0;
 		
 		if (op == JOptionPane.YES_OPTION) {
 			if (Data.currentFile == null) {
@@ -1198,11 +1209,11 @@ public class PekaEDGUI {
 				saveLevel(Data.currentFile);
 			}
 			
-			quit = true;
+			quit = 0;
 		} else if (op == JOptionPane.NO_OPTION) {
-			quit = true;
+			quit = 1;
 		} else if (op == JOptionPane.CANCEL_OPTION) {
-			quit = false;
+			quit = 2;
 		}
 		
 		return quit;

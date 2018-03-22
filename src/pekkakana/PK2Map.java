@@ -35,7 +35,7 @@ public class PK2Map {
 	public int scrollType;
 	
 	public int extra;
-	public byte background;
+	public int background;
 	
 	public int switch1Time = 2000;
 	public int switch2Time = 2000;
@@ -88,7 +88,7 @@ public class PK2Map {
 		weather = 0;
 		scrollType = 0;
 		extra = 0;
-		background = 2;
+		background = 0;
 		
 		x = 0;
 		y = 0;

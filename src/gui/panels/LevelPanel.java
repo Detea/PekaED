@@ -43,6 +43,7 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 	public boolean drawing = true;
 
 	private int dx, dy;
+	private int offsetX, offsetY;
 	
 	public LevelPanel() {
 		setBackground(Color.LIGHT_GRAY);
@@ -94,14 +95,14 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 							}
 						}
 						
-						drawTile(g2d, i * 32, j * 32, Data.map.getTileAt(i * 32, j * 32, Constants.LAYER_BACKGROUND));
+						drawTile(g2d, offsetX + (i * 32), offsetY + (j * 32), Data.map.getTileAt(i * 32, j * 32, Constants.LAYER_BACKGROUND));
 					}
 				}
 			}
 			
 			if (Data.showSprites) {
 				for (int i = viewX; i < (viewX + viewW) + 16; i++) {
-					for (int j = viewY; j < (viewY + viewH) + 16; j++) { // 8 is an arbitrary value. This should be the size of the biggest sprites divided by 32
+					for (int j = viewY; j < (viewY + viewH) + 16; j++) { // 16 is an arbitrary value. This should be the size of the biggest sprites divided by 32
 						if ((PK2Map.MAP_WIDTH * i + j) < Data.map.sprites.length && Data.map.sprites[PK2Map.MAP_WIDTH * i + j] != 255) {
 							if (!Data.map.spriteList.isEmpty() && Data.map.spriteList.get(Data.map.sprites[PK2Map.MAP_WIDTH * i + j]).image != null) {
 								g2d.drawImage(Data.map.spriteList.get(Data.map.sprites[PK2Map.MAP_WIDTH * i + j]).image, ((i * 32) - (Data.map.spriteList.get(Data.map.sprites[PK2Map.MAP_WIDTH * i + j]).image.getWidth() / 2) + 16), ((j * 32) - (Data.map.spriteList.get(Data.map.sprites[PK2Map.MAP_WIDTH * i + j]).image.getHeight() - 32)), null);
@@ -379,8 +380,14 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 				// Needed to know when the user is dragging, so that the program knows to draw the black/white rectangle
 				Data.dragging = true;
 			} else if (mouseButton == MouseEvent.BUTTON2) {
-				pkg.scrollPane2.getHorizontalScrollBar().setValue(((mx - viewX) - viewW));
-				pkg.scrollPane2.getVerticalScrollBar().setValue(my / 32);
+				
+				offsetX = e.getX();
+				offsetY = e.getY();
+				
+				System.out.println(offsetX + " - " + offsetY);
+				
+				//pkg.scrollPane2.getHorizontalScrollBar().setValue(mx - dragDistanceX);
+				//pkg.scrollPane2.getVerticalScrollBar().setValue(my / 32);
 			}
 			
 			repaint();
@@ -502,6 +509,9 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 				} else {
 					Data.selectedSprite = Data.map.sprites[PK2Map.MAP_WIDTH * (mx / 32) + (my / 32)];
 				}
+			} else if (e.getButton() == MouseEvent.BUTTON2) {
+				//dragDistanceX = e.getX() - pkg.scrollPane2.getHorizontalScrollBar().getValue();
+				//dragDistanceY = e.getY() - pkg.scrollPane2.getVerticalScrollBar().getValue();
 			}
 			
 			repaint();

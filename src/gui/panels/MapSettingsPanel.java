@@ -13,6 +13,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
 
 import data.Constants;
@@ -211,13 +213,31 @@ public class MapSettingsPanel extends JPanel {
 		spinner.setBounds(71, 136, 46, 20);
 		add(spinner);
 		
+		spinner.addChangeListener(new ChangeListener() {
+
+			@Override
+			public void stateChanged(ChangeEvent arg0) {
+				Data.fileChanged = true;
+			}
+			
+		});
+		
 		JLabel lblTime = new JLabel("Time (sec):");
-		lblTime.setBounds(119, 139, 60, 14);
+		lblTime.setBounds(123, 139, 60, 14);
 		add(lblTime);
 		
 		spinner_1 = new JSpinner();
 		spinner_1.setBounds(183, 136, 62, 20);
 		add(spinner_1);
+		
+		spinner_1.addChangeListener(new ChangeListener() {
+
+			@Override
+			public void stateChanged(ChangeEvent arg0) {
+				Data.fileChanged = true;
+			}
+			
+		});
 		
 		JLabel lblScrolling = new JLabel("Scrolling:");
 		lblScrolling.setBounds(10, 164, 46, 14);
@@ -228,6 +248,15 @@ public class MapSettingsPanel extends JPanel {
 		comboBox.setBounds(71, 161, 108, 20);
 		add(comboBox);
 		
+		comboBox.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				Data.fileChanged = true;
+			}
+			
+		});
+		
 		JLabel lblSpecial = new JLabel("Special:");
 		lblSpecial.setBounds(10, 193, 46, 14);
 		add(lblSpecial);
@@ -237,6 +266,15 @@ public class MapSettingsPanel extends JPanel {
 		comboBox_1.setBounds(71, 190, 108, 20);
 		add(comboBox_1);
 		
+		comboBox_1.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				Data.fileChanged = true;
+			}
+			
+		});
+		
 		JLabel lblIcon = new JLabel("Icon:");
 		lblIcon.setBounds(10, 221, 46, 14);
 		add(lblIcon);
@@ -245,6 +283,15 @@ public class MapSettingsPanel extends JPanel {
 		comboBox_2.setModel(new DefaultComboBoxModel(new String[] {"Question mark", "Forest Hill", "Forest Hill at night", "Deep Forest", "Deep Forest at Night", "Field", "Field at night", "Mountains", "Castle", "Red Castle", "Cave", "Boss Battle", "Factory", "Custom icon #14", "Custom icon #15", "Custom icon #16", "Custom icon #17", "Custom icon #18", "Custom icon #19", "Custom icon #20", "Custom icon #21", "Custom icon #22"}));
 		comboBox_2.setBounds(71, 218, 108, 20);
 		add(comboBox_2);
+		
+		comboBox_2.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				Data.fileChanged = true;
+			}
+			
+		});
 		
 		JLabel lblMapPosition = new JLabel("Position:");
 		lblMapPosition.setBounds(10, 253, 66, 14);
@@ -288,7 +335,7 @@ public class MapSettingsPanel extends JPanel {
 		Data.map.levelNumber = (int) spinner.getValue();
 		Data.map.time = (int) spinner_1.getValue();
 		
-		Data.map.extra = comboBox.getSelectedIndex();
+		Data.map.background = comboBox.getSelectedIndex();
 		
 		Data.map.weather = comboBox_1.getSelectedIndex();
 		Data.map.icon = comboBox_2.getSelectedIndex();
@@ -307,7 +354,7 @@ public class MapSettingsPanel extends JPanel {
 		spinner.setValue(Data.map.levelNumber);
 		spinner_1.setValue(Data.map.time);
 		
-		comboBox.setSelectedIndex((int) Data.map.extra);
+		comboBox.setSelectedIndex(Data.map.background);
 		comboBox_1.setSelectedIndex(Data.map.weather);
 		comboBox_2.setSelectedIndex(Data.map.icon);
 		

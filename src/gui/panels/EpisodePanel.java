@@ -177,7 +177,7 @@ public class EpisodePanel extends JPanel {
 					list.setSelectedIndex(Data.episodeFiles.size() - 1);
 					
 					if (Data.episodeFiles.size() == 0) {
-						pkg.createEmptyLevel();
+						pkg.newLevel();
 					}
 				}
 			}
