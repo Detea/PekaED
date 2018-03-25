@@ -19,6 +19,7 @@ import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
 
+import data.Data;
 import data.Settings;
 
 public class SetMapPositionDialog extends JDialog {
@@ -59,7 +60,15 @@ public class SetMapPositionDialog extends JDialog {
 			});
 			
 			try {
-				bg = ImageIO.read(new File(Settings.BASE_PATH + File.separatorChar + "gfx" + File.separatorChar + "MAP.bmp"));
+				String filePath = Settings.BASE_PATH + File.separatorChar + "gfx" + File.separatorChar + "MAP.bmp";
+				
+				if (Data.currentFile != null) {
+					if (new File(Data.currentFile.getParentFile().getAbsolutePath() + "\\MAP.bmp").exists()) {
+						filePath = Data.currentFile.getParentFile().getAbsolutePath() + "\\MAP.bmp";
+					}
+				}
+				
+				bg = ImageIO.read(new File(filePath));
 				iconSheet = ImageIO.read(new File(Settings.BASE_PATH + File.separatorChar + "gfx" + File.separatorChar + "PK2STUFF.bmp"));
 			} catch (IOException e) {
 				e.printStackTrace();
