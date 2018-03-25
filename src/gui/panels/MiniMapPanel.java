@@ -39,8 +39,8 @@ public class MiniMapPanel extends JPanel implements MouseListener, MouseMotionLi
 	
 	public void resizeViewportRect() {
 		if (pkg != null) {
-			vw = pkg.scrollPane2.getViewport().getVisibleRect().width / 32;
-			vh = pkg.scrollPane2.getViewport().getVisibleRect().height / 32;
+			vw = (int) (pkg.scrollPane2.getViewport().getVisibleRect().width / Data.scale) / 32;
+			vh = (int) (pkg.scrollPane2.getViewport().getVisibleRect().height / Data.scale) / 32;
 		}
 	}
 	
