@@ -6,6 +6,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
+import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
 
@@ -40,13 +41,13 @@ public class TilePanel extends JPanel implements MouseListener, MouseMotionListe
 		
 		if (Data.multiSelectTiles) {
 			g.setColor(Color.black);
-			g.drawRect(dx * 32, dy * 32, Data.sw * 32, Data.sh * 32);
+			g.drawRect(dx * 32, dy * 32, (Data.sw * 32) - 1, (Data.sh * 32) - 1);
 			
 			g.setColor(Color.white);
-			g.drawRect(dx * 32 + 1, dy * 32 + 1, Data.sw * 32 - 2, Data.sh * 32 - 2);
+			g.drawRect((dx * 32) + 1, (dy * 32) + 1, (Data.sw * 32) - 3, (Data.sh * 32) - 3);
 			
 			g.setColor(Color.black);
-			g.drawRect(dx * 32, dy * 32, Data.sw * 32, Data.sh * 32);
+			g.drawRect((dx * 32) + 2, (dy * 32) + 2, (Data.sw * 32) - 5, (Data.sh * 32) - 5);
 		} else if (!Data.multiSelectTiles) {
 			g.setColor(Color.BLACK);
 			g.drawRect(x, y, 31, 31);
@@ -75,7 +76,7 @@ public class TilePanel extends JPanel implements MouseListener, MouseMotionListe
 			    		}
 			    	}
 			    }
-				
+			    
 			    tileset = result;
 				
 				setPreferredSize(new Dimension(tileset.getWidth(), tileset.getHeight()));
