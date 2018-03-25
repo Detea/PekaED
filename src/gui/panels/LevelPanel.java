@@ -25,7 +25,7 @@ import data.Settings;
 import gui.windows.PekaEDGUI;
 import pekkakana.PK2Map;
 
-public class LevelPanel extends JPanel implements MouseListener, MouseMotionListener, MouseWheelListener, Runnable {
+public class LevelPanel extends JPanel implements MouseListener, MouseMotionListener, MouseWheelListener {
 	
 	private Thread thread;
 	
@@ -56,10 +56,6 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 		
 		setTileset(Settings.DEFAULT_TILESET);
 		setBackground(Settings.DEFAULT_BACKGROUND);
-	
-		/*
-		thread = new Thread(this);
-		thread.start();*/
 	}
 	
 	public void setPekaGUI(PekaEDGUI pkg) {
@@ -70,10 +66,13 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 		super.paintComponent(g);
 		
 		if (Data.map != null) {
-			viewX = pkg.scrollPane2.getViewport().getViewRect().x / 32;
-			viewY = pkg.scrollPane2.getViewport().getViewRect().y / 32;
-			viewW = pkg.scrollPane2.getViewport().getViewRect().width / 32;
-			viewH = pkg.scrollPane2.getViewport().getViewRect().height / 32;
+			viewX = (int) ((pkg.scrollPane2.getViewport().getViewRect().x / Data.scale) / 32);
+			viewY = (int) ((pkg.scrollPane2.getViewport().getViewRect().y / Data.scale) / 32);
+			viewW = (int) ((pkg.scrollPane2.getViewport().getViewRect().width / Data.scale) / 32);
+			viewH = (int) ((pkg.scrollPane2.getViewport().getViewRect().height / Data.scale) / 32);
+			
+			Graphics2D g2d = (Graphics2D) g;
+			g2d.scale(Data.scale, Data.scale);
 			
 			// Not the best solution, but it works. This should be improved.
 			for (int i = 0; i < (PK2Map.MAP_WIDTH * 32) / background.getWidth() + 1; i++) {
@@ -81,10 +80,6 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 					 g.drawImage(background, i * background.getWidth(), j * background.getHeight(), null);
 				 }
 			}
-			
-			// @Todo: Deal with the offset, that's caused by zooming
-			Graphics2D g2d = (Graphics2D) g;
-			g2d.scale(Data.scale, Data.scale);
 			
 			if (Data.currentLayer == Constants.LAYER_BACKGROUND || Data.currentLayer == Constants.LAYER_BOTH) {
 				for (int i = viewX; i < (viewX + viewW) + 2; i++) {
@@ -192,12 +187,18 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 				g.drawRect(dx * 32 + 1, dy * 32 + 1, Data.sw * 32 - 2, Data.sh * 32 - 2);
 				
 				g.setColor(Color.black);
-				g.drawRect(dx * 32,dy * 32, Data.sw * 32, Data.sh * 32);
+				g.drawRect(dx * 32 + 2, dy * 32 + 2, Data.sw * 32 - 4, Data.sh * 32 - 4);
 			}
 		}
 	}
 
-	
+	public Dimension getPreferredSize() {
+		int w = (int) ((PK2Map.MAP_WIDTH * 32) / Data.scale);
+		int h = (int) ((PK2Map.MAP_HEIGHT * 32) / Data.scale);
+		
+		return new Dimension(w, h);
+	}
+		
 	private void drawTile(Graphics g, int x, int y, int tile) {
 		if (tile != 255 && tile != -1) {
 			g.drawImage(tiles.get(tile), x, y, null);
@@ -251,8 +252,6 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 				}
 			} catch (IOException e) {
 				JOptionPane.showMessageDialog(this, "Could'nt read tileset file.\n'" + s + "'", "Error", JOptionPane.OK_OPTION);
-				
-				//e.printStackTrace();
 			}
 		}
 	}
@@ -261,21 +260,8 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 		if (!Settings.BASE_PATH.isEmpty()) {
 			try {
 				background = ImageIO.read(new File(Settings.SCENERY_PATH + str));
-				
-				/*
-				bgImg = new BufferedImage(8192, 8192, BufferedImage.TYPE_INT_ARGB);
-				
-				Graphics g = bgImg.getGraphics();
-				
-				for (int i = 0; i < (PK2Map.MAP_WIDTH * 32) / background.getWidth() + 1; i++) {
-					for (int j = 0; j < (PK2Map.MAP_HEIGHT * 32) / background.getHeight() + 1; j++) {
-						g.drawImage(background, i * background.getWidth(), j * background.getHeight(), null);
-					}
-				}*/
 			} catch (IOException e) {
 				JOptionPane.showMessageDialog(this, "Could'nt read background file.\n'" + str + "'", "Error", JOptionPane.OK_OPTION);
-				
-				//e.printStackTrace();
 			}
 		}
 	}
@@ -288,8 +274,8 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 	@Override
 	public void mouseDragged(MouseEvent e) {
 		if (Data.map != null) {
-			mx = e.getX();
-			my = e.getY();
+			mx = (int) (e.getX() / Data.scale);
+			my = (int) (e.getY() / Data.scale);
 			
 			if (mouseButton == MouseEvent.BUTTON1) {
 				Data.fileChanged = true;
@@ -339,15 +325,15 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 
 				case Data.TOOL_ERASER:
 					if (Data.selectedSprite == 255) {
-						Data.map.setTile(e.getX(), e.getY(), 255);
+						Data.map.setTile(mx, my, 255);
 					} else {
 						Data.map.sprites[PK2Map.MAP_WIDTH * (mx / 32) + (my / 32)] = 255;
 					}
 					break;
 				}
 			} else if (mouseButton == MouseEvent.BUTTON3) {
-				int mx = e.getX() / 32;
-				int my = e.getY() / 32;
+				mx = (int) ((e.getX() / 32) / Data.scale);
+				my = (int) ((e.getY() / 32) / Data.scale);
 				
 				if (mx < Data.sx) {
 					Data.sw = Data.sx - mx;
@@ -384,8 +370,6 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 				offsetX = e.getX();
 				offsetY = e.getY();
 				
-				System.out.println(offsetX + " - " + offsetY);
-				
 				//pkg.scrollPane2.getHorizontalScrollBar().setValue(mx - dragDistanceX);
 				//pkg.scrollPane2.getVerticalScrollBar().setValue(my / 32);
 			}
@@ -401,8 +385,8 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 
 	@Override
 	public void mouseMoved(MouseEvent e) {
-		mx = e.getX();
-		my = e.getY();
+		mx = (int) (e.getX() / Data.scale);
+		my = (int) (e.getY() / Data.scale);
 		
 		if (!Data.multiSelectionBackground.isEmpty() || !Data.multiSelectionForeground.isEmpty() || Data.selectedTileBackground != 255 || Data.selectedTileForeground != 255 || Data.selectedSprite != 255) {
 			repaint();
@@ -453,9 +437,9 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 						}
 					} else {
 						if (Data.selectedTileForeground != 255) {
-							Data.map.setForegroundTile(e.getX(), e.getY(), Data.selectedTileForeground);
+							Data.map.setForegroundTile(mx, my, Data.selectedTileForeground);
 						} else if (Data.selectedTileBackground != 255) {
-							Data.map.setBackgroundTile(e.getX(), e.getY(), Data.selectedTileBackground);
+							Data.map.setBackgroundTile(mx, my, Data.selectedTileBackground);
 						} else if (Data.selectedSprite != 255) {
 							Data.map.sprites[PK2Map.MAP_WIDTH * (mx / 32) + (my / 32)] = Data.selectedSprite;
 						}
@@ -464,7 +448,7 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 
 				case Data.TOOL_ERASER:
 					if (Data.selectedSprite == 255) {
-						Data.map.setTile(e.getX(), e.getY(), 255);
+						Data.map.setTile(mx, my, 255);
 					} else {
 						Data.map.sprites[PK2Map.MAP_WIDTH * (mx / 32) + (my / 32)] = 255;
 					}
@@ -480,8 +464,8 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 					 */
 					switch (Data.selectedTool) {
 						case Data.TOOL_BRUSH:
-							int x = e.getX() / 32;
-							int y = e.getY() / 32;
+							int x = (int) ((e.getX() / 32) / Data.scale);
+							int y = (int) ((e.getY() / 32) / Data.scale);
 							
 							if (Data.currentLayer == Constants.LAYER_FOREGROUND) {
 								Data.selectedTileForeground = Data.map.getTileAt(x * 32, y * 32, Constants.LAYER_FOREGROUND);
@@ -527,6 +511,9 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 	public void mouseReleased(MouseEvent e) {
 		// The following code is responsible for adding the selected tiles to the respective lists, depending on the current layer.
 		if (Data.dragging) {
+			mx = (int) (e.getX() / Data.scale);
+			my = (int) (e.getY() / Data.scale);
+			
 			for (int i = dx; i < dx + Data.sw; i++) {
 				for (int j = dy; j < dy + Data.sh; j++) {
 					switch (Data.currentLayer) {
@@ -546,9 +533,9 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 				}
 			}
 			
-			repaint();
-			
 			Data.dragging = false; // User is not dragging anymore, no need to draw the black/white selection rectangle.
+			
+			repaint();
 		}
 	}
 	
@@ -565,24 +552,35 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 	}
 
 	@Override
-	public void run() {
-		/*while (true) {
-			repaint();
-			
-			// Change this
-			if (Data.mmp != null) {
-				Data.mmp.repaint();
-			}
-
-			try {
-				Thread.sleep(34);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}*/
-	}
-
-	@Override
 	public void mouseWheelMoved(MouseWheelEvent e) {
+		if (e.isControlDown() && e.getWheelRotation() > 0) {
+			if (Data.scale - 0.02 > 0.2) {
+				Data.scale -= 0.02;
+				
+				Data.mmp.resizeViewportRect();
+				Data.mmp.repaint();
+				
+				Dimension d = Data.lp.getPreferredSize();
+				
+				pkg.scrollPane2.getViewport().setViewSize(new Dimension((int) (d.width / (Data.scale * -1)), (int) (d.height / (Data.scale * -1))));
+				
+				pkg.scrollPane2.revalidate();
+				
+				Data.lp.repaint();
+			}
+		} else if (e.isControlDown() && e.getWheelRotation() < 0) {
+			Data.scale += 0.02;
+			
+			Data.mmp.resizeViewportRect();
+			Data.mmp.repaint();
+			
+			Dimension d = Data.lp.getPreferredSize();
+			
+			pkg.scrollPane2.getViewport().setViewSize(new Dimension((int) (d.width * (Data.scale * -1)), (int) (d.height * (Data.scale * -1))));
+			
+			pkg.scrollPane2.revalidate();
+			
+			Data.lp.repaint();
+		}
 	}
 }
