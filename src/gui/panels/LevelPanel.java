@@ -332,39 +332,41 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 					break;
 				}
 			} else if (mouseButton == MouseEvent.BUTTON3) {
-				mx = (int) ((e.getX() / 32) / Data.scale);
-				my = (int) ((e.getY() / 32) / Data.scale);
-				
-				if (mx < Data.sx) {
-					Data.sw = Data.sx - mx;
+				if (Data.selectedTool == Data.TOOL_BRUSH) {
+					mx = (int) ((e.getX() / 32) / Data.scale);
+					my = (int) ((e.getY() / 32) / Data.scale);
 					
-					dx = mx;
-				} else {
-					Data.sw = mx - Data.sx;
+					if (mx < Data.sx) {
+						Data.sw = Data.sx - mx;
+						
+						dx = mx;
+					} else {
+						Data.sw = mx - Data.sx;
+						
+						dx = Data.sx;
+					}
 					
-					dx = Data.sx;
+					if (my < Data.sy) {
+						Data.sh = Data.sy - my;
+						
+						dy = my;
+					} else {
+						Data.sh = my - Data.sy;
+						
+						dy = Data.sy;
+					}
+					
+					Data.selectedTile = -1;
+					
+					Data.sw += 1;
+					Data.sh += 1;
+					
+					Data.multiSelectLevel = true;
+					Data.multiSelectTiles = false;
+					
+					// Needed to know when the user is dragging, so that the program knows to draw the black/white rectangle
+					Data.dragging = true;
 				}
-				
-				if (my < Data.sy) {
-					Data.sh = Data.sy - my;
-					
-					dy = my;
-				} else {
-					Data.sh = my - Data.sy;
-					
-					dy = Data.sy;
-				}
-				
-				Data.selectedTile = -1;
-				
-				Data.sw += 1;
-				Data.sh += 1;
-				
-				Data.multiSelectLevel = true;
-				Data.multiSelectTiles = false;
-				
-				// Needed to know when the user is dragging, so that the program knows to draw the black/white rectangle
-				Data.dragging = true;
 			} else if (mouseButton == MouseEvent.BUTTON2) {
 				
 				offsetX = e.getX();
