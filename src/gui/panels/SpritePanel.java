@@ -1,11 +1,8 @@
 package gui.panels;
 
 
+import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -138,7 +135,7 @@ public class SpritePanel extends JPanel {
 		dfm.addColumn("Player?:");
 		
 		JPanel buttonPanel = new JPanel();
-		buttonPanel.setLayout(new GridLayout(1, 3));
+		buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.X_AXIS));
 		
 		JButton btnAdd = new JButton("Add");
 		JButton btnRemove = new JButton("Remove");
