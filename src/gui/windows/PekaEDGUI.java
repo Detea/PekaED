@@ -402,7 +402,7 @@ public class PekaEDGUI {
 			
 		});
                 
-		bTestLevel.addActionListener(new ActionListener(){
+		bTestLevel.addActionListener(new ActionListener() {
                     
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -457,17 +457,39 @@ public class PekaEDGUI {
 			public void actionPerformed(ActionEvent e) {
 				switch (cbLayers.getSelectedIndex()) {
 					case 0:
-						Data.currentLayer = 2;
+						Data.currentLayer = 2; // both
 						Data.lp.repaint();
 						break;
 						
 					case 1:
-						Data.currentLayer = 0;
+						Data.currentLayer = 0; // foreground
+						
+						if (Data.selectedTileForeground == 255 && Data.selectedTileBackground != 255) {
+							Data.selectedTileForeground = Data.selectedTileBackground;
+							Data.selectedTileBackground = 255;
+						}
+						
+						if (Data.multiSelectTiles && Data.multiSelectionForeground.isEmpty() && !Data.multiSelectionBackground.isEmpty()) {
+							Data.multiSelectionForeground.addAll(Data.multiSelectionBackground);
+							Data.multiSelectionBackground.clear();
+						}
+						
 						Data.lp.repaint();
 						break;
 						
 					case 2:
-						Data.currentLayer = 1;
+						Data.currentLayer = 1; // background
+						
+						if (Data.selectedTileBackground == 255 && Data.selectedTileForeground != 255) {
+							Data.selectedTileBackground = Data.selectedTileForeground;
+							Data.selectedTileForeground = 255;
+						}
+						
+						if (Data.multiSelectTiles && Data.multiSelectionBackground.isEmpty() && !Data.multiSelectionForeground.isEmpty()) {
+							Data.multiSelectionBackground.addAll(Data.multiSelectionForeground);
+							Data.multiSelectionForeground.clear();
+						}
+						
 						Data.lp.repaint();
 						break;
 				}
@@ -546,7 +568,7 @@ public class PekaEDGUI {
 			
 		});
 		
-		JLabel lblMode = new JLabel("Mode:  ");
+		JLabel lblMode = new JLabel("Mode: ");
 		
 		Vector<String> modeList = new Vector<String>();
 		modeList.addElement("Legacy");
@@ -797,9 +819,16 @@ public class PekaEDGUI {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				Data.scale += 0.1;
+				Data.scale += 0.02;
 				
-				System.out.println(scrollPane2.getViewport().getView().getWidth() + " - " + (scrollPane2.getViewport().getView().getWidth() * Data.scale));
+				Data.mmp.resizeViewportRect();
+				Data.mmp.repaint();
+				
+				Dimension d = Data.lp.getPreferredSize();
+				
+				scrollPane2.getViewport().setViewSize(new Dimension((int) (d.width * (Data.scale * -1)), (int) (d.height * (Data.scale * -1))));
+				
+				scrollPane2.revalidate();
 				
 				Data.lp.repaint();
 			}
@@ -810,10 +839,17 @@ public class PekaEDGUI {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				if (Data.scale - 0.1 > 0) {
+				if (Data.scale - 0.1 > 0.1) {
 					Data.scale -= 0.1;
 					
-					System.out.println(scrollPane2.getViewport().getView().getWidth() + " - " + (scrollPane2.getViewport().getView().getWidth() * Data.scale));
+					Data.mmp.resizeViewportRect();
+					Data.mmp.repaint();
+					
+					Dimension d = Data.lp.getPreferredSize();
+					
+					scrollPane2.getViewport().setViewSize(new Dimension((int) (d.width / Data.scale), (int) (d.height / Data.scale)));
+					
+					scrollPane2.revalidate();
 					
 					Data.lp.repaint();
 				}
@@ -1106,7 +1142,7 @@ public class PekaEDGUI {
 		lp.repaint();
 		mmp.repaint();
 		
-		Rectangle r = Data.map.calculateUsedArea(Data.map.layers[Constants.LAYER_BACKGROUND]);
+		Rectangle r = Data.map.calculateUsedArea(Data.map.layers[Constants.LAYER_BACKGROUND], "background2");
 		
 		scrollPane2.getVerticalScrollBar().setValue((r.y - (r.height / 2)) * 32);
 		scrollPane2.getHorizontalScrollBar().setValue((r.x - (r.width / 2)) * 32);
