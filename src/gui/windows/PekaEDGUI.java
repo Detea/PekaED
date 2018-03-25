@@ -407,17 +407,19 @@ public class PekaEDGUI {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				if(Data.currentFile != null){
-					int saveRes = showSaveWarning();
-					
 					if (Data.fileChanged) {
+						int saveRes = showSaveWarning();
+						
 						if (saveRes == 0) {
 							saveLevel(Data.currentFile);
 							
 							Data.fileChanged = false;
 						}
-					}
-
-					if (saveRes != 2) {
+						
+						if (saveRes != 2) {
+							testLevel();
+						}
+					} else {
 						testLevel();
 					}
 				} else {
