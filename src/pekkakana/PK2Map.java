@@ -202,11 +202,8 @@ public class PK2Map {
 			}
 		} catch (FileNotFoundException e) {
 			JOptionPane.showMessageDialog(null, "File '" + file + "' not found.", "Error", JOptionPane.OK_OPTION);
-			//e.printStackTrace();
 		} catch (IOException e) {
 			JOptionPane.showMessageDialog(null, "Something went wrong while trying to read file '" + file + "\nError: " + e.getMessage(), "Error", JOptionPane.OK_OPTION);
-			
-			//e.printStackTrace();
 		}
 	}
 	
@@ -227,7 +224,7 @@ public class PK2Map {
 			writeArray(authorName, dos);
 			
 			char[] ca = new char[8];
-			setAndWrite(ca, Integer.toString(levelNumber), dos);
+			setAndWrite(ca, String.copyValueOf(getLevelNumberAsChar(levelNumber)), dos);
 			setAndWrite(ca, Integer.toString(weather), dos);
 			setAndWrite(ca, Integer.toString(switch1Time), dos);
 			setAndWrite(ca, Integer.toString(switch2Time), dos);
@@ -255,7 +252,7 @@ public class PK2Map {
 				}
 			}
 			
-			Rectangle r = calculateUsedArea(backgroundTiles);
+			Rectangle r = calculateUsedArea(layers[Constants.LAYER_BACKGROUND], "Background");
 			
 			int width = r.width - r.x;
 			int height = r.height - r.y;
@@ -274,8 +271,7 @@ public class PK2Map {
 				}
 			}
 			
-			r.setRect(0, 0, 0, 0);
-			r = calculateUsedArea(foregroundTiles);
+			r = calculateUsedArea(layers[Constants.LAYER_FOREGROUND], "Foreground");
 			
 			width = r.width - r.x;
 			height = r.height - r.y;
@@ -294,7 +290,7 @@ public class PK2Map {
 				}
 			}
 			
-			r = calculateUsedArea(sprites);
+			r = calculateUsedArea(sprites, "Sprites");
 			
 			width = r.width - r.x;
 			height = r.height - r.y;
@@ -399,13 +395,15 @@ public class PK2Map {
 	}
 	
 	public void setTile(int x, int y) {
-		if (Data.currentLayer == Constants.LAYER_FOREGROUND) {
-			layers[Constants.LAYER_FOREGROUND][MAP_WIDTH * (x / 32) + (y / 32)] = Data.selectedTileForeground;
-		} else if (Data.currentLayer == Constants.LAYER_BACKGROUND) {
-			layers[Constants.LAYER_BACKGROUND][MAP_WIDTH * (x / 32) + (y / 32)] = Data.selectedTileBackground;
-		} else if (Data.currentLayer == Constants.LAYER_BOTH){
-			layers[Constants.LAYER_FOREGROUND][MAP_WIDTH * (x / 32) + (y / 32)] = Data.selectedTileForeground;
-			layers[Constants.LAYER_BACKGROUND][MAP_WIDTH * (x / 32) + (y / 32)] = Data.selectedTileBackground;
+		if ((MAP_WIDTH * (x / 32) + (y / 32)) < MAP_SIZE && (MAP_WIDTH * (x / 32) + (y / 32)) >= 0) {
+			if (Data.currentLayer == Constants.LAYER_FOREGROUND) {
+				layers[Constants.LAYER_FOREGROUND][MAP_WIDTH * (x / 32) + (y / 32)] = Data.selectedTileForeground;
+			} else if (Data.currentLayer == Constants.LAYER_BACKGROUND) {
+				layers[Constants.LAYER_BACKGROUND][MAP_WIDTH * (x / 32) + (y / 32)] = Data.selectedTileBackground;
+			} else if (Data.currentLayer == Constants.LAYER_BOTH){
+				layers[Constants.LAYER_FOREGROUND][MAP_WIDTH * (x / 32) + (y / 32)] = Data.selectedTileForeground;
+				layers[Constants.LAYER_BACKGROUND][MAP_WIDTH * (x / 32) + (y / 32)] = Data.selectedTileBackground;
+			}
 		}
 	}
 
@@ -463,17 +461,27 @@ public class PK2Map {
 	}
 	
 	/*
-	 * Maybe convert all these methods into one?
+	 * These are kind of ugly, but they ensure that the produced files are VERY similar to the original editors files
 	 */
 	
 	public void setTileset(String s) {
 		for (int i = 0; i < tilesetImageFile.length; i++) {
-			tilesetImageFile[i] = 0x0;
+			tilesetImageFile[i] = 0xCD; // This ensures that the files created with PekaED are somewhat identical with the original editor
 		}
 		
-		for (int i = 0; i < s.length(); i++) {
+		int len = 0;
+		
+		if (s.length() > tilesetImageFile.length - 1) {
+			len = tilesetImageFile.length - 1;
+		} else {
+			len = s.length();
+		}
+		
+		for (int i = 0; i < len; i++) {
 			tilesetImageFile[i] = s.charAt(i);
 		}
+		
+		tilesetImageFile[len] = 0x0;
 	}
 	
 	public void setBackground(String s) {
@@ -481,7 +489,15 @@ public class PK2Map {
 			backgroundImageFile[i] = 0x0;
 		}
 		
-		for (int i = 0; i < s.length(); i++) {
+		int len = 0;
+		
+		if (s.length() > backgroundImageFile.length - 1) {
+			len = backgroundImageFile.length - 1;
+		} else {
+			len = s.length();
+		}
+		
+		for (int i = 0; i < len; i++) {
 			backgroundImageFile[i] = s.charAt(i);
 		}
 	}
@@ -491,19 +507,37 @@ public class PK2Map {
 			musicFile[i] = 0x0;
 		}
 		
-		for (int i = 0; i < s.length(); i++) {
+		int len = 0;
+		
+		if (s.length() > musicFile.length - 1) {
+			len = musicFile.length - 1;
+		} else {
+			len = s.length();
+		}
+		
+		for (int i = 0; i < len; i++) {
 			musicFile[i] = s.charAt(i);
 		}
 	}
 	
 	public void setMapName(String s) {
 		for (int i = 0; i < mapName.length; i++) {
-			mapName[i] = 0xCC;
+			mapName[i] = 0xCD;
 		}
 		
-		for (int i = 0; i < s.length(); i++) {
+		int len = 0;
+		
+		if (s.length() > mapName.length - 1) {
+			len = mapName.length - 1;
+		} else {
+			len = s.length();
+		}
+		
+		for (int i = 0; i < len; i++) {
 			mapName[i] = s.charAt(i);
 		}
+		
+		mapName[len] = 0x0;
 	}
 	
 	public void setAuthor(String s) {
@@ -511,9 +545,48 @@ public class PK2Map {
 			authorName[i] = 0xCC;
 		}
 		
-		for (int i = 0; i < s.length(); i++) {
+		int len = 0;
+		
+		if (s.length() >= 28) {
+			len = 28;
+		} else {
+			len = s.length();
+		}
+		
+		for (int i = 0; i < len; i++) {
 			authorName[i] = s.charAt(i);
 		}
+		
+		authorName[29] = 0x0;
+		
+		for (int i = 30; i < authorName.length; i++) {
+			authorName[i] = 0xCD;
+		}
+	}
+	
+	public char[] getLevelNumberAsChar(int number) {
+		char[] c = new char[8];
+		
+		for (int i = 0; i < c.length; i++) {
+			c[i] = 0xCC;
+		}
+		
+		String s = Integer.toString(number);
+		
+		int len = 0;
+		if (s.length() > 7) {
+			len = 7;
+		} else {
+			len = s.length();
+		}
+		
+		for (int i = 0; i < len; i++) {
+			c[i] = s.charAt(i);
+		}
+		
+		c[len] = 0x0;
+		
+		return c;
 	}
 	
 	public void setChar2dString(char[][] array, String s, int index) {
@@ -568,7 +641,7 @@ public class PK2Map {
 	 * This methods looks for the space where tiles are placed.
 	 * That way you can store only the placed tiles and don't have to save the whole map.
 	 */
-	public Rectangle calculateUsedArea(int[] array) {
+	public Rectangle calculateUsedArea(int[] array, String layer) {
 		Rectangle r = new Rectangle(0, 0, 0, 0);
 		
 		int x, y;
@@ -581,17 +654,21 @@ public class PK2Map {
 			for (x = 0; x < MAP_WIDTH; x++) {
 				if (MAP_WIDTH * x + y < array.length) {
 					if (array[MAP_WIDTH * x + y] != 255) {
-						if (x < map_left)
+						if (x < map_left) {
 							map_left = x;
-						
-						if (y < map_upper)
+						}
+							
+						if (y < map_upper) {
 							map_upper = y;
+						}
 						
-						if (x > map_right)
+						if (x > map_right) {
 							map_right = x;
+						}
 						
-						if (y > map_lower)
+						if (y > map_lower) {
 							map_lower = y;
+						}
 					}
 				}
 			}
@@ -604,7 +681,10 @@ public class PK2Map {
 			map_right = 1;
 		}
 		
-		r.setBounds(map_left, map_upper, map_right, map_lower);
+		r.x = map_left;
+		r.y = map_upper;
+		r.width = map_right;
+		r.height = map_lower;
 		
 		return r;
 	}
@@ -622,7 +702,9 @@ public class PK2Map {
 
 	public void setForegroundTile(int x, int y, int tile) {
 		if ((MAP_WIDTH * (x / 32) + (y / 32)) < MAP_SIZE) { // check if x & y > 0 && < width/height
-			layers[Constants.LAYER_FOREGROUND][MAP_WIDTH * (x / 32) + (y / 32)] = tile;
+			if (tile != -256 || tile != -1) {
+				layers[Constants.LAYER_FOREGROUND][MAP_WIDTH * (x / 32) + (y / 32)] = tile;
+			}
 		}
 	}
 	
