@@ -233,6 +233,8 @@ public class PekaEDGUI {
 				JFileChooser fc = new JFileChooser();
 				fc.setDialogTitle("Load an episode");
 				
+				fc.setCurrentDirectory(new File(Settings.EPISODES_PATH));
+				
 				fc.setFileFilter(new FileFilter() {
 
 					@Override
