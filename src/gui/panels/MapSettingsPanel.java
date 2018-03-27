@@ -227,7 +227,7 @@ public class MapSettingsPanel extends JPanel {
 		add(lblTime);
 		
 		spinner_1 = new JSpinner();
-		spinner_1.setBounds(183, 136, 62, 20);
+		spinner_1.setBounds(183, 136, 66, 20);
 		add(spinner_1);
 		
 		spinner_1.addChangeListener(new ChangeListener() {
