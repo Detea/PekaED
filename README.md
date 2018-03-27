@@ -4,6 +4,7 @@ A modern Pekka Kana 2 level editor.
 ![PekaED in action](https://i.imgur.com/ov0VxeG.png)
 
 If you want to work on PekaED, or compile it yourself, you need to run it with the following VM argument:
+
 	-Dsun.java2d.noddraw=true
 	
 This is because the drawing of the background image(s) is rather inefficient.
