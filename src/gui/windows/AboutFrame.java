@@ -36,7 +36,7 @@ public class AboutFrame extends JFrame {
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 		
-		JLabel lblPekkaKana = new JLabel("Pekka Kana 2 Editor v.1.1");
+		JLabel lblPekkaKana = new JLabel("Pekka Kana 2 Editor");
 		lblPekkaKana.setFont(new Font("Tahoma", Font.PLAIN, 18));
 		lblPekkaKana.setBounds(104, 11, 254, 26);
 		contentPane.add(lblPekkaKana);
