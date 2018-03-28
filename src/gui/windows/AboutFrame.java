@@ -38,7 +38,7 @@ public class AboutFrame extends JFrame {
 		
 		JLabel lblPekkaKana = new JLabel("Pekka Kana 2 Editor");
 		lblPekkaKana.setFont(new Font("Tahoma", Font.PLAIN, 18));
-		lblPekkaKana.setBounds(104, 11, 254, 26);
+		lblPekkaKana.setBounds(137, 11, 174, 26);
 		contentPane.add(lblPekkaKana);
 		
 		JLabel lblProgrammedByX = new JLabel("Github:");
