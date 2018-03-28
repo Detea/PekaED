@@ -36,6 +36,8 @@ public class Data {
 	public static boolean multiSelectTiles = false;
 	public static boolean dragging = false;
 	
+	public static boolean showSpriteRect = true;
+	
 	public static ArrayList<Integer> multiSelectionForeground = new ArrayList<Integer>();
 	public static ArrayList<Integer> multiSelectionBackground = new ArrayList<Integer>();
 	
@@ -46,6 +48,7 @@ public class Data {
 	public static String currentEpisodePath;
 	
 	public static int mode = Constants.MODE_LEGACY;
+	public static int editMode = Constants.EDIT_MODE_TILES;
 	
 	public static PK2Map map;
 	

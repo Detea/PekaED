@@ -45,6 +45,9 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 	private int dx, dy;
 	private int offsetX, offsetY;
 	
+	BufferedImage buffer;
+	Graphics2D gg;
+	
 	public LevelPanel() {
 		setBackground(Color.LIGHT_GRAY);
 		
@@ -56,6 +59,9 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 		
 		setTileset(Settings.DEFAULT_TILESET);
 		setBackground(Settings.DEFAULT_BACKGROUND);
+		
+		buffer = new BufferedImage(PK2Map.MAP_WIDTH * 32, PK2Map.MAP_HEIGHT * 32, BufferedImage.TYPE_INT_ARGB);
+		gg = (Graphics2D) buffer.getGraphics();
 	}
 	
 	public void setPekaGUI(PekaEDGUI pkg) {
@@ -77,7 +83,7 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 			// Not the best solution, but it works. This should be improved.
 			for (int i = 0; i < (PK2Map.MAP_WIDTH * 32) / background.getWidth() + 1; i++) {
 				 for (int j = 0; j < (PK2Map.MAP_HEIGHT * 32) / background.getHeight() + 1; j++) {
-					 g.drawImage(background, i * background.getWidth(), j * background.getHeight(), null);
+					 g2d.drawImage(background, i * background.getWidth(), j * background.getHeight(), null);
 				 }
 			}
 			
@@ -95,18 +101,6 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 				}
 			}
 			
-			if (Data.showSprites) {
-				for (int i = viewX; i < (viewX + viewW) + 16; i++) {
-					for (int j = viewY; j < (viewY + viewH) + 16; j++) { // 16 is an arbitrary value. This should be the size of the biggest sprites divided by 32
-						if ((PK2Map.MAP_WIDTH * i + j) < Data.map.sprites.length && Data.map.sprites[PK2Map.MAP_WIDTH * i + j] != 255) {
-							if (!Data.map.spriteList.isEmpty() && Data.map.spriteList.get(Data.map.sprites[PK2Map.MAP_WIDTH * i + j]).image != null) {
-								g2d.drawImage(Data.map.spriteList.get(Data.map.sprites[PK2Map.MAP_WIDTH * i + j]).image, ((i * 32) - (Data.map.spriteList.get(Data.map.sprites[PK2Map.MAP_WIDTH * i + j]).image.getWidth() / 2) + 16), ((j * 32) - (Data.map.spriteList.get(Data.map.sprites[PK2Map.MAP_WIDTH * i + j]).image.getHeight() - 32)), null);
-							}
-						}
-					}
-				}
-			}
-			
 			if (Data.currentLayer == Constants.LAYER_FOREGROUND || Data.currentLayer == Constants.LAYER_BOTH) {
 				for (int i = viewX; i < (viewX + viewW) + 2; i++) {
 					for (int j = viewY; j < (viewY + viewH) + 2; j++) {
@@ -116,63 +110,84 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 							}
 						}
 						
-						drawTile(g, i * 32, j * 32, Data.map.getTileAt(i * 32, j * 32, Constants.LAYER_FOREGROUND));
+						drawTile(g2d, i * 32, j * 32, Data.map.getTileAt((i * 32), (j * 32), Constants.LAYER_FOREGROUND));
 					}
 				}
 			}
 			
-			// If the currently selected tool is the brush, draw the selected tiles at the position of the mouse cursor
-			if (Data.selectedTool == Data.TOOL_BRUSH) {
-				if (!Data.multiSelectionForeground.isEmpty() || !Data.multiSelectionBackground.isEmpty()) {
-					if (Data.currentLayer == Constants.LAYER_BACKGROUND || Data.currentLayer == Constants.LAYER_BOTH) {
-						int x = 0, y = 0, i = 0;
-						
-						while (i < Data.multiSelectionBackground.size()) {
-							drawTile(g, (mx + (x * 32)) - ((Data.sw * 32) / 2), (my + (y * 32)) - ((Data.sh * 32) / 2), Data.multiSelectionBackground.get(i));
-
-							y++;
-
-							if (y >= Data.sh) {
-								x++;
-								y = 0;
+			if (Data.showSprites) {
+				for (int i = viewX; i < (viewX + viewW) + 16; i++) {
+					for (int j = viewY; j < (viewY + viewH) + 16; j++) { // 16 is an arbitrary value. This should be the size of the biggest sprites divided by 32
+						if ((PK2Map.MAP_WIDTH * i + j) < Data.map.sprites.length && Data.map.sprites[PK2Map.MAP_WIDTH * i + j] != 255) {
+							if (!Data.map.spriteList.isEmpty() && Data.map.spriteList.get(Data.map.sprites[PK2Map.MAP_WIDTH * i + j]).image != null) {
+								g2d.drawImage(Data.map.spriteList.get(Data.map.sprites[PK2Map.MAP_WIDTH * i + j]).image, ((i * 32) - (Data.map.spriteList.get(Data.map.sprites[PK2Map.MAP_WIDTH * i + j]).image.getWidth() / 2) + 16), ((j * 32) - (Data.map.spriteList.get(Data.map.sprites[PK2Map.MAP_WIDTH * i + j]).image.getHeight() - 32)), null);
+							
+								if (Data.editMode == Constants.EDIT_MODE_SPRITES && Data.showSpriteRect) {
+									g.setColor(Color.white);
+									g.drawRect(i * 32, j * 32, 32, 32);
+								}
 							}
-
-							i++;
 						}
-					}
-					
-					if (Data.currentLayer == Constants.LAYER_FOREGROUND || Data.currentLayer == Constants.LAYER_BOTH) {
-						int x = 0, y = 0, i = 0;
-						
-						while (i < Data.multiSelectionForeground.size()) {
-							drawTile(g, (mx + (x * 32)) - ((Data.sw * 32) / 2), (my + (y * 32)) - ((Data.sh * 32) / 2), Data.multiSelectionForeground.get(i));
-
-							y++;
-
-							if (y >= Data.sh) {
-								x++;
-								y = 0;
-							}
-
-							i++;
-						}
-					}
-				} else if(!Data.multiSelectLevel && !Data.multiSelectTiles) {
-					/*
-					 * This draws the selected tiles.
-					 * They are both getting drawn, because if the user has selected a transparent tile, the tile behind it
-					 * should also be drawn.
-					 */
-					if (Data.selectedTileBackground != 255) {
-						drawTile(g, mx - 16, my - 16, Data.selectedTileBackground);
-					}
-					
-					if (Data.selectedTileForeground != 255) {
-						drawTile(g, mx - 16, my - 16, Data.selectedTileForeground);
 					}
 				}
-				
-				if (Data.selectedSprite != 255) {
+			}
+			
+			//g2d.drawImage(buffer.getSubimage(0, 0, 1280, 720), 0, 0, (int) (buffer.getWidth() / Data.scale), (int) (buffer.getHeight() / Data.scale), null);
+			
+			// If the currently selected tool is the brush, draw the selected tiles at the position of the mouse cursor
+			if (Data.editMode == Constants.EDIT_MODE_TILES) {
+				if (Data.selectedTool == Data.TOOL_BRUSH) {
+					if (!Data.multiSelectionForeground.isEmpty() || !Data.multiSelectionBackground.isEmpty()) {
+						if (Data.currentLayer == Constants.LAYER_BACKGROUND || Data.currentLayer == Constants.LAYER_BOTH) {
+							int x = 0, y = 0, i = 0;
+							
+							while (i < Data.multiSelectionBackground.size()) {
+								drawTile(g, (mx + (x * 32)) - ((Data.sw * 32) / 2), (my + (y * 32)) - ((Data.sh * 32) / 2), Data.multiSelectionBackground.get(i));
+
+								y++;
+
+								if (y >= Data.sh) {
+									x++;
+									y = 0;
+								}
+
+								i++;
+							}
+						}
+						
+						if (Data.currentLayer == Constants.LAYER_FOREGROUND || Data.currentLayer == Constants.LAYER_BOTH) {
+							int x = 0, y = 0, i = 0;
+							
+							while (i < Data.multiSelectionForeground.size()) {
+								drawTile(g, (mx + (x * 32)) - ((Data.sw * 32) / 2), (my + (y * 32)) - ((Data.sh * 32) / 2), Data.multiSelectionForeground.get(i));
+
+								y++;
+
+								if (y >= Data.sh) {
+									x++;
+									y = 0;
+								}
+
+								i++;
+							}
+						}
+					} else if(!Data.multiSelectLevel && !Data.multiSelectTiles) {
+						/*
+						 * This draws the selected tiles.
+						 * They are both getting drawn, because if the user has selected a transparent tile, the tile behind it
+						 * should also be drawn.
+						 */
+						if (Data.selectedTileBackground != 255) {
+							drawTile(g, mx - 16, my - 16, Data.selectedTileBackground);
+						}
+						
+						if (Data.selectedTileForeground != 255) {
+							drawTile(g, mx - 16, my - 16, Data.selectedTileForeground);
+						}
+					}
+				}
+			} else if (Data.editMode == Constants.EDIT_MODE_SPRITES) {
+				if (Data.selectedSprite != 255 && Data.selectedTool == Data.TOOL_BRUSH) {
 					if (!Data.map.spriteList.isEmpty()) {
 						g.drawImage(Data.map.spriteList.get(Data.selectedSprite).image, mx - (Data.map.spriteList.get(Data.selectedSprite).image.getWidth() / 2), my - (Data.map.spriteList.get(Data.selectedSprite).image.getHeight() / 2), null);
 					}
@@ -193,8 +208,8 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 	}
 
 	public Dimension getPreferredSize() {
-		int w = (int) ((PK2Map.MAP_WIDTH * 32) / Data.scale);
-		int h = (int) ((PK2Map.MAP_HEIGHT * 32) / Data.scale);
+		int w = (int) ((PK2Map.MAP_WIDTH * 32));
+		int h = (int) ((PK2Map.MAP_HEIGHT * 32));
 		
 		return new Dimension(w, h);
 	}
@@ -231,7 +246,7 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 			    
 			    int[] pixel = ((DataBufferInt) ts.getRaster().getDataBuffer()).getData();
 			    for (int i = 0; i < pixel.length; i++) {
-			    	pixel[i] &= 0x40FFFFFF; // Set transparency to 1/4 of the original
+			    	pixel[i] &= 0x50FFFFFF; // Set transparency 
 			    }
 			    
 				// chop the tileset up and add the tiles to a list
@@ -282,49 +297,55 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 				
 				switch (Data.selectedTool) {
 				case Data.TOOL_BRUSH:
-					if (!Data.multiSelectionForeground.isEmpty() || !Data.multiSelectionBackground.isEmpty()) {
-						if (!Data.multiSelectionForeground.isEmpty() && (Data.currentLayer == Constants.LAYER_FOREGROUND || Data.currentLayer == Constants.LAYER_BOTH)) {
-							int x = 0, y = 0, i = 0;
-							while (i < Data.multiSelectionForeground.size()) {
-								Data.map.setForegroundTile(((mx + 16) + (x * 32)) - ((Data.sw * 32) / 2), ((my + 16) + (y * 32)) - ((Data.sh * 32) / 2), Data.multiSelectionForeground.get(i));
-								
-								y++;
+					if (Data.editMode == Constants.EDIT_MODE_TILES) {
+						if (!Data.multiSelectionForeground.isEmpty() || !Data.multiSelectionBackground.isEmpty()) {
+							if (!Data.multiSelectionForeground.isEmpty() && (Data.currentLayer == Constants.LAYER_FOREGROUND || Data.currentLayer == Constants.LAYER_BOTH)) {
+								int x = 0, y = 0, i = 0;
+								while (i < Data.multiSelectionForeground.size()) {
+									Data.map.setForegroundTile(((mx + 16) + (x * 32)) - ((Data.sw * 32) / 2), ((my + 16) + (y * 32)) - ((Data.sh * 32) / 2), Data.multiSelectionForeground.get(i));
+									
+									y++;
 
-								if (y >= Data.sh) {
-									x++;
-									y = 0;
+									if (y >= Data.sh) {
+										x++;
+										y = 0;
+									}
+
+									i++;
 								}
-
-								i++;
 							}
-						}
-						
-						if (!Data.multiSelectionBackground.isEmpty() && Data.currentLayer == Constants.LAYER_BACKGROUND || Data.currentLayer == Constants.LAYER_BOTH) {
-							int x = 0, y = 0, i = 0;
-							while (i < Data.multiSelectionBackground.size()) {
-								Data.map.setBackgroundTile(((mx + 16) + (x * 32)) - ((Data.sw * 32) / 2), ((my + 16) + (y * 32)) - ((Data.sh * 32) / 2), Data.multiSelectionBackground.get(i));
-								
-								y++;
+							
+							if (!Data.multiSelectionBackground.isEmpty() && (Data.currentLayer == Constants.LAYER_BACKGROUND || Data.currentLayer == Constants.LAYER_BOTH)) {
+								int x = 0, y = 0, i = 0;
+								while (i < Data.multiSelectionBackground.size()) {
+									Data.map.setBackgroundTile(((mx + 16) + (x * 32)) - ((Data.sw * 32) / 2), ((my + 16) + (y * 32)) - ((Data.sh * 32) / 2), Data.multiSelectionBackground.get(i));
+									
+									y++;
 
-								if (y >= Data.sh) {
-									x++;
-									y = 0;
+									if (y >= Data.sh) {
+										x++;
+										y = 0;
+									}
+
+									i++;
 								}
-
-								i++;
 							}
-						}
-					} else {
-						if (Data.selectedSprite != 255) {
-							Data.map.sprites[PK2Map.MAP_WIDTH * (mx / 32) + (my / 32)] = Data.selectedSprite;
 						} else {
-							Data.map.setTile(mx, my);
+							if (Data.selectedTileForeground != 255) {
+								Data.map.setForegroundTile(mx, my, Data.selectedTileForeground);
+							} else if (Data.selectedTileBackground != 255) {
+								Data.map.setBackgroundTile(mx, my, Data.selectedTileBackground);
+							}
+						}
+					} else if (Data.editMode == Constants.EDIT_MODE_SPRITES) {
+						if (Data.selectedSprite != 255 && Data.editMode == Constants.EDIT_MODE_SPRITES) {
+							Data.map.sprites[PK2Map.MAP_WIDTH * (mx / 32) + (my / 32)] = Data.selectedSprite;
 						}
 					}
 					break;
 
 				case Data.TOOL_ERASER:
-					if (Data.selectedSprite == 255) {
+					if (Data.editMode == Constants.EDIT_MODE_TILES) {
 						Data.map.setTile(mx, my, 255);
 					} else {
 						Data.map.sprites[PK2Map.MAP_WIDTH * (mx / 32) + (my / 32)] = 255;
@@ -332,40 +353,42 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 					break;
 				}
 			} else if (mouseButton == MouseEvent.BUTTON3) {
-				if (Data.selectedTool == Data.TOOL_BRUSH) {
-					mx = (int) ((e.getX() / 32) / Data.scale);
-					my = (int) ((e.getY() / 32) / Data.scale);
-					
-					if (mx < Data.sx) {
-						Data.sw = Data.sx - mx;
+				if (Data.editMode == Constants.EDIT_MODE_TILES) {
+					if (Data.selectedTool == Data.TOOL_BRUSH) {
+						mx = (int) ((e.getX() / 32) / Data.scale);
+						my = (int) ((e.getY() / 32) / Data.scale);
 						
-						dx = mx;
-					} else {
-						Data.sw = mx - Data.sx;
+						if (mx < Data.sx) {
+							Data.sw = Data.sx - mx;
+							
+							dx = mx;
+						} else {
+							Data.sw = mx - Data.sx;
+							
+							dx = Data.sx;
+						}
 						
-						dx = Data.sx;
+						if (my < Data.sy) {
+							Data.sh = Data.sy - my;
+							
+							dy = my;
+						} else {
+							Data.sh = my - Data.sy;
+							
+							dy = Data.sy;
+						}
+						
+						Data.selectedTile = -1;
+						
+						Data.sw += 1;
+						Data.sh += 1;
+						
+						Data.multiSelectLevel = true;
+						Data.multiSelectTiles = false;
+						
+						// Needed to know when the user is dragging, so that the program knows to draw the black/white rectangle
+						Data.dragging = true;
 					}
-					
-					if (my < Data.sy) {
-						Data.sh = Data.sy - my;
-						
-						dy = my;
-					} else {
-						Data.sh = my - Data.sy;
-						
-						dy = Data.sy;
-					}
-					
-					Data.selectedTile = -1;
-					
-					Data.sw += 1;
-					Data.sh += 1;
-					
-					Data.multiSelectLevel = true;
-					Data.multiSelectTiles = false;
-					
-					// Needed to know when the user is dragging, so that the program knows to draw the black/white rectangle
-					Data.dragging = true;
 				}
 			} else if (mouseButton == MouseEvent.BUTTON2) {
 				
@@ -403,53 +426,58 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 			if (e.getButton() == MouseEvent.BUTTON1) {
 				Data.fileChanged = true;
 				
+				// This code isn't going to be pretty, be warned...
 				switch (Data.selectedTool) {
 				case Data.TOOL_BRUSH:
-					if (!Data.multiSelectionForeground.isEmpty() || !Data.multiSelectionBackground.isEmpty()) {
-						if (!Data.multiSelectionForeground.isEmpty() && (Data.currentLayer == Constants.LAYER_FOREGROUND || Data.currentLayer == Constants.LAYER_BOTH)) {
-							int x = 0, y = 0, i = 0;
-							while (i < Data.multiSelectionForeground.size()) {
-								Data.map.setForegroundTile(((mx + 16) + (x * 32)) - ((Data.sw * 32) / 2), ((my + 16) + (y * 32)) - ((Data.sh * 32) / 2), Data.multiSelectionForeground.get(i));
-								
-								y++;
+					if (Data.editMode == Constants.EDIT_MODE_TILES) {
+						if (!Data.multiSelectionForeground.isEmpty() || !Data.multiSelectionBackground.isEmpty()) {
+							if (!Data.multiSelectionForeground.isEmpty() && (Data.currentLayer == Constants.LAYER_FOREGROUND || Data.currentLayer == Constants.LAYER_BOTH)) {
+								int x = 0, y = 0, i = 0;
+								while (i < Data.multiSelectionForeground.size()) {
+									Data.map.setForegroundTile(((mx + 16) + (x * 32)) - ((Data.sw * 32) / 2), ((my + 16) + (y * 32)) - ((Data.sh * 32) / 2), Data.multiSelectionForeground.get(i));
+									
+									y++;
 
-								if (y >= Data.sh) {
-									x++;
-									y = 0;
+									if (y >= Data.sh) {
+										x++;
+										y = 0;
+									}
+
+									i++;
 								}
+							}
+							
+							if (!Data.multiSelectionBackground.isEmpty() && (Data.currentLayer == Constants.LAYER_BACKGROUND || Data.currentLayer == Constants.LAYER_BOTH)) {
+								int x = 0, y = 0, i = 0;
+								while (i < Data.multiSelectionBackground.size()) {
+									Data.map.setBackgroundTile(((mx + 16) + (x * 32)) - ((Data.sw * 32) / 2), ((my + 16) + (y * 32)) - ((Data.sh * 32) / 2), Data.multiSelectionBackground.get(i));
+									
+									y++;
 
-								i++;
+									if (y >= Data.sh) {
+										x++;
+										y = 0;
+									}
+
+									i++;
+								}
+							}
+						} else {
+							if (Data.selectedTileForeground != 255) {
+								Data.map.setForegroundTile(mx, my, Data.selectedTileForeground);
+							} else if (Data.selectedTileBackground != 255) {
+								Data.map.setBackgroundTile(mx, my, Data.selectedTileBackground);
 							}
 						}
-						
-						if (!Data.multiSelectionBackground.isEmpty() && (Data.currentLayer == Constants.LAYER_BACKGROUND || Data.currentLayer == Constants.LAYER_BOTH)) {
-							int x = 0, y = 0, i = 0;
-							while (i < Data.multiSelectionBackground.size()) {
-								Data.map.setBackgroundTile(((mx + 16) + (x * 32)) - ((Data.sw * 32) / 2), ((my + 16) + (y * 32)) - ((Data.sh * 32) / 2), Data.multiSelectionBackground.get(i));
-								
-								y++;
-
-								if (y >= Data.sh) {
-									x++;
-									y = 0;
-								}
-
-								i++;
-							}
-						}
-					} else {
-						if (Data.selectedTileForeground != 255) {
-							Data.map.setForegroundTile(mx, my, Data.selectedTileForeground);
-						} else if (Data.selectedTileBackground != 255) {
-							Data.map.setBackgroundTile(mx, my, Data.selectedTileBackground);
-						} else if (Data.selectedSprite != 255) {
+					} else if (Data.editMode == Constants.EDIT_MODE_SPRITES) {
+						if (Data.selectedSprite != 255 || Data.editMode == Constants.EDIT_MODE_SPRITES) {
 							Data.map.sprites[PK2Map.MAP_WIDTH * (mx / 32) + (my / 32)] = Data.selectedSprite;
 						}
 					}
 					break;
 
 				case Data.TOOL_ERASER:
-					if (Data.selectedSprite == 255) {
+					if (Data.editMode == Constants.EDIT_MODE_TILES) {
 						Data.map.setTile(mx, my, 255);
 					} else {
 						Data.map.sprites[PK2Map.MAP_WIDTH * (mx / 32) + (my / 32)] = 255;
@@ -459,7 +487,7 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 			} else if (e.getButton() == MouseEvent.BUTTON3) {
 				Data.fileChanged = true;
 				
-				if (Data.selectedSprite == 255) {
+				if (Data.editMode == Constants.EDIT_MODE_TILES) {
 					/*
 					 * If the user doesn't have a sprite selected they can select one or multiple tiles from the level.
 					 * That is being handled in the following code.
@@ -492,8 +520,10 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 							Data.multiSelectLevel = false;
 							Data.multiSelectTiles = false;
 					}
-				} else {
-					Data.selectedSprite = Data.map.sprites[PK2Map.MAP_WIDTH * (mx / 32) + (my / 32)];
+				} else if (Data.editMode == Constants.EDIT_MODE_SPRITES) {
+					if (Data.selectedTool == Data.TOOL_BRUSH) {
+						Data.selectedSprite = Data.map.sprites[PK2Map.MAP_WIDTH * (mx / 32) + (my / 32)];
+					}
 				}
 			} else if (e.getButton() == MouseEvent.BUTTON2) {
 				//dragDistanceX = e.getX() - pkg.scrollPane2.getHorizontalScrollBar().getValue();
@@ -556,33 +586,21 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 	@Override
 	public void mouseWheelMoved(MouseWheelEvent e) {
 		if (e.isControlDown() && e.getWheelRotation() > 0) {
-			if (Data.scale - 0.02 > 0.2) {
+			if (Data.scale - 0.02 > 0.02) {
 				Data.scale -= 0.02;
 				
 				Data.mmp.resizeViewportRect();
 				Data.mmp.repaint();
 				
-				Dimension d = Data.lp.getPreferredSize();
-				
-				pkg.scrollPane2.getViewport().setViewSize(new Dimension((int) (d.width / (Data.scale * -1)), (int) (d.height / (Data.scale * -1))));
-				
-				pkg.scrollPane2.revalidate();
-				
-				Data.lp.repaint();
+				repaint();
 			}
 		} else if (e.isControlDown() && e.getWheelRotation() < 0) {
 			Data.scale += 0.02;
 			
 			Data.mmp.resizeViewportRect();
 			Data.mmp.repaint();
-			
-			Dimension d = Data.lp.getPreferredSize();
-			
-			pkg.scrollPane2.getViewport().setViewSize(new Dimension((int) (d.width * (Data.scale * -1)), (int) (d.height * (Data.scale * -1))));
-			
-			pkg.scrollPane2.revalidate();
-			
-			Data.lp.repaint();
+
+			repaint();
 		}
 	}
 }

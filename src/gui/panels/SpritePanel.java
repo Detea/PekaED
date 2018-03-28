@@ -1,7 +1,6 @@
 package gui.panels;
 
 
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -27,14 +26,18 @@ import javax.swing.table.TableCellEditor;
 import data.Constants;
 import data.Data;
 import data.Settings;
+import gui.windows.PekaEDGUI;
 import pekkakana.PK2Sprite;
 
 public class SpritePanel extends JPanel {
 
 	DefaultTableModel dfm;
 	JTable table;
+	PekaEDGUI pkg;
 	
-	public SpritePanel() {
+	public SpritePanel(PekaEDGUI pkg) {
+		this.pkg = pkg;
+		
 		dfm = new DefaultTableModel();
 		
 		table = new JTable(dfm);
@@ -113,13 +116,16 @@ public class SpritePanel extends JPanel {
 			}
 
 			@Override
-			public void mousePressed(MouseEvent arg0) {
-				if (table.getSelectedRow() != -1) {
+			public void mousePressed(MouseEvent e) {
+				if (table.getSelectedRow() != -1 && e.getClickCount() >= 2) {
 					Data.selectedTile = 255;
 					Data.selectedTileForeground = 255;
 					Data.selectedTileBackground = 255;
 					Data.multiSelectLevel = false;
 					Data.selectedSprite = table.getSelectedRow();
+					
+					pkg.setEditMode(Constants.EDIT_MODE_SPRITES);
+					Data.lp.repaint();
 				}
 			}
 

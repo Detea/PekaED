@@ -700,14 +700,18 @@ public class PK2Map {
 	}
 
 	public void setForegroundTile(int x, int y, int tile) {
-		if ((MAP_WIDTH * (x / 32) + (y / 32)) < MAP_SIZE) { // check if x & y > 0 && < width/height
-			if (tile != -256 || tile != -1) {
+		if ((MAP_WIDTH * (x / 32) + (y / 32)) >= 0 && (MAP_WIDTH * (x / 32) + (y / 32)) < MAP_SIZE) { // check if x & y > 0 && < width/height
+			if (tile != -256 || tile >= 0) {
 				layers[Constants.LAYER_FOREGROUND][MAP_WIDTH * (x / 32) + (y / 32)] = tile;
 			}
 		}
 	}
 	
 	public void setBackgroundTile(int x, int y, int tile) {
-		layers[Constants.LAYER_BACKGROUND][MAP_WIDTH * (x / 32) + (y / 32)] = tile;
+		if ((MAP_WIDTH * (x / 32) + (y / 32)) >= 0 && (MAP_WIDTH * (x / 32) + (y / 32)) < MAP_SIZE) { // check if x & y > 0 && < width/height
+			if (tile != -256 || tile >= 0) {
+				layers[Constants.LAYER_BACKGROUND][MAP_WIDTH * (x / 32) + (y / 32)] = tile;
+			}
+		}
 	}
 }

@@ -7,6 +7,9 @@ public class Constants {
 	
 	public final static int MODE_LEGACY = 0;
 	public final static int MODE_ENHANCED = 1;
+
+	public final static int EDIT_MODE_TILES = 0;
+	public final static int EDIT_MODE_SPRITES = 1;
 	
 	public final static int SPRITE_LIMIT = 100;
 	

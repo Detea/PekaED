@@ -83,6 +83,8 @@ public class PekaEDGUI {
 	
 	private SettingsDialog settingsDialog;
 	
+	private JComboBox<String> cbEditMode;
+	
 	public JScrollPane scrollPane2;
 	
 	public JToggleButton btBrush, btEraser;
@@ -111,7 +113,7 @@ public class PekaEDGUI {
 		Data.mmp = mmp;
 		
 		msp = new MapSettingsPanel();
-		sp = new SpritePanel();
+		sp = new SpritePanel(this);
 		
 		settingsDialog = new SettingsDialog();
 		
@@ -558,7 +560,6 @@ public class PekaEDGUI {
 		JToggleButton btShowSprites = new JToggleButton("Show Sprites");
 
 		btShowSprites.setSelected(true);
-		
 		btShowSprites.addActionListener(new ActionListener() {
 
 			@Override
@@ -572,38 +573,53 @@ public class PekaEDGUI {
 			
 		});
 		
-		JLabel lblMode = new JLabel("Mode: ");
-		
-		Vector<String> modeList = new Vector<String>();
-		modeList.addElement("Legacy");
-		modeList.addElement("Enhanced");
-		JComboBox<String> cbMode = new JComboBox<String>(modeList);
-		cbMode.setMaximumSize(new Dimension(100, 25));
-
-		if (Settings.startInEnhancedMode) {
-			setEditorMode(1);
-			cbMode.setSelectedIndex(1);
-		} else {
-			setEditorMode(0);
-			cbMode.setSelectedIndex(0);
-		}
-		
-		cbMode.addActionListener(new ActionListener() {
+		JToggleButton btnHighlightSprites = new JToggleButton("Highlight Sprites");
+		btnHighlightSprites.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				setEditorMode(cbMode.getSelectedIndex());
+				if (Data.showSpriteRect) {
+					Data.showSpriteRect = false;
+				} else {
+					Data.showSpriteRect = true;
+				}
+				
+				Data.lp.repaint();
+			}
+			
+		});
+		
+		Vector<String> ml = new Vector<String>();
+		ml.add("Tile Mode");
+		ml.add("Sprite Mode");
+		cbEditMode = new JComboBox<String>(ml);
+		cbEditMode.setMaximumSize(new Dimension(100, 25));
+		
+		JLabel lblEditMode = new JLabel("Mode: ");
+		
+		cbEditMode.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				if (cbEditMode.getSelectedIndex() == 0) {
+					Data.editMode = Constants.EDIT_MODE_TILES;
+				} else if (cbEditMode.getSelectedIndex() == 1) {
+					Data.editMode = Constants.EDIT_MODE_SPRITES;
+				}
+				
+				Data.lp.repaint();
 			}
 			
 		});
 		
 		toolbar.add(btShowSprites);
+		toolbar.add(btnHighlightSprites);
 		toolbar.addSeparator();
 		toolbar.add(lblLayer); 
 		toolbar.add(cbLayers);
-		toolbar.addSeparator(new Dimension(10, 0));
-		toolbar.add(lblMode);
-		toolbar.add(cbMode);
+		toolbar.addSeparator(new Dimension(5, 0));
+		toolbar.add(lblEditMode);
+		toolbar.add(cbEditMode);
 		
 		tabbedPane.addTab("Properties", msp);
 		tabbedPane.addTab("Sprites", sp);
@@ -828,9 +844,9 @@ public class PekaEDGUI {
 				Data.mmp.resizeViewportRect();
 				Data.mmp.repaint();
 				
-				Dimension d = Data.lp.getPreferredSize();
+				//Dimension d = Data.lp.getPreferredSize();
 				
-				scrollPane2.getViewport().setViewSize(new Dimension((int) (d.width * (Data.scale * -1)), (int) (d.height * (Data.scale * -1))));
+				//scrollPane2.getViewport().setViewSize(new Dimension((int) (d.width * (Data.scale * -1)), (int) (d.height * (Data.scale * -1))));
 				
 				scrollPane2.revalidate();
 				
@@ -849,9 +865,9 @@ public class PekaEDGUI {
 					Data.mmp.resizeViewportRect();
 					Data.mmp.repaint();
 					
-					Dimension d = Data.lp.getPreferredSize();
+					//Dimension d = Data.lp.getPreferredSize();
 					
-					scrollPane2.getViewport().setViewSize(new Dimension((int) (d.width / Data.scale), (int) (d.height / Data.scale)));
+					//scrollPane2.getViewport().setViewSize(new Dimension((int) (d.width / Data.scale), (int) (d.height / Data.scale)));
 					
 					scrollPane2.revalidate();
 					
@@ -866,6 +882,43 @@ public class PekaEDGUI {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				testLevel();
+			}
+			
+		});
+		
+		actionMap.put("editModeTiles", new AbstractAction() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				setEditMode(Constants.EDIT_MODE_TILES);
+			}
+			
+		});
+		
+		actionMap.put("editModeSprites", new AbstractAction() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				setEditMode(Constants.EDIT_MODE_SPRITES);
+			}
+			
+		});
+		
+		actionMap.put("showSpriteRect", new AbstractAction() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				if (Data.editMode == Constants.EDIT_MODE_SPRITES) {
+					if (Data.showSpriteRect) {
+						Data.showSpriteRect = false;
+					} else {
+						Data.showSpriteRect = true;
+					}
+					
+					btnHighlightSprites.setSelected(Data.showSpriteRect);
+					
+					Data.lp.repaint();
+				}
 			}
 			
 		});
@@ -888,6 +941,11 @@ public class PekaEDGUI {
 		keyMap.put(KeyStroke.getKeyStroke("E"), "selectBrush");
 		keyMap.put(KeyStroke.getKeyStroke("R"), "selectEraser");
 		keyMap.put(KeyStroke.getKeyStroke("S"), "showSprites");
+
+		keyMap.put(KeyStroke.getKeyStroke("H"), "showSpriteRect");
+		
+		keyMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_1, Event.CTRL_MASK), "editModeTiles");
+		keyMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_2, Event.CTRL_MASK), "editModeSprites");
 		
 		SwingUtilities.replaceUIActionMap((JComponent) frame.getContentPane(), actionMap);
 		SwingUtilities.replaceUIInputMap((JComponent) frame.getContentPane(),  JComponent.WHEN_IN_FOCUSED_WINDOW, keyMap);
@@ -1335,6 +1393,16 @@ public class PekaEDGUI {
 			frame.setTitle(Data.currentFile.getName() + " - PekaED");
 		} else {
 			frame.setTitle("Untitled - PekaED");
+		}
+	}
+
+	public void setEditMode(int editMode) {
+		Data.editMode = editMode;
+		
+		if (editMode == Constants.EDIT_MODE_TILES) {
+			cbEditMode.setSelectedIndex(0);
+		} else if (editMode == Constants.EDIT_MODE_SPRITES) {
+			cbEditMode.setSelectedIndex(1);
 		}
 	}
 }

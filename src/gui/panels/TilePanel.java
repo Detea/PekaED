@@ -185,8 +185,8 @@ public class TilePanel extends JPanel implements MouseListener, MouseMotionListe
 				Data.selectedTileForeground = 255;
 				Data.selectedTileBackground = y * (320 / 32) + x;
 			} else {
-				Data.selectedTileForeground = y * (320 / 32) + x;
-				Data.selectedTileBackground = y * (320 / 32) + x;
+				Data.selectedTileForeground = y * (320 / 32) + x; // Only foreground?
+				Data.selectedTileBackground = 255;
 			}
 			
 			Data.selectedSprite = 255;
@@ -195,6 +195,8 @@ public class TilePanel extends JPanel implements MouseListener, MouseMotionListe
 			
 			x *= 32;
 			y *= 32;
+			
+			pk.setEditMode(Constants.EDIT_MODE_TILES);
 			
 			repaint();
 		}
