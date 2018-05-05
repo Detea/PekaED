@@ -68,6 +68,7 @@ import gui.panels.MapSettingsPanel;
 import gui.panels.MiniMapPanel;
 import gui.panels.SpritePanel;
 import gui.panels.TilePanel;
+import gui.windows.palettewindow.PaletteFrame;
 import pekkakana.PK2Map;
 import pekkakana.PK2Sprite;
 
@@ -286,6 +287,7 @@ public class PekaEDGUI {
 		
 		JMenu mExtras = new JMenu("Extras");
 		JMenuItem mieSettings = new JMenuItem("Settings");
+		JMenuItem miePalette = new JMenuItem("Palette");
 		JMenuItem mieAbout = new JMenuItem("About");
 		JMenuItem mieHelp = new JMenuItem("Help");
 		
@@ -294,6 +296,15 @@ public class PekaEDGUI {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				settingsDialog.showDialog();
+			}
+		
+		});
+		
+		miePalette.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				new PaletteFrame();
 			}
 		
 		});
@@ -327,6 +338,7 @@ public class PekaEDGUI {
 		});
 		
 		mExtras.add(mieSettings);
+		mExtras.add(miePalette);
 		mExtras.add(mieAbout);
 		mExtras.add(mieHelp);
 		
@@ -1196,8 +1208,8 @@ public class PekaEDGUI {
 		
 		Data.currentFile = new File(file);
 		
-		tp.setTileset(Data.map.getTileset());
 		lp.setMap();
+		tp.setTileset(Data.map.getTileset());
 		msp.setMap();
 		sp.setMap();
 		
@@ -1210,7 +1222,7 @@ public class PekaEDGUI {
 		scrollPane2.getHorizontalScrollBar().setValue((r.x - (r.width / 2)) * 32);
 		
 		Data.fileChanged = false;
-
+		
 		setFrameTitle();
 	}
 	
@@ -1249,8 +1261,8 @@ public class PekaEDGUI {
 		msp.setMap();
 		sp.setMap();
 		
-		tp.setTileset(Data.map.getTileset());
 		lp.setMap();
+		tp.setTileset(Data.map.getTileset());
 		
 		lp.repaint();
 		mmp.repaint();

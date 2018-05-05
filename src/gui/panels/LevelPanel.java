@@ -10,7 +10,9 @@ import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferInt;
+import java.awt.image.IndexColorModel;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -57,8 +59,8 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 		
 		setPreferredSize(new Dimension(PK2Map.MAP_WIDTH * 32, PK2Map.MAP_HEIGHT * 32));
 		
-		setTileset(Settings.DEFAULT_TILESET);
 		setBackground(Settings.DEFAULT_BACKGROUND);
+		setTileset(Settings.DEFAULT_TILESET);
 		
 		buffer = new BufferedImage(PK2Map.MAP_WIDTH * 32, PK2Map.MAP_HEIGHT * 32, BufferedImage.TYPE_INT_ARGB);
 		gg = (Graphics2D) buffer.getGraphics();
@@ -101,20 +103,6 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 				}
 			}
 			
-			if (Data.currentLayer == Constants.LAYER_FOREGROUND || Data.currentLayer == Constants.LAYER_BOTH) {
-				for (int i = viewX; i < (viewX + viewW) + 2; i++) {
-					for (int j = viewY; j < (viewY + viewH) + 2; j++) {
-						if (Data.currentLayer != Constants.LAYER_BOTH) {
-							if (Data.map.getTileAt(i * 32, j * 32, Constants.LAYER_BACKGROUND) != 255) {
-								g2d.drawImage(inactiveTiles.get(Data.map.getTileAt(i * 32, j * 32, Constants.LAYER_BACKGROUND)), i * 32, j * 32, null);
-							}
-						}
-						
-						drawTile(g2d, i * 32, j * 32, Data.map.getTileAt((i * 32), (j * 32), Constants.LAYER_FOREGROUND));
-					}
-				}
-			}
-			
 			if (Data.showSprites) {
 				for (int i = viewX; i < (viewX + viewW) + 16; i++) {
 					for (int j = viewY; j < (viewY + viewH) + 16; j++) { // 16 is an arbitrary value. This should be the size of the biggest sprites divided by 32
@@ -128,6 +116,20 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 								}
 							}
 						}
+					}
+				}
+			}
+			
+			if (Data.currentLayer == Constants.LAYER_FOREGROUND || Data.currentLayer == Constants.LAYER_BOTH) {
+				for (int i = viewX; i < (viewX + viewW) + 2; i++) {
+					for (int j = viewY; j < (viewY + viewH) + 2; j++) {
+						if (Data.currentLayer != Constants.LAYER_BOTH) {
+							if (Data.map.getTileAt(i * 32, j * 32, Constants.LAYER_BACKGROUND) != 255) {
+								g2d.drawImage(inactiveTiles.get(Data.map.getTileAt(i * 32, j * 32, Constants.LAYER_BACKGROUND)), i * 32, j * 32, null);
+							}
+						}
+						
+						drawTile(g2d, i * 32, j * 32, Data.map.getTileAt((i * 32), (j * 32), Constants.LAYER_FOREGROUND));
 					}
 				}
 			}
@@ -225,19 +227,49 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 			try {
 				tileset = ImageIO.read(new File(Settings.TILES_PATH + s));
 				
-				BufferedImage result = new BufferedImage(tileset.getWidth(), tileset.getHeight(), BufferedImage.TYPE_INT_ARGB);
-				 
-			    // make color transparent
-			    int oldRGB = new Color(148, 209, 222).getRGB();
-			 
-			    for (int i = 0; i < tileset.getWidth(); i++) {
-			    	for (int j = 0; j < tileset.getHeight(); j++) {
-			    		if (tileset.getRGB(i, j) != oldRGB) {
-			    			result.setRGB(i, j, tileset.getRGB(i, j));
-			    		}
-			    	}
+				byte[] rs = new byte[256];
+				byte[] gs = new byte[256];
+				byte[] bs = new byte[256];
+				
+				Data.bgPalette.getReds(rs);
+				Data.bgPalette.getGreens(gs);
+				Data.bgPalette.getBlues(bs);
+				
+				IndexColorModel icm = new IndexColorModel(8, 256, rs, gs, bs);
+				
+				BufferedImage result = new BufferedImage(tileset.getWidth(), tileset.getHeight(), BufferedImage.TYPE_BYTE_INDEXED, icm);
+	
+				byte[] tss = ((DataBufferByte) (tileset.getRaster().getDataBuffer())).getData();
+			    byte[] rd = ((DataBufferByte) (result.getRaster().getDataBuffer())).getData();
+				
+			    for (int i = 0; i < tss.length; i++) {
+			    	rd[i] = tss[i];
 			    }
 				
+			    tileset = result;
+			    
+			    result = new BufferedImage(tileset.getWidth(), tileset.getHeight(), BufferedImage.TYPE_INT_ARGB);
+			    
+			    int oldRGB = new Color(144, 200, 226).getRGB();
+			    int oldRGB2 = new Color(101, 168, 255).getRGB();
+			    int oldRGB3 = new Color(155, 232, 224).getRGB();
+			    int oldRGB4 = new Color(133, 175, 230).getRGB();
+			    int oldRGB5 = new Color(101, 166, 255).getRGB();
+			    int oldRGB6 = new Color(108, 168, 255).getRGB();
+			 
+			    int[] data = ((DataBufferInt) result.getRaster().getDataBuffer()).getData();
+			    
+			    for (int i = 0; i < data.length; i++) {
+			    	if (tileset.getColorModel().getRGB(tss[i]) != oldRGB 
+			    			&& tileset.getColorModel().getRGB(tss[i]) != oldRGB2 
+			    			&& tileset.getColorModel().getRGB(tss[i]) != oldRGB3
+			    			&& tileset.getColorModel().getRGB(tss[i]) != oldRGB4
+			    			&& tileset.getColorModel().getRGB(tss[i]) != oldRGB5
+			    		&& tileset.getColorModel().getRGB(tss[i]) != oldRGB6) {
+			    		data[i] = tileset.getColorModel().getRGB(tss[i]);
+			    	}
+			    }
+			    
 			    tileset = result;
 			    
 			    BufferedImage ts = new BufferedImage(tileset.getWidth(), tileset.getHeight(), BufferedImage.TYPE_INT_ARGB);
@@ -275,6 +307,9 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 		if (!Settings.BASE_PATH.isEmpty()) {
 			try {
 				background = ImageIO.read(new File(Settings.SCENERY_PATH + str));
+				
+				Data.bgPalette = (IndexColorModel) background.getColorModel();
+				Data.bgImg = background;
 			} catch (IOException e) {
 				JOptionPane.showMessageDialog(this, "Could'nt read background file.\n'" + str + "'", "Error", JOptionPane.OK_OPTION);
 			}
@@ -282,8 +317,8 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 	}
 	
 	public void setMap() {
-		setTileset(Data.map.getTileset());
 		setBackground(Data.map.getBackground());
+		setTileset(Data.map.getTileset());
 	}
 	
 	@Override
