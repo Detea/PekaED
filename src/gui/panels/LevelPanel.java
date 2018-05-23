@@ -628,6 +628,7 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 
 	@Override
 	public void mouseEntered(MouseEvent arg0) {
+		pkg.scrollPane2.requestFocus();
 	}
 
 	@Override

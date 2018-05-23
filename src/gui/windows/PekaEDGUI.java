@@ -12,6 +12,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
@@ -47,6 +49,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
@@ -626,6 +629,18 @@ public class PekaEDGUI {
 		toolbar.add(lblEditMode);
 		toolbar.add(cbEditMode);
 		
+		btnHighlightSprites.setFocusable(false);
+		cbEditMode.setFocusable(false);
+		bNewMap.setFocusable(false);
+		bLoadMap.setFocusable(false);
+		bSaveAsMap.setFocusable(false);
+		bTestLevel.setFocusable(false);
+		btEraser.setFocusable(false);
+		cbLayers.setFocusable(false);
+		btShowSprites.setFocusable(false);
+		bSaveMap.setFocusable(false);
+		btBrush.setFocusable(false);
+		
 		tabbedPane.addTab("Properties", msp);
 		tabbedPane.addTab("Sprites", sp);
 		tabbedPane.addTab("Episode", ep);
@@ -639,10 +654,23 @@ public class PekaEDGUI {
 		scrollPane2 = new JScrollPane(Data.lp, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, scrollPane1, scrollPane2);
 		
-		//scrollPane2.getViewport().setScrollMode(JViewport.SIMPLE_SCROLL_MODE);
 		scrollPane2.getVerticalScrollBar().setUnitIncrement(32);
 		scrollPane2.getHorizontalScrollBar().setUnitIncrement(32);
 		
+		JScrollBar sb = scrollPane2.getVerticalScrollBar();
+		sb.setUnitIncrement(32);
+		
+		InputMap im = sb.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+		im.put(KeyStroke.getKeyStroke("DOWN"), "positiveUnitIncrement");
+		im.put(KeyStroke.getKeyStroke("UP"), "negativeUnitIncrement");
+		
+		JScrollBar sbh = scrollPane2.getHorizontalScrollBar();
+		InputMap imh = sbh.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+		imh.put(KeyStroke.getKeyStroke("RIGHT"), "positiveUnitIncrement");
+		imh.put(KeyStroke.getKeyStroke("LEFT"), "negativeUnitIncrement");
+		
+		//scrollPane2.getViewport().setScrollMode(JViewport.SIMPLE_SCROLL_MODE);
+	
 		splitPane.setDividerLocation(320);
 
 		GridBagLayout gbl = new GridBagLayout();
@@ -949,43 +977,6 @@ public class PekaEDGUI {
 			}
 			
 		});
-		
-		//scrollPane2
-		actionMap.put("scrollLeft", new AbstractAction() {
-
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				scrollPane2.getHorizontalScrollBar().setValue(scrollPane2.getHorizontalScrollBar().getValue() - 32);
-			}
-			
-		});
-		
-		actionMap.put("scrollRight", new AbstractAction() {
-
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				scrollPane2.getHorizontalScrollBar().setValue(scrollPane2.getHorizontalScrollBar().getValue() + 32);
-			}
-			
-		});
-		
-		actionMap.put("scrollUp", new AbstractAction() {
-
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				scrollPane2.getVerticalScrollBar().setValue(scrollPane2.getVerticalScrollBar().getValue() - 32);
-			}
-			
-		});
-		
-		actionMap.put("scrollDown", new AbstractAction() {
-
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				scrollPane2.getVerticalScrollBar().setValue(scrollPane2.getVerticalScrollBar().getValue() + 32);
-			}
-			
-		});
 
 		InputMap keyMap = new ComponentInputMap((JComponent) frame.getContentPane());
 		keyMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_S, Event.CTRL_MASK), "saveAction");
@@ -1007,11 +998,6 @@ public class PekaEDGUI {
 		keyMap.put(KeyStroke.getKeyStroke("S"), "showSprites");
 
 		keyMap.put(KeyStroke.getKeyStroke("H"), "showSpriteRect");
-		
-		keyMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, Event.CTRL_MASK), "scrollLeft");
-		keyMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, Event.CTRL_MASK), "scrollRight");
-		keyMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, Event.CTRL_MASK), "scrollUp");
-		keyMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, Event.CTRL_MASK), "scrollDown");
 		
 		keyMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_1, Event.CTRL_MASK), "editModeTiles");
 		keyMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_2, Event.CTRL_MASK), "editModeSprites");
