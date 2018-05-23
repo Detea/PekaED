@@ -1,7 +1,8 @@
 package pekkakana;
 import java.awt.Color;
-import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
+import java.awt.image.IndexColorModel;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -11,6 +12,7 @@ import java.util.HashMap;
 
 import javax.imageio.ImageIO;
 
+import data.Data;
 import data.Settings;
 
 public class PK2Sprite {
@@ -171,53 +173,64 @@ public class PK2Sprite {
 	
 	private void loadBufferedImage() {
 		try {
-			BufferedImage tilesheet = ImageIO.read(new File(Settings.SPRITE_PATH + cleanString(imageFile)));
+			BufferedImage image = ImageIO.read(new File(Settings.SPRITE_PATH + cleanString(imageFile)));
 			
-			try {
-				image = tilesheet.getSubimage(frameX, frameY, frameWidth, frameHeight);
-			} catch (Exception ex) {
-				System.out.println(filename + " - " + frameX + ", " + frameY + " - " + frameWidth + " - " + frameHeight);
-			}
+			//image = image.getSubimage(frameX, frameY, frameWidth, frameHeight);
 				
-			BufferedImage result = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
-			 
-		    // make color transparent
-		    int oldRGB = new Color(148, 209, 222).getRGB();
-		    int oldRGB2 = new Color(128, 205, 214).getRGB();
-		    int oldRGB3 = new Color(155, 232, 224).getRGB();
-		    int oldRGB4 = new Color(114, 200, 228).getRGB();
+			byte[] rs = new byte[256];
+			byte[] gs = new byte[256];
+			byte[] bs = new byte[256];
+			
+			Data.bgPalette.getReds(rs);
+			Data.bgPalette.getGreens(gs);
+			Data.bgPalette.getBlues(bs);
+			
+			IndexColorModel icm = new IndexColorModel(8, 256, rs, gs, bs);
+			
+			BufferedImage result = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_BYTE_INDEXED, icm);
+			
+			byte[] ts = ((DataBufferByte) (image.getRaster().getDataBuffer())).getData();
+		    byte[] rd = ((DataBufferByte) (result.getRaster().getDataBuffer())).getData();
+			
+		    for (int i = 0; i < ts.length; i++) {
+		    	rd[i] = ts[i];
+		    }
 		 
+		    byte[] data = null;
+		    
+		    if (color != 255) {
+		    	data = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
+		    	
+		    	int col;
+		    	
+		    	for (int i = 0; i < image.getWidth(); i++) {
+		    		for (int j = 0; j < image.getHeight(); j++) {
+		    			if ((col = data[i + j * image.getWidth()]) != 255) {
+		    				col &= 0xFF;
+		    				
+		    				if (image.getRGB(i, j) != image.getColorModel().getRGB(255)) {
+			    				col %= 32;
+			    				col += color;
+			    				
+			    				data[i + j * image.getWidth()] = (byte) col;
+		    				}
+		    			}
+		    		}
+		    	}
+		    }
+		    
+		    result = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
+		    
 		    for (int i = 0; i < image.getWidth(); i++) {
 		    	for (int j = 0; j < image.getHeight(); j++) {
-		    		if (image.getRGB(i, j) != oldRGB && image.getRGB(i, j) != oldRGB2 && image.getRGB(i, j) != oldRGB3 && image.getRGB(i, j) != oldRGB4) {
+		    		if (image.getRGB(i, j) != image.getColorModel().getRGB(255)) {
 		    			result.setRGB(i, j, image.getRGB(i, j));
 		    		}
 		    	}
 		    }
 		    
-		   if (color != 255) {
-			  /*
-			   * if (this->vari != VARI_NORMAALI){ //Change sprite colors
-					PisteDraw2_Image_GetSize(bufferi,w,h);
-			
-					PisteDraw2_DrawImage_Start(bufferi,*&buffer,leveys);
-			
-					for (x=0;x<w;x++)
-						for (y=0;y<h;y++)
-							if ((vari = buffer[x+y*leveys]) != 255){
-								vari %= 32;
-								vari += this->vari;
-								buffer[x+y*leveys] = vari;
-							}
-			
-					PisteDraw2_DrawImage_End(bufferi);
-				}
-				
-				TODO Tint sprite
-			   */
-		   }
 		    
-		    image = result;
+		    this.image = result.getSubimage(frameX, frameY, frameWidth, frameHeight);
 		} catch (IOException e) {
 			//e.printStackTrace();
 		}

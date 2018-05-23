@@ -117,7 +117,7 @@ public class SpritePanel extends JPanel {
 
 			@Override
 			public void mousePressed(MouseEvent e) {
-				if (table.getSelectedRow() != -1 && e.getClickCount() >= 2) {
+				if (table.getSelectedRow() != -1) {
 					Data.selectedTile = 255;
 					Data.selectedTileForeground = 255;
 					Data.selectedTileBackground = 255;

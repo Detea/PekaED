@@ -68,6 +68,7 @@ import gui.panels.MapSettingsPanel;
 import gui.panels.MiniMapPanel;
 import gui.panels.SpritePanel;
 import gui.panels.TilePanel;
+import gui.windows.palettewindow.PaletteFrame;
 import pekkakana.PK2Map;
 import pekkakana.PK2Sprite;
 
@@ -286,6 +287,7 @@ public class PekaEDGUI {
 		
 		JMenu mExtras = new JMenu("Extras");
 		JMenuItem mieSettings = new JMenuItem("Settings");
+		JMenuItem miePalette = new JMenuItem("Palette");
 		JMenuItem mieAbout = new JMenuItem("About");
 		JMenuItem mieHelp = new JMenuItem("Help");
 		
@@ -294,6 +296,15 @@ public class PekaEDGUI {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				settingsDialog.showDialog();
+			}
+		
+		});
+		
+		miePalette.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				new PaletteFrame();
 			}
 		
 		});
@@ -327,6 +338,7 @@ public class PekaEDGUI {
 		});
 		
 		mExtras.add(mieSettings);
+		mExtras.add(miePalette);
 		mExtras.add(mieAbout);
 		mExtras.add(mieHelp);
 		
@@ -341,7 +353,7 @@ public class PekaEDGUI {
 		JButton bSaveMap = new JButton();
 		JButton bSaveAsMap = new JButton();
         JButton bTestLevel = new JButton();
-		
+        
 		bNewMap.setToolTipText("New Level (Ctrl+N)");
 		bLoadMap.setToolTipText("Load Level (Ctrl+O)");
 		bSaveMap.setToolTipText("Save Level (Ctrl+S)");
@@ -923,6 +935,43 @@ public class PekaEDGUI {
 			
 		});
 		
+		//scrollPane2
+		actionMap.put("scrollLeft", new AbstractAction() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				scrollPane2.getHorizontalScrollBar().setValue(scrollPane2.getHorizontalScrollBar().getValue() - 32);
+			}
+			
+		});
+		
+		actionMap.put("scrollRight", new AbstractAction() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				scrollPane2.getHorizontalScrollBar().setValue(scrollPane2.getHorizontalScrollBar().getValue() + 32);
+			}
+			
+		});
+		
+		actionMap.put("scrollUp", new AbstractAction() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				scrollPane2.getVerticalScrollBar().setValue(scrollPane2.getVerticalScrollBar().getValue() - 32);
+			}
+			
+		});
+		
+		actionMap.put("scrollDown", new AbstractAction() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				scrollPane2.getVerticalScrollBar().setValue(scrollPane2.getVerticalScrollBar().getValue() + 32);
+			}
+			
+		});
+
 		InputMap keyMap = new ComponentInputMap((JComponent) frame.getContentPane());
 		keyMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_S, Event.CTRL_MASK), "saveAction");
 		keyMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_O, Event.CTRL_MASK), "loadAction");
@@ -943,6 +992,11 @@ public class PekaEDGUI {
 		keyMap.put(KeyStroke.getKeyStroke("S"), "showSprites");
 
 		keyMap.put(KeyStroke.getKeyStroke("H"), "showSpriteRect");
+		
+		keyMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0), "scrollLeft");
+		keyMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0), "scrollRight");
+		keyMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), "scrollUp");
+		keyMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), "scrollDown");
 		
 		keyMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_1, Event.CTRL_MASK), "editModeTiles");
 		keyMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_2, Event.CTRL_MASK), "editModeSprites");
@@ -1111,6 +1165,9 @@ public class PekaEDGUI {
 			newLevel();
 		}
 		
+		frame.setFocusable(true);
+		frame.requestFocus();
+		
 		frame.setIconImage(img);
 		
 		frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -1196,8 +1253,8 @@ public class PekaEDGUI {
 		
 		Data.currentFile = new File(file);
 		
-		tp.setTileset(Data.map.getTileset());
 		lp.setMap();
+		tp.setTileset(Data.map.getTileset());
 		msp.setMap();
 		sp.setMap();
 		
@@ -1206,11 +1263,12 @@ public class PekaEDGUI {
 		
 		Rectangle r = Data.map.calculateUsedArea(Data.map.layers[Constants.LAYER_BACKGROUND], "background2");
 		
+		// @Todo: Fix this, why does this not work?
 		scrollPane2.getVerticalScrollBar().setValue((r.y - (r.height / 2)) * 32);
 		scrollPane2.getHorizontalScrollBar().setValue((r.x - (r.width / 2)) * 32);
 		
 		Data.fileChanged = false;
-
+		
 		setFrameTitle();
 	}
 	
@@ -1249,8 +1307,8 @@ public class PekaEDGUI {
 		msp.setMap();
 		sp.setMap();
 		
-		tp.setTileset(Data.map.getTileset());
 		lp.setMap();
+		tp.setTileset(Data.map.getTileset());
 		
 		lp.repaint();
 		mmp.repaint();

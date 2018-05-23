@@ -6,6 +6,9 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
+import java.awt.image.DataBufferInt;
+import java.awt.image.IndexColorModel;
 import java.io.File;
 import java.io.IOException;
 
@@ -63,21 +66,41 @@ public class TilePanel extends JPanel implements MouseListener, MouseMotionListe
 		if (!Settings.BASE_PATH.isEmpty()) {
 			try {
 				tileset = ImageIO.read(new File(Settings.TILES_PATH + str));
-				BufferedImage result = new BufferedImage(tileset.getWidth(), tileset.getHeight(), BufferedImage.TYPE_INT_ARGB);
-				 
-			    // make color transparent
-			    int oldRGB = new Color(148, 209, 222).getRGB();
-			 
-			    for (int i = 0; i < tileset.getWidth(); i++) {
-			    	for (int j = 0; j < tileset.getHeight(); j++) {
-			    		if (tileset.getRGB(i, j) != oldRGB) {
-			    			result.setRGB(i, j, tileset.getRGB(i, j));
-			    		}
+				
+				byte[] rs = new byte[256];
+				byte[] gs = new byte[256];
+				byte[] bs = new byte[256];
+				
+				Data.bgPalette.getReds(rs);
+				Data.bgPalette.getGreens(gs);
+				Data.bgPalette.getBlues(bs);
+				
+				IndexColorModel icm = new IndexColorModel(8, 256, rs, gs, bs);
+				
+				BufferedImage result = new BufferedImage(tileset.getWidth(), tileset.getHeight(), BufferedImage.TYPE_BYTE_INDEXED, icm);
+	
+				byte[] ts = ((DataBufferByte) (tileset.getRaster().getDataBuffer())).getData();
+			    byte[] rd = ((DataBufferByte) (result.getRaster().getDataBuffer())).getData();
+				
+			    for (int i = 0; i < ts.length; i++) {
+			    	rd[i] = ts[i];
+			    }
+			    
+			    tileset = result; // temporarily storing the image
+				
+			    result = new BufferedImage(tileset.getWidth(), tileset.getHeight(), BufferedImage.TYPE_INT_ARGB);
+
+			    int[] data = ((DataBufferInt) result.getRaster().getDataBuffer()).getData();
+			    
+			    for (int i = 0; i < data.length; i++) {
+			    	if (tileset.getColorModel().getRGB(ts[i]) != tileset.getColorModel().getRGB(255)) {
+			    		data[i] = tileset.getColorModel().getRGB(ts[i]);
 			    	}
 			    }
 			    
+			    tileset = new BufferedImage(tileset.getWidth(), tileset.getHeight(), BufferedImage.TYPE_INT_ARGB);
 			    tileset = result;
-				
+			    
 				setPreferredSize(new Dimension(tileset.getWidth(), tileset.getHeight()));
 				
 				x = 0;
@@ -172,6 +195,7 @@ public class TilePanel extends JPanel implements MouseListener, MouseMotionListe
 			Data.multiSelectionForeground.clear();
 			Data.multiSelectionBackground.clear();
 			Data.multiSelectTiles = false;
+			Data.multiSelectLevel = false;
 			
 			Data.sx = x;
 			Data.sy = y;

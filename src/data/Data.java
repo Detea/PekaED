@@ -1,9 +1,9 @@
 package data;
 
+import java.awt.image.BufferedImage;
+import java.awt.image.IndexColorModel;
 import java.io.File;
 import java.util.ArrayList;
-
-import javax.swing.JScrollPane;
 
 import gui.panels.LevelPanel;
 import gui.panels.MiniMapPanel;
@@ -36,7 +36,7 @@ public class Data {
 	public static boolean multiSelectTiles = false;
 	public static boolean dragging = false;
 	
-	public static boolean showSpriteRect = true;
+	public static boolean showSpriteRect = false;
 	
 	public static ArrayList<Integer> multiSelectionForeground = new ArrayList<Integer>();
 	public static ArrayList<Integer> multiSelectionBackground = new ArrayList<Integer>();
@@ -58,4 +58,7 @@ public class Data {
 	
 	public static boolean fileChanged = false, episodeChanged = false;
 	public static String currentEpisodeName;
+	
+	public static IndexColorModel bgPalette;
+	public static BufferedImage bgImg;
 }
