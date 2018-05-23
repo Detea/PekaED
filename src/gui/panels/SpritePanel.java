@@ -176,6 +176,8 @@ public class SpritePanel extends JPanel {
 					}
 					
 					Data.fileChanged = true;
+					
+					Data.lp.repaint();
 				}
 			}
 			
@@ -236,7 +238,9 @@ public class SpritePanel extends JPanel {
 					
 					table.setRowSelectionInterval(dfm.getRowCount() - 1, dfm.getRowCount() - 1);
 					
-					Data.selectedSprite = table.getSelectedRow();
+					pkg.setEditMode(Constants.EDIT_MODE_SPRITES);
+					
+					Data.selectedSprite = dfm.getRowCount() - 1;
 					Data.selectedTile = 255;
 					Data.selectedTileForeground = 255;
 					Data.selectedTileBackground = 255;
