@@ -268,7 +268,7 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 			    int[] data = ((DataBufferInt) result.getRaster().getDataBuffer()).getData();
 			    
 			    for (int i = 0; i < data.length; i++) {
-			    	if (tileset.getColorModel().getRGB(tss[i]) != tileset.getColorModel().getRGB(255)) {
+			    	if ((tss[i] & 0xFF) != 255) {
 			    		data[i] = tileset.getColorModel().getRGB(tss[i]);
 			    	}
 			    }

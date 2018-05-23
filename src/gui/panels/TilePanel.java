@@ -93,7 +93,7 @@ public class TilePanel extends JPanel implements MouseListener, MouseMotionListe
 			    int[] data = ((DataBufferInt) result.getRaster().getDataBuffer()).getData();
 			    
 			    for (int i = 0; i < data.length; i++) {
-			    	if (tileset.getColorModel().getRGB(ts[i]) != tileset.getColorModel().getRGB(255)) {
+			    	if ((ts[i] & 0xFF) != 255) {
 			    		data[i] = tileset.getColorModel().getRGB(ts[i]);
 			    	}
 			    }
