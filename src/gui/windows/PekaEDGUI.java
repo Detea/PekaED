@@ -14,6 +14,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
+import java.awt.event.WindowFocusListener;
 import java.awt.event.WindowListener;
 import java.io.BufferedWriter;
 import java.io.DataInputStream;
@@ -68,7 +69,6 @@ import gui.panels.MapSettingsPanel;
 import gui.panels.MiniMapPanel;
 import gui.panels.SpritePanel;
 import gui.panels.TilePanel;
-import gui.windows.palettewindow.PaletteFrame;
 import pekkakana.PK2Map;
 import pekkakana.PK2Sprite;
 
@@ -92,6 +92,9 @@ public class PekaEDGUI {
 	
 	private MiniMapPanel mmp;
 	
+	/**
+	 * @wbp.parser.entryPoint
+	 */
 	public void setup() {
 		frame = new JFrame("PekaED");
 		
@@ -296,15 +299,6 @@ public class PekaEDGUI {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				settingsDialog.showDialog();
-			}
-		
-		});
-		
-		miePalette.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				new PaletteFrame();
 			}
 		
 		});
@@ -640,8 +634,10 @@ public class PekaEDGUI {
 		tabbedPane.setMinimumSize(new Dimension(280, 400));
 		tabbedPane.setPreferredSize(new Dimension(280, 400));
 		
+		Data.lp = lp;
+		
 		JScrollPane scrollPane1 = new JScrollPane(tp, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		scrollPane2 = new JScrollPane(lp, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		scrollPane2 = new JScrollPane(Data.lp, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, scrollPane1, scrollPane2);
 		
 		//scrollPane2.getViewport().setScrollMode(JViewport.SIMPLE_SCROLL_MODE);
@@ -669,9 +665,28 @@ public class PekaEDGUI {
 		c.weighty = 0.5;
 		gbl.setConstraints(mmp, c);
 		
-		frame.add(toolbar, BorderLayout.NORTH);
-		frame.add(splitPane, BorderLayout.CENTER);
-		frame.add(sidePanel, BorderLayout.EAST);
+		frame.getContentPane().add(toolbar, BorderLayout.NORTH);
+		
+		JButton btnZoomOut = new JButton("zoom out");
+		btnZoomOut.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				if (Data.scale - 0.1 > 0.1) {
+					Data.scale -= 0.1;
+					
+					Data.mmp.resizeViewportRect();
+					Data.mmp.repaint();
+					
+					Data.lp.setPreferredSize(new Dimension((int) ((PK2Map.MAP_WIDTH * 32) / Data.scale), (int) ((PK2Map.MAP_HEIGHT * 32) / Data.scale)));
+					Data.lp.revalidate();
+					Data.lp.repaint();
+					
+					scrollPane1.updateUI();
+				}
+			}
+		});
+		toolbar.add(btnZoomOut);
+		frame.getContentPane().add(splitPane, BorderLayout.CENTER);
+		frame.getContentPane().add(sidePanel, BorderLayout.EAST);
 		
 		ActionMap actionMap = new ActionMapUIResource();
 		actionMap.put("saveAction", new AbstractAction() {
@@ -993,10 +1008,10 @@ public class PekaEDGUI {
 
 		keyMap.put(KeyStroke.getKeyStroke("H"), "showSpriteRect");
 		
-		keyMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0), "scrollLeft");
-		keyMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0), "scrollRight");
-		keyMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), "scrollUp");
-		keyMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), "scrollDown");
+		keyMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, Event.CTRL_MASK), "scrollLeft");
+		keyMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, Event.CTRL_MASK), "scrollRight");
+		keyMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, Event.CTRL_MASK), "scrollUp");
+		keyMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, Event.CTRL_MASK), "scrollDown");
 		
 		keyMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_1, Event.CTRL_MASK), "editModeTiles");
 		keyMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_2, Event.CTRL_MASK), "editModeSprites");
@@ -1122,8 +1137,7 @@ public class PekaEDGUI {
 			}
 			
 		});
-		
-		Data.lp = lp;
+	
 		Data.tp = tp;
 		
 		Image img = null;
@@ -1165,12 +1179,8 @@ public class PekaEDGUI {
 			newLevel();
 		}
 		
-		frame.setFocusable(true);
-		frame.requestFocus();
-		
 		frame.setIconImage(img);
 		
-		frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
 		frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		
 		frame.pack();
