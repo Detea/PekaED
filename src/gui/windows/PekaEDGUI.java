@@ -14,7 +14,6 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowFocusListener;
 import java.awt.event.WindowListener;
 import java.io.BufferedWriter;
 import java.io.DataInputStream;
@@ -28,6 +27,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Vector;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
@@ -290,7 +291,6 @@ public class PekaEDGUI {
 		
 		JMenu mExtras = new JMenu("Extras");
 		JMenuItem mieSettings = new JMenuItem("Settings");
-		JMenuItem miePalette = new JMenuItem("Palette");
 		JMenuItem mieAbout = new JMenuItem("About");
 		JMenuItem mieHelp = new JMenuItem("Help");
 		
@@ -332,7 +332,6 @@ public class PekaEDGUI {
 		});
 		
 		mExtras.add(mieSettings);
-		mExtras.add(miePalette);
 		mExtras.add(mieAbout);
 		mExtras.add(mieHelp);
 		
@@ -667,6 +666,7 @@ public class PekaEDGUI {
 		
 		frame.getContentPane().add(toolbar, BorderLayout.NORTH);
 		
+		/*
 		JButton btnZoomOut = new JButton("zoom out");
 		btnZoomOut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -683,8 +683,8 @@ public class PekaEDGUI {
 					scrollPane1.updateUI();
 				}
 			}
-		});
-		toolbar.add(btnZoomOut);
+		});*/
+		//toolbar.add(btnZoomOut);
 		frame.getContentPane().add(splitPane, BorderLayout.CENTER);
 		frame.getContentPane().add(sidePanel, BorderLayout.EAST);
 		
@@ -1471,6 +1471,23 @@ public class PekaEDGUI {
 			cbEditMode.setSelectedIndex(0);
 		} else if (editMode == Constants.EDIT_MODE_SPRITES) {
 			cbEditMode.setSelectedIndex(1);
+		}
+	}
+	
+	private void exportEpisode(File target) {
+		try {
+			ZipOutputStream zou = new ZipOutputStream(new FileOutputStream(target));
+			
+			zou.putNextEntry(new ZipEntry("episodes/"));
+			zou.putNextEntry(new ZipEntry("episodes/" + Data.currentEpisodeName + "/"));
+			
+			for (File f : Data.episodeFiles) {
+				zou.putNextEntry(new ZipEntry("episodes/" + Data.currentEpisodeName + "/" + f));
+			}
+		} catch (IOException e) {
+			JOptionPane.showMessageDialog(null, "Can't create file '" + target.getName() + "'!", "Error", JOptionPane.ERROR_MESSAGE);
+			
+			e.printStackTrace();
 		}
 	}
 }
