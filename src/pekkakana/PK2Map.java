@@ -7,6 +7,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
 
 import javax.swing.JOptionPane;
@@ -92,6 +93,40 @@ public class PK2Map {
 		x = 0;
 		y = 0;
 		icon = 0;
+	}
+	
+	public void loadIconData(String file) {
+		try {
+			RandomAccessFile r = new RandomAccessFile(file, "r");
+			
+			r.skipBytes(0xC4);
+			
+			char[] amount = new char[8];
+			
+			for (int i = 0; i < amount.length; i++) {
+				amount[i] = (char) r.readByte();
+			}
+			
+			x = Integer.parseInt(cleanString(amount));
+			
+			for (int i = 0; i < amount.length; i++) {
+				amount[i] = (char) r.readByte();
+			}
+			
+			y = Integer.parseInt(cleanString(amount));
+			
+			for (int i = 0; i < amount.length; i++) {
+				amount[i] = (char) r.readByte();
+			}
+			
+			icon = Integer.parseInt(cleanString(amount));
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	/*

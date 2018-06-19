@@ -4,6 +4,8 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -71,7 +73,14 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 		buffer = new BufferedImage(PK2Map.MAP_WIDTH * 32, PK2Map.MAP_HEIGHT * 32, BufferedImage.TYPE_INT_ARGB);
 		gg = (Graphics2D) buffer.getGraphics();
 		
-		af = AffineTransform.getScaleInstance(0.6, 0.6);
+		af = AffineTransform.getScaleInstance(1, 1);
+		
+		try {
+			is = af.createInverse();
+		} catch (NoninvertibleTransformException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		try {
 			is = af.createInverse();
 		} catch (NoninvertibleTransformException e) {
@@ -94,8 +103,8 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 			viewH = (int) ((pkg.scrollPane2.getViewport().getViewRect().height / Data.scale) / 32);
 			
 			Graphics2D g2d = (Graphics2D) g;
-			g2d.scale(Data.scale, Data.scale);
-			//g2d.transform(af);
+			//g2d.scale(Data.scale, Data.scale);
+			g2d.transform(af);
 			
 			// Not the best solution, but it works. This should be improved.
 			for (int i = 0; i < (PK2Map.MAP_WIDTH * 32) / background.getWidth() + 1; i++) {
@@ -225,8 +234,8 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 	}
 
 	public Dimension getPreferredSize() {
-		int w = (int) ((PK2Map.MAP_WIDTH * 32));
-		int h = (int) ((PK2Map.MAP_HEIGHT * 32));
+		int w = (int) ((PK2Map.MAP_WIDTH * 32) * Data.scale);
+		int h = (int) ((PK2Map.MAP_HEIGHT * 32) * Data.scale);
 		
 		return new Dimension(w, h);
 	}
@@ -327,8 +336,12 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 	@Override
 	public void mouseDragged(MouseEvent e) {
 		if (Data.map != null) {
-			mx = (int) (e.getX() / Data.scale);
-			my = (int) (e.getY() / Data.scale);
+			Point2D ml = e.getPoint();
+			
+			is.transform(ml, ml);
+			
+			mx = (int) ml.getX();
+			my = (int) ml.getY();
 			
 			if (mouseButton == MouseEvent.BUTTON1) {
 				Data.fileChanged = true;
@@ -393,8 +406,8 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 			} else if (mouseButton == MouseEvent.BUTTON3) {
 				if (Data.editMode == Constants.EDIT_MODE_TILES) {
 					if (Data.selectedTool == Data.TOOL_BRUSH) {
-						mx = (int) ((e.getX() / 32) / Data.scale);
-						my = (int) ((e.getY() / 32) / Data.scale);
+						mx = (int) ((ml.getX() / 32));
+						my = (int) ((ml.getY() / 32));
 						
 						if (mx < Data.sx) {
 							Data.sw = Data.sx - mx;
@@ -418,16 +431,8 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 						
 						Data.selectedTile = -1;
 						
-						if (Data.scale == 1 || Data.scale > 1) {
-							Data.sw += 1;
-							Data.sh += 1;
-						} else {
-							dx *= Data.scale;
-							dy *= Data.scale;
-							
-							Data.sw += 2;
-							Data.sh += 2;
-						}
+						Data.sw += 1;
+						Data.sh += 1;
 						
 						Data.multiSelectLevel = true;
 						Data.multiSelectTiles = false;
@@ -438,8 +443,8 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 				}
 			} else if (mouseButton == MouseEvent.BUTTON2) {
 				
-				offsetX = e.getX();
-				offsetY = e.getY();
+				offsetX = mx;
+				offsetY = my;
 				
 				//pkg.scrollPane2.getHorizontalScrollBar().setValue(mx - dragDistanceX);
 				//pkg.scrollPane2.getVerticalScrollBar().setValue(my / 32);
@@ -460,8 +465,8 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 		
 		is.transform(ml, ml);
 		
-		mx = (int) (e.getX() / Data.scale);
-		my = (int) (e.getY() / Data.scale);
+		mx = (int) ml.getX();
+		my = (int) ml.getY();
 		
 		if (!Data.multiSelectionBackground.isEmpty() || !Data.multiSelectionForeground.isEmpty() || Data.selectedTileBackground != 255 || Data.selectedTileForeground != 255 || Data.selectedSprite != 255) {
 			repaint();
@@ -472,6 +477,13 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 	public void mousePressed(MouseEvent e) {
 		if (Data.map != null) {
 			mouseButton = e.getButton();
+			
+			Point2D ml = e.getPoint();
+			
+			is.transform(ml, ml);
+			
+			mx = (int) ml.getX();
+			my = (int) ml.getY();
 			
 			if (e.getButton() == MouseEvent.BUTTON1) {
 				Data.fileChanged = true;
@@ -545,8 +557,8 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 						case Data.TOOL_BRUSH:
 							int x = 0, y = 0;
 							
-							x = (int) ((e.getX() / 32) / Data.scale);
-							y = (int) ((e.getY() / 32) / Data.scale);
+							x = (int) ((ml.getX() / 32));
+							y = (int) ((ml.getY() / 32));
 							
 							if (Data.currentLayer == Constants.LAYER_FOREGROUND) {
 								Data.selectedTileForeground = Data.map.getTileAt(x * 32, y * 32, Constants.LAYER_FOREGROUND);
@@ -594,8 +606,13 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 	public void mouseReleased(MouseEvent e) {
 		// The following code is responsible for adding the selected tiles to the respective lists, depending on the current layer.
 		if (Data.dragging) {
-			mx = (int) (e.getX() / Data.scale);
-			my = (int) (e.getY() / Data.scale);
+			// Setting the mouse position variables, because if you don't the selection will appear at 0, 0, until the user moves the mouse
+			Point2D ml = e.getPoint();
+			
+			is.transform(ml, ml);
+			
+			mx = (int) ml.getX();
+			my = (int) ml.getY();
 			
 			for (int i = dx; i < dx + Data.sw; i++) {
 				for (int j = dy; j < dy + Data.sh; j++) {
@@ -634,49 +651,139 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 	@Override
 	public void mouseExited(MouseEvent arg0) {
 	}
-
-	@Override
-	public void mouseWheelMoved(MouseWheelEvent e) {
-		if (e.isControlDown() && e.getWheelRotation() > 0) {
-			if (Data.scale - 0.1 > 0.1) {
-				Data.scale -= 0.1;
-				
-				Data.mmp.resizeViewportRect();
-				Data.mmp.repaint();
-				
-				setPreferredSize(new Dimension((int) ((PK2Map.MAP_WIDTH * 32) / Data.scale), (int) ((PK2Map.MAP_HEIGHT * 32) / Data.scale)));
-				revalidate();
-				repaint();
-				
-				System.out.println((int) ((PK2Map.MAP_WIDTH * 32) * Data.scale) + " - " + (int) ((PK2Map.MAP_HEIGHT * 32) * Data.scale));
-				
-				pkg.scrollPane2.updateUI();
-			}
-		} else if (e.isControlDown() && e.getWheelRotation() < 0) {
-			Data.scale += 0.1;
-			
-			Data.mmp.resizeViewportRect();
-			Data.mmp.repaint();
-
-			setPreferredSize(new Dimension((int) ((PK2Map.MAP_WIDTH * 32) * Data.scale), (int) ((PK2Map.MAP_HEIGHT * 32) * Data.scale)));
-			revalidate();
-			repaint();
-			
-			pkg.scrollPane2.updateUI();
+	
+	public void zoom() {
+		af = AffineTransform.getScaleInstance(Data.scale, Data.scale);
+		
+		try {
+			is = af.createInverse();
+		} catch (NoninvertibleTransformException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
 		}
 		
-		if (e.isAltDown()) {
-			if (e.getWheelRotation() > 0) {
-				pkg.scrollPane2.getHorizontalScrollBar().setValue(pkg.scrollPane2.getHorizontalScrollBar().getValue() + 32);
-			} else if (e.getWheelRotation() < 0) {
-				pkg.scrollPane2.getHorizontalScrollBar().setValue(pkg.scrollPane2.getHorizontalScrollBar().getValue() - 32);
-			}
+		setPreferredSize(new Dimension((int) ((PK2Map.MAP_WIDTH * 32) * Data.scale), (int) ((PK2Map.MAP_HEIGHT * 32) * Data.scale)));
+
+		invalidate();
+		revalidate();
+		updateUI();
+		repaint();
+		
+		Data.mmp.resizeViewportRect();
+		Data.mmp.repaint();
+		
+		pkg.scrollPane2.revalidate();
+		pkg.scrollPane2.updateUI();
+	}
+
+	private void zoomIn(Point ml) {
+		Data.scale += 0.055f;
+		Point pos = pkg.scrollPane2.getViewport().getViewPosition();
+		
+		int newX = (int) ((pos.x * Data.scale) + ((pkg.scrollPane2.getVisibleRect().width * Data.scale) / 2));
+		int newY = (int) ((pos.y * Data.scale) + ((pkg.scrollPane2.getVisibleRect().height * Data.scale) / 2));
+		
+		/*
+		newX = (int) (ml.x * (Data.scale - 1) - (Data.scale - 1) * pos.x);
+		newY = (int) (ml.y * (Data.scale - 1) - (Data.scale - 1) * pos.y);
+		*/
+		
+		
+		/* THIS SHIT AIN'T WORK
+		 * 
+		 * This is really annoying. This is supposed to make it so that the editor zooms in on the mouse cursors position.
+		 * It kinda works, but only when the zoom value is above 1.1f or whatever.
+		 * It doesn't work at all, when the zoom value is below 1.
+		 * 
+		  if (Data.scale > 1) {
+			newX = (int) (ml.x * (Data.scale - 1) + ((Data.scale * pos.x) - ((Data.scale - 0.05f) * pos.x)));
+			newY = (int) (ml.y * (Data.scale - 1) + ((Data.scale * pos.y) - ((Data.scale - 0.05f) * pos.y)));
 		} else {
+			newX = (int) (ml.x * (Data.scale - 1) + ((Data.scale * pos.x) - ((Data.scale - 0.05f) * pos.x)));
+			newY = (int) (ml.y * (Data.scale - 1) + ((Data.scale * pos.y) - ((Data.scale - 0.05f) * pos.y)));
+		}
+		 */
+		
+		if (newX < 0) {
+			newX = 0;
+		}
+		
+		if (newY < 0) {
+			newY = 0;
+		}
+	
+	    pkg.scrollPane2.getViewport().setViewPosition(new Point(newX, newY));
+
+	    pkg.scrollPane2.revalidate();
+	    pkg.scrollPane2.repaint();
+	    pkg.scrollPane2.updateUI();
+	    
+	    repaint();
+	}
+	
+	private void zoomOut(MouseEvent e) {
+		Point pos = pkg.scrollPane2.getViewport().getViewPosition();
+	    Point ml = e.getPoint();
+		
+		is.transform(ml, ml);
+		
+		Data.scale -= 0.055;
+		
+		if (Data.scale < 0.2) {
+			Data.scale = 0.2f;
+		}
+		
+		int newX = (int) ((pos.x * Data.scale) + ((pkg.scrollPane2.getVisibleRect().width * Data.scale) / 2));
+		int newY = (int) ((pos.y * Data.scale) + ((pkg.scrollPane2.getVisibleRect().height * Data.scale) / 2));
+		
+		if (newX < 0) {
+			newX = 0;
+		}
+		
+		if (newY < 0) {
+			newY = 0;
+		}
+		
+	    pkg.scrollPane2.getViewport().setViewPosition(new Point(newX, newY));
+
+	    pkg.scrollPane2.revalidate();
+	    pkg.scrollPane2.repaint();
+	}
+	
+	@Override
+	public void mouseWheelMoved(MouseWheelEvent e) {
+		if (e.isControlDown()) {
 			if (e.getWheelRotation() > 0) {
-				pkg.scrollPane2.getVerticalScrollBar().setValue(pkg.scrollPane2.getVerticalScrollBar().getValue() + 32);
+				if (Math.abs(Data.scale - 0.1) > 0.1) {
+					zoomOut(e);
+				}
 			} else if (e.getWheelRotation() < 0) {
-				pkg.scrollPane2.getVerticalScrollBar().setValue(pkg.scrollPane2.getVerticalScrollBar().getValue() - 32);
+			    Point ml = e.getPoint();
+				
+				is.transform(ml, ml);
+			    
+				zoomIn(ml);
+			}
+			
+			Data.zoomSpinner.setValue((float) (Data.scale * 100));
+			
+			zoom();
+		} else {
+			if (e.isAltDown()) {
+				if (e.getWheelRotation() > 0) {
+					pkg.scrollPane2.getHorizontalScrollBar().setValue(pkg.scrollPane2.getHorizontalScrollBar().getValue() + 32);
+				} else if (e.getWheelRotation() < 0) {
+					pkg.scrollPane2.getHorizontalScrollBar().setValue(pkg.scrollPane2.getHorizontalScrollBar().getValue() - 32);
+				}
+			} else {
+				if (e.getWheelRotation() > 0) {
+					pkg.scrollPane2.getVerticalScrollBar().setValue(pkg.scrollPane2.getVerticalScrollBar().getValue() + 32);
+				} else if (e.getWheelRotation() < 0) {
+					pkg.scrollPane2.getVerticalScrollBar().setValue(pkg.scrollPane2.getVerticalScrollBar().getValue() - 32);
+				}
 			}
 		}
+		
+		repaint();
 	}
 }

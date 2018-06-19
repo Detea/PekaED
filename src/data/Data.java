@@ -5,6 +5,8 @@ import java.awt.image.IndexColorModel;
 import java.io.File;
 import java.util.ArrayList;
 
+import javax.swing.JSpinner;
+
 import gui.panels.LevelPanel;
 import gui.panels.MiniMapPanel;
 import gui.panels.TilePanel;
@@ -18,7 +20,7 @@ public class Data {
 	public static int selectedTool = 0;
 	public static int selectedTile = 0, selectedSprite = 255;
 	
-	public static double scale = 1;
+	public static float scale = 1;
 	
 	public static int selectedTileForeground = 0, selectedTileBackground = 0;
 	
@@ -61,4 +63,5 @@ public class Data {
 	
 	public static IndexColorModel bgPalette;
 	public static BufferedImage bgImg;
+	public static JSpinner zoomSpinner;
 }

@@ -1,19 +1,19 @@
 package gui.windows;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Event;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
@@ -35,6 +35,7 @@ import java.util.zip.ZipOutputStream;
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
+import javax.swing.Box;
 import javax.swing.ComponentInputMap;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
@@ -52,14 +53,19 @@ import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
+import javax.swing.JSpinner;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
+import javax.swing.JViewport;
 import javax.swing.KeyStroke;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.plaf.ActionMapUIResource;
@@ -694,25 +700,59 @@ public class PekaEDGUI {
 		
 		frame.getContentPane().add(toolbar, BorderLayout.NORTH);
 		
-		/*
-		JButton btnZoomOut = new JButton("zoom out");
-		btnZoomOut.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				if (Data.scale - 0.1 > 0.1) {
-					Data.scale -= 0.1;
-					
-					Data.mmp.resizeViewportRect();
-					Data.mmp.repaint();
-					
-					Data.lp.setPreferredSize(new Dimension((int) ((PK2Map.MAP_WIDTH * 32) / Data.scale), (int) ((PK2Map.MAP_HEIGHT * 32) / Data.scale)));
-					Data.lp.revalidate();
-					Data.lp.repaint();
-					
-					scrollPane1.updateUI();
-				}
+		toolbar.addSeparator();
+		
+		JLabel lblZoom = new JLabel("Zoom:");
+		toolbar.add(lblZoom);
+		
+		JSpinner spinner = new JSpinner();
+		spinner.setMaximumSize(new Dimension(50, 20));
+		spinner.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				Data.scale = (float) spinner.getValue() / 100;
+				
+				JViewport vp = scrollPane2.getViewport();
+				Point p = vp.getViewPosition();
+				Point p2 = new Point(p.x + vp.getWidth() / 2, p.y + vp.getHeight() / 2);
+				
+				Rectangle vr = scrollPane2.getViewport().getViewRect();
+				
+				vr.x = p2.x - vr.width / 2;
+				vr.y = p2.y - vr.height / 2;
+				
+				vr.x *= Data.scale;
+				vr.y *= Data.scale;
+				
+				scrollPane2.scrollRectToVisible(vr);
+
+				scrollPane2.revalidate();
+				scrollPane2.repaint();
+				
+				Data.lp.zoom();
 			}
-		});*/
-		//toolbar.add(btnZoomOut);
+		});
+		spinner.setModel(new SpinnerNumberModel(new Float(100), new Float(20), null, new Float(1)));
+		toolbar.add(spinner);
+		
+		Data.zoomSpinner = spinner;
+		
+		JButton btnReset = new JButton("Reset");
+		btnReset.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				Data.scale = 1;
+				
+				spinner.setValue(100f);
+				
+				Data.lp.zoom();
+			}
+		});
+		
+		Component horizontalStrut = Box.createHorizontalStrut(20);
+		horizontalStrut.setMaximumSize(new Dimension(5, 32767));
+		horizontalStrut.setMinimumSize(new Dimension(5, 0));
+		toolbar.add(horizontalStrut);
+		toolbar.add(btnReset);
+		
 		frame.getContentPane().add(splitPane, BorderLayout.CENTER);
 		frame.getContentPane().add(sidePanel, BorderLayout.EAST);
 		
@@ -905,6 +945,7 @@ public class PekaEDGUI {
 				
 				scrollPane2.revalidate();
 				
+				Data.lp.zoom();
 				Data.lp.repaint();
 			}
 			
@@ -914,7 +955,7 @@ public class PekaEDGUI {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				if (Data.scale - 0.1 > 0.1) {
+				if (Data.scale - 0.1 > 0.3) {
 					Data.scale -= 0.1;
 					
 					Data.mmp.resizeViewportRect();
@@ -926,6 +967,7 @@ public class PekaEDGUI {
 					
 					scrollPane2.revalidate();
 					
+					Data.lp.zoom();
 					Data.lp.repaint();
 				}
 			}
@@ -988,9 +1030,9 @@ public class PekaEDGUI {
 		keyMap.put(KeyStroke.getKeyStroke("2"), "layerAction2");
 		keyMap.put(KeyStroke.getKeyStroke("3"), "layerAction3");
 		
-		keyMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_PLUS, Event.CTRL_MASK), "zoomInAction");
-		keyMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_MINUS, Event.CTRL_MASK), "zoomOutAction");
-		
+		keyMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_PLUS, 0), "zoomInAction");
+		keyMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_MINUS, 0), "zoomOutAction");
+	
 		keyMap.put(KeyStroke.getKeyStroke("F5"), "testLevel");
 		
 		keyMap.put(KeyStroke.getKeyStroke("E"), "selectBrush");
@@ -1177,6 +1219,8 @@ public class PekaEDGUI {
 		
 		lp.setPekaGUI(this);
 		mmp.setPekaGUI(this);
+		
+		//scrollPane2.getViewport().setSize(new Dimension((int) (scrollPane2.getViewport().getWidth() * 0.6), (int) (scrollPane2.getViewport().getHeight() * 0.6)));
 	}
 	
 	public void setToolButton() {
