@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JViewport;
+import javax.swing.SwingUtilities;
 
 import data.Constants;
 import data.Data;
@@ -50,7 +52,7 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 	public boolean drawing = true;
 
 	private int dx, dy;
-	private int offsetX, offsetY;
+	private int originX, originY;
 	
 	BufferedImage buffer;
 	Graphics2D gg;
@@ -122,7 +124,7 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 							}
 						}
 						
-						drawTile(g2d, offsetX + (i * 32), offsetY + (j * 32), Data.map.getTileAt(i * 32, j * 32, Constants.LAYER_BACKGROUND));
+						drawTile(g2d, i * 32, j * 32, Data.map.getTileAt(i * 32, j * 32, Constants.LAYER_BACKGROUND));
 					}
 				}
 			}
@@ -442,17 +444,23 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 					}
 				}
 			} else if (mouseButton == MouseEvent.BUTTON2) {
-				
-				offsetX = mx;
-				offsetY = my;
-				
-				//pkg.scrollPane2.getHorizontalScrollBar().setValue(mx - dragDistanceX);
-				//pkg.scrollPane2.getVerticalScrollBar().setValue(my / 32);
+				int deltaX = originX - e.getX();
+                int deltaY = originY - e.getY();
+			
+				JViewport viewPort = (JViewport) SwingUtilities.getAncestorOfClass(JViewport.class, this);
+                if (viewPort != null) {
+                    Rectangle view = viewPort.getViewRect();
+                    view.x += deltaX;
+                    view.y += deltaY;
+
+                    scrollRectToVisible(view);
+                    
+                    Data.mmp.reposition();
+                }
 			}
 			
 			repaint();
 			
-			// Change this
 			if (Data.mmp != null) {
 				Data.mmp.repaint();
 			}
@@ -589,8 +597,8 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 					}
 				}
 			} else if (e.getButton() == MouseEvent.BUTTON2) {
-				//dragDistanceX = e.getX() - pkg.scrollPane2.getHorizontalScrollBar().getValue();
-				//dragDistanceY = e.getY() - pkg.scrollPane2.getVerticalScrollBar().getValue();
+				originX = (int) e.getX();
+				originY = (int) e.getY();
 			}
 			
 			repaint();

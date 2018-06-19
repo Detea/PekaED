@@ -44,6 +44,23 @@ public class MiniMapPanel extends JPanel implements MouseListener, MouseMotionLi
 		}
 	}
 	
+	public void reposition() {
+		vx = (vw / 2) + pkg.scrollPane2.getHorizontalScrollBar().getValue() / 32;
+		vy = (vh / 2) + pkg.scrollPane2.getVerticalScrollBar().getValue() / 32;
+		
+		if (vx - (vw / 2) < 0) {
+			vx = vw / 2;
+		} else if (vx + (vw / 2) > PK2Map.MAP_WIDTH) {
+			vx = PK2Map.MAP_WIDTH - (vw / 2);
+		}
+		
+		if (vy - (vh / 2) < 0) {
+			vy = vh / 2;
+		} else if (vy + (vh / 2) > PK2Map.MAP_HEIGHT) {
+			vy = PK2Map.MAP_HEIGHT - (vh / 2);
+		}
+	}
+	
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		
