@@ -45,8 +45,6 @@ public class PK2Map {
 	int startX;
 	public int startY;
 	
-	public int[] backgroundTiles = new int[MAP_SIZE];
-	public int[] foregroundTiles = new int[MAP_SIZE];
 	public int[][] layers = new int[2][MAP_SIZE];
 	public int[] sprites = new int[MAP_SIZE];
 	
@@ -234,6 +232,8 @@ public class PK2Map {
 					sprites[MAP_WIDTH * x + y] = (int) (dis.readByte() & 0xFF);
 				}
 			}
+			
+			dis.close();
 		} catch (FileNotFoundException e) {
 			JOptionPane.showMessageDialog(null, "File '" + file + "' not found.", "Error", JOptionPane.OK_OPTION);
 		} catch (IOException e) {
@@ -370,7 +370,11 @@ public class PK2Map {
 		if (spriteList.size() < MAP_MAX_PROTOTYPES) {
 			spriteList.add(spr);
 			
-			setCharString(prototypes[spriteList.size() - 1], filename);
+			if (spriteList.size() > 1) {
+				setCharString(prototypes[spriteList.size() - 1], filename);
+			} else {
+				setCharString(prototypes[0], filename);
+			}
 		}
 	}
 	
@@ -453,34 +457,9 @@ public class PK2Map {
 		return 255;
 	}
 	
-	/*
-	public void readLevelNumberFromFile(File file) {
-		RandomAccessFile r = null;
-		
-		try {
-			r = new RandomAccessFile(file, "r");
-			
-			r.skipBytes(124);
-			
-			char[] ln = new char[8];
-			for (int i = 0; i < 8; i++) {
-				ln[i] = (char) (r.readByte());
-			}
-			
-			levelNumber = Integer.parseInt(cleanString(ln));
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
-			try {
-				r.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-	}*/
+	public String getSprite(int i) {
+		return cleanString(prototypes[i]);
+	}
 	
 	public String getTileset() {
 		return cleanString(tilesetImageFile);

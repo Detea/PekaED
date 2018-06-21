@@ -91,11 +91,13 @@ public class MapSettingsPanel extends JPanel {
 				if (res == JFileChooser.APPROVE_OPTION) {
 					textField_2.setText(fc.getSelectedFile().getName());
 					
+					Data.tilesetFile = fc.getSelectedFile();
+					
 					Data.map.setTileset(fc.getSelectedFile().getName());
 					
 					// It is important to update the level panel before the tile panel, because the level panel loads the background image palette
-					Data.lp.setTileset(Data.map.getTileset());
-					Data.tp.setTileset(Data.map.getTileset());
+					Data.lp.setTileset();
+					Data.tp.setTileset();
 					
 					Data.fileChanged = true;
 				}
@@ -139,13 +141,15 @@ public class MapSettingsPanel extends JPanel {
 				if (res == JFileChooser.APPROVE_OPTION) {
 					textField_3.setText(fc.getSelectedFile().getName());
 					
+					Data.bgFile = fc.getSelectedFile();
+					
 					Data.map.setBackground(fc.getSelectedFile().getName());
-					Data.lp.setBackground(Data.map.getBackground());
-					Data.lp.setTileset(Data.map.getTileset());
+					Data.lp.setBackground();
+					Data.lp.setTileset();
 					
 					Data.lp.repaint();
 					
-					Data.tp.setTileset(Data.map.getTileset());
+					Data.tp.setTileset();
 					
 					Data.fileChanged = true;
 				}

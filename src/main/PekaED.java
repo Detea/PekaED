@@ -6,12 +6,12 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-import javax.swing.JOptionPane;
-
 import data.Constants;
+import data.Data;
 import data.Settings;
 import gui.windows.PekaEDGUI;
 import gui.windows.SetPathDialog;
+import helpers.EpisodeExtractor;
 
 public class PekaED {
 	public static void main(String[] args) {
@@ -28,6 +28,8 @@ public class PekaED {
 				Settings.startInEnhancedMode = dis.readBoolean();
 				Constants.ENHANCED_LEVEL_LIMIT = dis.readInt();
 				
+				Data.mode = Constants.MODE_ENHANCED;
+				
 				File pathFile = new File(Settings.BASE_PATH);
 				
 				dis.close();
@@ -37,6 +39,7 @@ public class PekaED {
 				} else {
 					new PekaEDGUI().setup();
 				}
+				
 			} catch (FileNotFoundException e1) {
 				//JOptionPane.showMessageDialog(null, "Could'nt find settings file.\n" + e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 				//e1.printStackTrace();

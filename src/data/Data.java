@@ -59,7 +59,9 @@ public class Data {
 	public static MiniMapPanel mmp;
 	
 	public static boolean fileChanged = false, episodeChanged = false;
-	public static String currentEpisodeName;
+	public static String currentEpisodeName = "";
+	
+	public static File bgFile, tilesetFile;
 	
 	public static IndexColorModel bgPalette;
 	public static BufferedImage bgImg;

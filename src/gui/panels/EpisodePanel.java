@@ -251,7 +251,7 @@ public class EpisodePanel extends JPanel {
 			
 			r.close();
 		} catch (FileNotFoundException e) {
-			JOptionPane.showMessageDialog(null, "Could'nt find episode file '" + file.getName() + "'.", "Error", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(null, "Couldn't find episode file '" + file.getName() + "'.", "Error", JOptionPane.ERROR_MESSAGE);
 			
 			FileWriter w;
 			try {

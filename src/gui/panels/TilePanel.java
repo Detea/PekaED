@@ -62,10 +62,10 @@ public class TilePanel extends JPanel implements MouseListener, MouseMotionListe
 		}
 	}
 	
-	public void setTileset(String str) {
+	public void setTileset() {
 		if (!Settings.BASE_PATH.isEmpty()) {
 			try {
-				tileset = ImageIO.read(new File(Settings.TILES_PATH + str));
+				tileset = ImageIO.read(Data.tilesetFile);
 				
 				byte[] rs = new byte[256];
 				byte[] gs = new byte[256];
@@ -106,8 +106,7 @@ public class TilePanel extends JPanel implements MouseListener, MouseMotionListe
 				x = 0;
 				y = 0;
 			} catch (IOException e) {
-				JOptionPane.showMessageDialog(this, "Could'nt read tileset file.\n'" + str + "'", "Error", JOptionPane.OK_OPTION);
-				//e.printStackTrace();
+				JOptionPane.showMessageDialog(this, "Couldn't read tileset file.\n'" + Data.tilesetFile.getName() + "'", "Error", JOptionPane.OK_OPTION);
 			}
 		}
 		

@@ -3,7 +3,7 @@ A modern Pekka Kana 2 level editor.
 
 ---
 
-![PekaED in action](https://i.imgur.com/ov0VxeG.png)
+![PekaED in action](https://i.imgur.com/t8UMdNT.png)
 
 ---
 

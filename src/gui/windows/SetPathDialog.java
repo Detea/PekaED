@@ -138,7 +138,7 @@ public class SetPathDialog extends JDialog {
 								
 								new PekaEDGUI().setup();
 							} catch (IOException e1) {
-								JOptionPane.showMessageDialog(null, "Could'nt create settings file.\n" + e1.getMessage(), "Error", JOptionPane.OK_OPTION);
+								JOptionPane.showMessageDialog(null, "Couldn't create settings file.\n" + e1.getMessage(), "Error", JOptionPane.OK_OPTION);
 								
 								e1.printStackTrace();
 							}

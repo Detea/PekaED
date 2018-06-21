@@ -12,6 +12,8 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.KeyEvent;
@@ -42,6 +44,7 @@ import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -79,8 +82,10 @@ import gui.panels.MapSettingsPanel;
 import gui.panels.MiniMapPanel;
 import gui.panels.SpritePanel;
 import gui.panels.TilePanel;
+import helpers.EpisodeExtractor;
 import pekkakana.PK2Map;
 import pekkakana.PK2Sprite;
+import javax.swing.DefaultComboBoxModel;
 
 public class PekaEDGUI {
 	private JFrame frame;
@@ -101,6 +106,7 @@ public class PekaEDGUI {
 	public JToggleButton btBrush, btEraser;
 	
 	private MiniMapPanel mmp;
+	private JComboBox comboBox;
 	
 	/**
 	 * @wbp.parser.entryPoint
@@ -148,6 +154,7 @@ public class PekaEDGUI {
 		JMenuItem mifSaveEpisode = new JMenuItem("Save Episode");
 		
 		JMenuItem mifImportEpisode = new JMenuItem("Import Episode");
+		JMenuItem mifExportEpisode = new JMenuItem("Export Episode");
 		
 		mifNewLevel.setAccelerator(KeyStroke.getKeyStroke('N', KeyEvent.CTRL_DOWN_MASK));
 		mifOpenLevel.setAccelerator(KeyStroke.getKeyStroke('O', KeyEvent.CTRL_DOWN_MASK));
@@ -164,6 +171,17 @@ public class PekaEDGUI {
 		mFile.add(mifSaveEpisode);
 		mFile.add(new JSeparator());
 		mFile.add(mifImportEpisode);
+		mFile.add(mifExportEpisode);
+		
+		JDialog exportDialog = new JDialog();
+		exportDialog.setTitle("Exporting episode...");
+		JLabel edLbl = new JLabel("Exporting episode...");
+		JLabel edLbl2 = new JLabel("You can close this window when done.");
+		
+		exportDialog.getContentPane().add(edLbl);
+		exportDialog.getContentPane().add(edLbl2);
+		
+		exportDialog.setSize(new Dimension(300, 100));
 		
 		mifNewLevel.addActionListener(new ActionListener() {
 
@@ -240,6 +258,71 @@ public class PekaEDGUI {
 				}
 			}
 		
+		});
+		
+		mifExportEpisode.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				if (!Data.currentEpisodeName.isEmpty()) {
+					JFileChooser fc = new JFileChooser();
+					
+					fc.setFileFilter(new FileFilter() {
+
+						@Override
+						public boolean accept(File f) {
+							return f.getName().toLowerCase().endsWith("zip");
+						}
+
+						@Override
+						public String getDescription() {
+							return "ZIP compressed archive (.zip)";
+						}
+						
+					});
+					
+					fc.setSelectedFile(new File(Data.currentEpisodeName + ".zip"));
+					
+					if (fc.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
+						Thread t = new Thread(new Runnable() {
+
+							@Override
+							public void run() {
+								exportDialog.setVisible(true);
+								
+								File f = fc.getSelectedFile();
+								
+								if (!f.getName().endsWith("zip")) {
+									f = new File(fc.getSelectedFile().getAbsolutePath() + ".zip");
+								}
+								
+								boolean done = EpisodeExtractor.extract(f);
+								
+								System.out.println(done);
+								
+								if (done) {
+									edLbl.setText("Done!");
+								} else {
+									edLbl.setText("Writing files...");
+								}
+								
+								try {
+									Thread.sleep(17);
+								} catch (InterruptedException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+							}
+							
+						});
+						
+						t.start();
+					}
+				} else {
+					JOptionPane.showMessageDialog(null, "Create a new or import an existing episode first.", "No episode loaded!", JOptionPane.ERROR_MESSAGE);
+				}
+			};
+			
 		});
 		
 		mifOpenEpisode.addActionListener(new ActionListener() {
@@ -675,8 +758,6 @@ public class PekaEDGUI {
 		imh.put(KeyStroke.getKeyStroke("RIGHT"), "positiveUnitIncrement");
 		imh.put(KeyStroke.getKeyStroke("LEFT"), "negativeUnitIncrement");
 		
-		//scrollPane2.getViewport().setScrollMode(JViewport.SIMPLE_SCROLL_MODE);
-	
 		splitPane.setDividerLocation(320);
 
 		GridBagLayout gbl = new GridBagLayout();
@@ -752,6 +833,31 @@ public class PekaEDGUI {
 		horizontalStrut.setMinimumSize(new Dimension(5, 0));
 		toolbar.add(horizontalStrut);
 		toolbar.add(btnReset);
+		
+		toolbar.addSeparator();
+		
+		comboBox = new JComboBox();
+		
+		JLabel lblMode = new JLabel("Rules:");
+		toolbar.add(lblMode);
+		comboBox.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				if (comboBox.getSelectedIndex() == 1) {
+					Data.mode = Constants.MODE_ENHANCED;
+				} else {
+					Data.mode = Constants.MODE_LEGACY;
+				}
+			}
+		});
+		
+		Component horizontalStrut_1 = Box.createHorizontalStrut(20);
+		horizontalStrut_1.setMaximumSize(new Dimension(3, 32767));
+		toolbar.add(horizontalStrut_1);
+		comboBox.setModel(new DefaultComboBoxModel(new String[] {"Legacy", "Enhanced"}));
+		comboBox.setMaximumSize(new Dimension(100, 25));
+		toolbar.add(comboBox);
+		
+		comboBox.setSelectedIndex(Data.mode);
 		
 		frame.getContentPane().add(splitPane, BorderLayout.CENTER);
 		frame.getContentPane().add(sidePanel, BorderLayout.EAST);
@@ -1220,6 +1326,28 @@ public class PekaEDGUI {
 		lp.setPekaGUI(this);
 		mmp.setPekaGUI(this);
 		
+		scrollPane2.getHorizontalScrollBar().addAdjustmentListener(new AdjustmentListener() {
+
+			@Override
+			public void adjustmentValueChanged(AdjustmentEvent arg0) {
+				if (Data.mmp != null) {
+					Data.mmp.reposition();
+				}
+			}
+			
+		});
+		
+		scrollPane2.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {
+
+			@Override
+			public void adjustmentValueChanged(AdjustmentEvent arg0) {
+				if (Data.mmp != null) {
+					Data.mmp.reposition();
+				}
+			}
+			
+		});
+		
 		//scrollPane2.getViewport().setSize(new Dimension((int) (scrollPane2.getViewport().getWidth() * 0.6), (int) (scrollPane2.getViewport().getHeight() * 0.6)));
 	}
 	
@@ -1293,19 +1421,39 @@ public class PekaEDGUI {
 		
 		Data.currentFile = new File(file);
 		
+		if (new File(Data.currentFile.getParentFile().getAbsolutePath() + "\\" + Data.map.getBackground()).exists()) {
+			Data.bgFile = new File(Data.currentFile.getParentFile().getAbsolutePath() + "\\" + Data.map.getBackground());
+		} else {
+			Data.bgFile = new File(Settings.SCENERY_PATH + "\\" + Data.map.getBackground());
+		}
+		
+		System.out.println(Data.bgFile.getAbsolutePath());
+		
+		if (new File(Data.currentFile.getParentFile().getAbsolutePath() + "\\" + Data.map.getTileset()).exists()) {
+			Data.tilesetFile = new File(Data.currentFile.getParentFile().getAbsolutePath() + "\\" + Data.map.getTileset());
+		} else {
+			Data.tilesetFile = new File(Settings.TILES_PATH + "\\" + Data.map.getTileset());
+		}
+		
 		lp.setMap();
-		tp.setTileset(Data.map.getTileset());
+		tp.setTileset();
 		msp.setMap();
 		sp.setMap();
+		
+		Data.scale = 1f;
+		Data.zoomSpinner.setValue(100f);
+		Data.lp.zoom();
 		
 		lp.repaint();
 		mmp.repaint();
 		
 		Rectangle r = Data.map.calculateUsedArea(Data.map.layers[Constants.LAYER_BACKGROUND], "background2");
 		
-		// @Todo: Fix this, why does this not work?
-		scrollPane2.getVerticalScrollBar().setValue((r.y - (r.height / 2)) * 32);
-		scrollPane2.getHorizontalScrollBar().setValue((r.x - (r.width / 2)) * 32);
+		scrollPane2.getVerticalScrollBar().setValue(r.y * 32);
+		scrollPane2.getHorizontalScrollBar().setValue(r.x * 32);
+		
+		Data.mmp.reposition();
+		Data.mmp.resizeViewportRect();
 		
 		Data.fileChanged = false;
 		
@@ -1334,7 +1482,7 @@ public class PekaEDGUI {
 	public void newLevel() {
 		PK2Sprite psprite = new PK2Sprite("rooster.spr");
 		Data.map = new PK2Map();
-		Data.map.addSprite(psprite, psprite.filename);
+		Data.map.addSprite(psprite, "rooster.spr");
 		Data.map.levelNumber = Data.episodeFiles.size() + 1;
 		sp.setList();
 		
@@ -1344,11 +1492,14 @@ public class PekaEDGUI {
 		
 		Data.selectedTile = 0;
 		
+		Data.bgFile = new File(Settings.SCENERY_PATH + "\\" + Settings.DEFAULT_BACKGROUND);
+		Data.tilesetFile = new File(Settings.TILES_PATH + "\\" + Settings.DEFAULT_TILESET);
+		
 		msp.setMap();
 		sp.setMap();
 		
 		lp.setMap();
-		tp.setTileset(Data.map.getTileset());
+		tp.setTileset();
 		
 		lp.repaint();
 		mmp.repaint();

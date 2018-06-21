@@ -45,6 +45,8 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 	public ArrayList<BufferedImage> tiles = new ArrayList<BufferedImage>();
 	public ArrayList<BufferedImage> inactiveTiles = new ArrayList<BufferedImage>();
 
+	private BufferedImage lastTile;
+	
 	private Image bgImg;
 	
 	private PekaEDGUI pkg;
@@ -53,6 +55,9 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 
 	private int dx, dy;
 	private int originX, originY;
+	
+	// variables for animation
+	//private int ani1 = 60, ani2 = 65, ani3 = 70, ani4 = 75; 
 	
 	BufferedImage buffer;
 	Graphics2D gg;
@@ -69,8 +74,11 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 		
 		setPreferredSize(new Dimension(PK2Map.MAP_WIDTH * 32, PK2Map.MAP_HEIGHT * 32));
 		
-		setBackground(Settings.DEFAULT_BACKGROUND);
-		setTileset(Settings.DEFAULT_TILESET);
+		Data.bgFile = new File(Settings.SCENERY_PATH + "\\" + Settings.DEFAULT_BACKGROUND);
+		Data.tilesetFile = new File(Settings.TILES_PATH + "\\" + Settings.DEFAULT_TILESET);
+		
+		setBackground();
+		setTileset();
 		
 		buffer = new BufferedImage(PK2Map.MAP_WIDTH * 32, PK2Map.MAP_HEIGHT * 32, BufferedImage.TYPE_INT_ARGB);
 		gg = (Graphics2D) buffer.getGraphics();
@@ -156,6 +164,21 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 						}
 						
 						drawTile(g2d, i * 32, j * 32, Data.map.getTileAt((i * 32), (j * 32), Constants.LAYER_FOREGROUND));
+						
+						/*
+						 * Animated tiles, not used
+						 * 
+						if (Data.map.getTileAt((i * 32), (j * 32), Constants.LAYER_FOREGROUND) == 60) {
+							drawTile(g2d, i * 32, j * 32, ani1);
+						} else if (Data.map.getTileAt((i * 32), (j * 32), Constants.LAYER_FOREGROUND) == 65) {
+							drawTile(g2d, i * 32, j * 32, ani2);
+						} else if (Data.map.getTileAt((i * 32), (j * 32), Constants.LAYER_FOREGROUND) == 70) {
+							drawTile(g2d, i * 32, j * 32, ani3);
+						} else if (Data.map.getTileAt((i * 32), (j * 32), Constants.LAYER_FOREGROUND) == 75) {
+							drawTile(g2d, i * 32, j * 32, ani4);
+						} else {
+							drawTile(g2d, i * 32, j * 32, Data.map.getTileAt((i * 32), (j * 32), Constants.LAYER_FOREGROUND));
+						}*/
 					}
 				}
 			}
@@ -248,10 +271,10 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 		}
 	}
 	
-	public void setTileset(String s) {
+	public void setTileset() {
 		if (!Settings.BASE_PATH.isEmpty()) {
 			try {
-				tileset = ImageIO.read(new File(Settings.TILES_PATH + s));
+				tileset = ImageIO.read(Data.tilesetFile);
 				
 				byte[] rs = new byte[256];
 				byte[] gs = new byte[256];
@@ -312,27 +335,43 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 					}
 				}
 			} catch (IOException e) {
-				JOptionPane.showMessageDialog(this, "Could'nt read tileset file.\n'" + s + "'", "Error", JOptionPane.OK_OPTION);
+				//JOptionPane.showMessageDialog(this, "Couldn't read tileset file.\n'" + s + "'", "Error", JOptionPane.OK_OPTION);
 			}
 		}
 	}
 	
-	public void setBackground(String str) {
+	public void setBackground() {
 		if (!Settings.BASE_PATH.isEmpty()) {
 			try {
-				background = ImageIO.read(new File(Settings.SCENERY_PATH + str));
+				background = ImageIO.read(Data.bgFile);
 				
 				Data.bgPalette = (IndexColorModel) background.getColorModel();
 				Data.bgImg = background;
 			} catch (IOException e) {
-				JOptionPane.showMessageDialog(this, "Could'nt read background file.\n'" + str + "'", "Error", JOptionPane.OK_OPTION);
+				JOptionPane.showMessageDialog(this, "Couldn't read background file.\n'" + Data.bgFile.getName()+ "'", "Error", JOptionPane.OK_OPTION);
 			}
 		}
 	}
 	
 	public void setMap() {
-		setBackground(Data.map.getBackground());
-		setTileset(Data.map.getTileset());
+		setBackground();
+		setTileset();
+	}
+	
+	private void panView(int newX, int newY) {
+		int deltaX = originX - newX;
+        int deltaY = originY - newY;
+	
+		JViewport viewPort = (JViewport) SwingUtilities.getAncestorOfClass(JViewport.class, this);
+        if (viewPort != null) {
+            Rectangle view = viewPort.getViewRect();
+            view.x += deltaX;
+            view.y += deltaY;
+
+            scrollRectToVisible(view);
+            
+            Data.mmp.reposition();
+        }
 	}
 	
 	@Override
@@ -444,19 +483,7 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 					}
 				}
 			} else if (mouseButton == MouseEvent.BUTTON2) {
-				int deltaX = originX - e.getX();
-                int deltaY = originY - e.getY();
-			
-				JViewport viewPort = (JViewport) SwingUtilities.getAncestorOfClass(JViewport.class, this);
-                if (viewPort != null) {
-                    Rectangle view = viewPort.getViewRect();
-                    view.x += deltaX;
-                    view.y += deltaY;
-
-                    scrollRectToVisible(view);
-                    
-                    Data.mmp.reposition();
-                }
+				panView(e.getX(), e.getY());
 			}
 			
 			repaint();
@@ -677,6 +704,7 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 		updateUI();
 		repaint();
 		
+		Data.mmp.reposition();
 		Data.mmp.resizeViewportRect();
 		Data.mmp.repaint();
 		
@@ -685,17 +713,30 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 	}
 
 	private void zoomIn(Point ml) {
-		Data.scale += 0.055f;
+		Data.scale *= 1.055f;
 		Point pos = pkg.scrollPane2.getViewport().getViewPosition();
 		
+		/*
 		int newX = (int) ((pos.x * Data.scale) + ((pkg.scrollPane2.getVisibleRect().width * Data.scale) / 2));
 		int newY = (int) ((pos.y * Data.scale) + ((pkg.scrollPane2.getVisibleRect().height * Data.scale) / 2));
-		
-		/*
-		newX = (int) (ml.x * (Data.scale - 1) - (Data.scale - 1) * pos.x);
-		newY = (int) (ml.y * (Data.scale - 1) - (Data.scale - 1) * pos.y);
 		*/
 		
+		int newX = (int) (ml.x * (1.055f - 1f) + 1.055f * pos.x);
+		int newY = (int) (ml.y * (1.055f - 1f) + 1.055f * pos.y);
+
+		JViewport viewPort = (JViewport) SwingUtilities.getAncestorOfClass(JViewport.class, this);
+        if (viewPort != null) {
+            Rectangle view = viewPort.getViewRect();
+            view.x = newX;
+            view.y = newY;
+
+            viewPort.setViewPosition(new Point(newX, newY));
+            
+            revalidate();
+            repaint();
+            
+            Data.mmp.reposition();
+        }
 		
 		/* THIS SHIT AIN'T WORK
 		 * 
@@ -794,4 +835,44 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 		
 		repaint();
 	}
+
+	/*
+	@Override
+	public void run() {
+		while (true) {
+			try {
+				if (Data.lp != null) {
+					ani1++;
+			
+					if (ani1 > 64) {
+						ani1 = 60;
+					}
+					
+					ani2++;
+					
+					if (ani2 > 69) {
+						ani2 = 65;
+					}
+					
+					ani3++;
+					
+					if (ani3 > 74) {
+						ani3 = 70;
+					}
+					
+					ani4++;
+					
+					if (ani4 > 79) {
+						ani4 = 75;
+					}
+					
+					Data.lp.repaint();
+				}
+				
+				Thread.sleep(30 / 2 * 10);
+			} catch (InterruptedException ex) {
+				ex.printStackTrace();
+			}
+		}
+	}*/
 }
