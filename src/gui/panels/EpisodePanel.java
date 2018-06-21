@@ -217,6 +217,8 @@ public class EpisodePanel extends JPanel {
 		try {
 			BufferedReader r = new BufferedReader(new FileReader(file));
 			
+			dfm.removeAllElements();
+			
 			Data.currentEpisodeFile = file;
 			
 			Data.currentEpisodeName = r.readLine();
@@ -234,20 +236,6 @@ public class EpisodePanel extends JPanel {
 				
 				dfm.addElement(filepath[filepath.length - 1]);
 			}
-		
-			// Sorting the list
-			/*
-			PK2Map lastMap = null;
-			for (int j = 0; j < 4; j++) {
-				for (int i = 1; i < files.size(); i++) {
-					lastMap = files.get(i - 1);
-					
-					if (lastMap.levelNumber > files.get(i).levelNumber) {
-						files.set(i - 1, files.get(i));
-						files.set(i, lastMap);
-					}
-				}
-			}*/
 			
 			r.close();
 		} catch (FileNotFoundException e) {
@@ -272,7 +260,7 @@ public class EpisodePanel extends JPanel {
 	}
 	
 	public void importLevel(File file) {
-		if (Data.episodeFiles.size() < Data.EPISODE_LEVEL_LIMIT) {
+		if (Data.episodeFiles.size() < Data.EPISODE_LEVEL_LIMIT) {			
 			if (file.getParentFile().getPath() != Data.currentEpisodePath) {
 				try {
 					Files.copy(file.toPath(), (new File(Data.currentEpisodePath + File.separatorChar + file.getName()).toPath()), StandardCopyOption.REPLACE_EXISTING);

@@ -5,6 +5,7 @@ import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Event;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
@@ -173,13 +174,24 @@ public class PekaEDGUI {
 		mFile.add(mifImportEpisode);
 		mFile.add(mifExportEpisode);
 		
+		Image img = null;
+		try {
+			img = ImageIO.read(getClass().getResource("/pkedit.png"));
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+		
 		JDialog exportDialog = new JDialog();
+		exportDialog.setIconImage(img);
+		exportDialog.setAlwaysOnTop(true);
+		exportDialog.setLocationRelativeTo(frame);
+		
 		exportDialog.setTitle("Exporting episode...");
-		JLabel edLbl = new JLabel("Exporting episode...");
-		JLabel edLbl2 = new JLabel("You can close this window when done.");
+		JLabel edLbl = new JLabel("Writing files...");
+		edLbl.setFont(new Font(edLbl.getFont().getFontName(), Font.PLAIN, 14));
+		edLbl.setHorizontalAlignment(JLabel.CENTER);
 		
 		exportDialog.getContentPane().add(edLbl);
-		exportDialog.getContentPane().add(edLbl2);
 		
 		exportDialog.setSize(new Dimension(300, 100));
 		
@@ -265,6 +277,24 @@ public class PekaEDGUI {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				if (!Data.currentEpisodeName.isEmpty()) {
+					if (Data.fileChanged) {
+						showSaveWarning();
+					}
+					
+					if (Data.episodeChanged) {
+						int res = showEpisodeSaveWarning();
+						
+						if (res != 2) {
+							if (res == 0) {
+								ep.saveEpisode();
+							}
+						} else {
+							return;
+						}
+					}
+					
+					edLbl.setText("Writing files...");
+					
 					JFileChooser fc = new JFileChooser();
 					
 					fc.setFileFilter(new FileFilter() {
@@ -298,12 +328,8 @@ public class PekaEDGUI {
 								
 								boolean done = EpisodeExtractor.extract(f);
 								
-								System.out.println(done);
-								
 								if (done) {
 									edLbl.setText("Done!");
-								} else {
-									edLbl.setText("Writing files...");
 								}
 								
 								try {
@@ -319,7 +345,7 @@ public class PekaEDGUI {
 						t.start();
 					}
 				} else {
-					JOptionPane.showMessageDialog(null, "Create a new or import an existing episode first.", "No episode loaded!", JOptionPane.ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(frame, "Load an episode, before exporting it.", "No episode loaded", JOptionPane.ERROR_MESSAGE);
 				}
 			};
 			
@@ -1274,13 +1300,6 @@ public class PekaEDGUI {
 	
 		Data.tp = tp;
 		
-		Image img = null;
-		try {
-			img = ImageIO.read(getClass().getResource("/pkedit.png"));
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
-		
 		if (Settings.loadEpisodeOnStartup) {
 			try {
 				if (new File("lastepisode").exists()) {
@@ -1427,8 +1446,6 @@ public class PekaEDGUI {
 			Data.bgFile = new File(Settings.SCENERY_PATH + "\\" + Data.map.getBackground());
 		}
 		
-		System.out.println(Data.bgFile.getAbsolutePath());
-		
 		if (new File(Data.currentFile.getParentFile().getAbsolutePath() + "\\" + Data.map.getTileset()).exists()) {
 			Data.tilesetFile = new File(Data.currentFile.getParentFile().getAbsolutePath() + "\\" + Data.map.getTileset());
 		} else {
@@ -1560,6 +1577,22 @@ public class PekaEDGUI {
 		} else if (op == JOptionPane.NO_OPTION) {
 			quit = 1;
 		} else if (op == JOptionPane.CANCEL_OPTION) {
+			quit = 2;
+		}
+		
+		return quit;
+	}
+	
+	private int showEpisodeSaveWarning() {
+		int op = JOptionPane.showConfirmDialog(frame, "Episode has changed. Do you want to save?", "Save changes?", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
+		
+		int quit = 0;
+		
+		if (op == JOptionPane.YES_OPTION) {
+			quit = 0;
+		} else if (op == JOptionPane.NO_OPTION) {
+			quit = 1;
+		} else {
 			quit = 2;
 		}
 		

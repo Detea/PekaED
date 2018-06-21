@@ -166,7 +166,7 @@ public final class EpisodeExtractor {
 	}
 	
 	private static void addToFiles(String filename, String folder, ArrayList<String> list) {
-		if (!isVanilla(filename, list)) {
+		if (!isVanilla(filename, list) && !trackList.contains(getPath(filename, folder).getAbsolutePath())) {
 			File entry = getPath(filename, folder);
 			
 			ze.add(new ZipEntry("episodes\\" + Data.currentEpisodeName + "\\" + entry.getName()));
@@ -174,6 +174,8 @@ public final class EpisodeExtractor {
 			if (entry != null) {
 				tmpFiles.add(entry);
 			}
+			
+			trackList.add(entry.getAbsolutePath());
 		}
 	}
 	
