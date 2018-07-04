@@ -374,7 +374,7 @@ public class PekaEDGUI {
 					
 				});
 				
-				int res = fc.showSaveDialog(frame);
+				int res = fc.showOpenDialog(frame);
 				
 				if (res == JFileChooser.APPROVE_OPTION) {
 					ep.loadEpisode(fc.getSelectedFile());
