@@ -1,15 +1,14 @@
 package helpers;
 
 import java.io.BufferedReader;
-import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -37,7 +36,7 @@ public final class EpisodeExtractor {
 		boolean done = false;
 		
 		try {
-			BufferedReader r = new BufferedReader(new FileReader("vanillaFiles/tiles"));
+			BufferedReader r = new BufferedReader(new InputStreamReader(EpisodeExtractor.class.getResourceAsStream("/tiles")));
 			
 			String l;
 			
@@ -47,7 +46,7 @@ public final class EpisodeExtractor {
 			
 			r.close();
 			
-			r = new BufferedReader(new FileReader("vanillaFiles/scenery"));
+			r = new BufferedReader(new InputStreamReader(EpisodeExtractor.class.getResourceAsStream("/scenery")));
 			
 			while ((l = r.readLine()) != null) {
 				scenery.add(l.toLowerCase());
@@ -55,7 +54,7 @@ public final class EpisodeExtractor {
 			
 			r.close();
 			
-			r = new BufferedReader(new FileReader("vanillaFiles/sprites"));
+			r = new BufferedReader(new InputStreamReader(EpisodeExtractor.class.getResourceAsStream("/sprites")));
 			
 			while ((l = r.readLine()) != null) {
 				sprites.add(l.toLowerCase());
@@ -63,7 +62,7 @@ public final class EpisodeExtractor {
 			
 			r.close();
 			
-			r = new BufferedReader(new FileReader("vanillaFiles/music"));
+			r = new BufferedReader(new InputStreamReader(EpisodeExtractor.class.getResourceAsStream("/music")));
 			
 			while ((l = r.readLine()) != null) {
 				music.add(l.toLowerCase());
