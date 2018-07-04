@@ -1,7 +1,7 @@
 package gui.panels;
 
-import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -15,7 +15,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
 
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
@@ -69,6 +68,9 @@ public class EpisodePanel extends JPanel {
 		
 		JLabel lblEpisode = new JLabel("Episode: ");
 		lblEpisodeName = new JLabel("");
+		
+		lblEpisode.setFont(new Font(lblEpisode.getFont().getName(), Font.BOLD, lblEpisode.getFont().getSize()));
+		lblEpisode.setPreferredSize(new Dimension(40, 30));
 		
 		JButton btnImport = new JButton("Import Level");
 		JButton btnRemove = new JButton("Remove");
