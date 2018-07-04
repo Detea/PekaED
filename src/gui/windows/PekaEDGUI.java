@@ -403,6 +403,8 @@ public class PekaEDGUI {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				importEpisode();
+				
+				tabbedPane.setSelectedIndex(2);
 			}
 			
 		});
@@ -692,6 +694,8 @@ public class PekaEDGUI {
 				} else {
 					Data.showSprites = true;
 				}
+				
+				Data.lp.repaint();
 			}
 			
 		});
