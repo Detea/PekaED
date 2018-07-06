@@ -229,21 +229,25 @@ public class SpritePanel extends JPanel {
 				if (fc.getSelectedFile().exists()) {
 					PK2Sprite s = new PK2Sprite(fc.getSelectedFile().getName());
 					
-					Vector v = new Vector();
-					v.addElement(" " + s.getName() + " (" + fc.getSelectedFile().getName() + ")");
-					
-					dfm.addRow(v);
-					
-					Data.map.addSprite(s, fc.getSelectedFile().getName());
-					
-					table.setRowSelectionInterval(dfm.getRowCount() - 1, dfm.getRowCount() - 1);
-					
-					pkg.setEditMode(Constants.EDIT_MODE_SPRITES);
-					
-					Data.selectedSprite = dfm.getRowCount() - 1;
-					Data.selectedTile = 255;
-					Data.selectedTileForeground = 255;
-					Data.selectedTileBackground = 255;
+					if (s.version[2] == '3') {
+						Vector v = new Vector();
+						v.addElement(" " + s.getName() + " (" + fc.getSelectedFile().getName() + ")");
+						
+						dfm.addRow(v);
+						
+						Data.map.addSprite(s, fc.getSelectedFile().getName());
+						
+						table.setRowSelectionInterval(dfm.getRowCount() - 1, dfm.getRowCount() - 1);
+						
+						pkg.setEditMode(Constants.EDIT_MODE_SPRITES);
+						
+						Data.selectedSprite = dfm.getRowCount() - 1;
+						Data.selectedTile = 255;
+						Data.selectedTileForeground = 255;
+						Data.selectedTileBackground = 255;
+					} else {
+						JOptionPane.showMessageDialog(null, "Only sprites version 1.3 allowed!", "Wrong Sprite", JOptionPane.ERROR_MESSAGE);
+					}
 				} else {
 					JOptionPane.showMessageDialog(null, "Coulnd't find file '" + fc.getSelectedFile().getName() + "'.", "Error", JOptionPane.OK_OPTION);
 				}

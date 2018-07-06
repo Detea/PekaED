@@ -23,9 +23,7 @@ public class PK2Sprite {
 	public char[] imageFile = new char[100];
 	public char[][] soundFiles = new char[7][100];
 	
-	private char[] version13 = {'1', '.', '3', '\0'};
-	private char[] version12 = {'1', '.', '2', '\0'};
-	private char[] version11 = {'1', '.', '1', '\0'};
+	public char[] version = {'1', '.', '3', '\0'};
 	
 	public String ImageFileStr = "";
 	
@@ -154,8 +152,6 @@ public class PK2Sprite {
 			}
 			
 			DataInputStream dis = new DataInputStream(new FileInputStream(fi));
-			
-			char[] version = {'1', '.', '3', '\0'};
 			
 			for (int i = 0; i < version.length; i++) {
 				version[i] = (char) dis.readByte();
