@@ -719,6 +719,20 @@ public class PekaEDGUI {
 			
 		});
 		
+		JToggleButton btnShowTileNr = new JToggleButton("Show Tile Number");
+		btnShowTileNr.setSelected(true);
+		btnShowTileNr.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				if (Data.showTileNr) {
+					Data.showTileNr = false;
+				} else {
+					Data.showTileNr = true;
+				}
+			}
+		});
+				
 		Vector<String> ml = new Vector<String>();
 		ml.add("Tile Mode");
 		ml.add("Sprite Mode");
@@ -744,6 +758,7 @@ public class PekaEDGUI {
 		
 		toolbar.add(btShowSprites);
 		toolbar.add(btnHighlightSprites);
+		toolbar.add(btnShowTileNr);
 		toolbar.addSeparator();
 		toolbar.add(lblLayer); 
 		toolbar.add(cbLayers);
