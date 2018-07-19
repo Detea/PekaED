@@ -1,6 +1,7 @@
 package gui.panels;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -9,8 +10,8 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferInt;
 import java.awt.image.IndexColorModel;
-import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
@@ -24,8 +25,10 @@ import gui.windows.PekaEDGUI;
 public class TilePanel extends JPanel implements MouseListener, MouseMotionListener {
 
 	BufferedImage tileset;	
-	int x, y, w, h, dx, dy;
+	int x, y, w, h, dx, dy, fx, fy, in;
 	private PekaEDGUI pk;
+	
+	private int[][] tileTable = new int[320 / 32][480 / 32]; // shouldn't be hardcoded, in case there will be support for bigger tile sets, but there probably won't
 	
 	public TilePanel(PekaEDGUI pk) {
 		addMouseListener(this);
@@ -59,6 +62,18 @@ public class TilePanel extends JPanel implements MouseListener, MouseMotionListe
 
 			g.setColor(Color.BLACK);
 			g.drawRect(x + 2, y + 2, 27, 27);
+		}
+		
+		g.setColor(Color.WHITE);
+		g.setFont(new Font(g.getFont().getName(), Font.BOLD, 12));
+		
+		// Ensure that the tile number is always centered
+		if (in / 10 < 1) {
+			g.drawString("" + in, x + 13, y + 20);
+		} else if (in / 10 <= 10) {
+			g.drawString("" + in, x + 6, y + 20);
+		} else {
+			g.drawString("" + in, x + 4, y + 20);
 		}
 	}
 	
@@ -110,6 +125,22 @@ public class TilePanel extends JPanel implements MouseListener, MouseMotionListe
 			}
 		}
 		
+		tileTable = new int[tileset.getHeight() / 32][tileset.getWidth() / 32];
+		
+		int xx = 0, yy = 0, ii = 0;
+		while (yy < tileset.getHeight() / 32) {
+			tileTable[yy][xx] = ii;
+			
+			xx++;
+			
+			if (xx >= tileset.getWidth() / 32) {
+				yy++;
+				xx = 0;
+			}
+			
+			ii++;
+		}
+		
 		repaint();
 	}
 	
@@ -157,8 +188,15 @@ public class TilePanel extends JPanel implements MouseListener, MouseMotionListe
 
 	@Override
 	public void mouseMoved(MouseEvent e) {
-		// TODO Auto-generated method stub
+		x = e.getX() / 32;
+		y = e.getY() / 32;
 		
+		in = tileTable[y][x];
+		
+		x *= 32;
+		y *= 32;
+		
+		repaint();
 	}
 
 	@Override
