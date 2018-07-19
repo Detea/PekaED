@@ -6,12 +6,13 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import javax.swing.SwingUtilities;
+
 import data.Constants;
 import data.Data;
 import data.Settings;
 import gui.windows.PekaEDGUI;
 import gui.windows.SetPathDialog;
-import helpers.EpisodeExtractor;
 
 public class PekaED {
 	public static void main(String[] args) {
@@ -37,7 +38,11 @@ public class PekaED {
 				if (!pathFile.exists()) {
 					new SetPathDialog();
 				} else {
-					new PekaEDGUI().setup();
+					SwingUtilities.invokeLater(new Runnable() {
+						public void run() {
+							new PekaEDGUI().setup();
+						}
+					});
 				}
 				
 			} catch (FileNotFoundException e1) {

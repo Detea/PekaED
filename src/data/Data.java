@@ -5,6 +5,7 @@ import java.awt.image.IndexColorModel;
 import java.io.File;
 import java.util.ArrayList;
 
+import javax.swing.JLabel;
 import javax.swing.JSpinner;
 
 import gui.panels.LevelPanel;
@@ -60,6 +61,8 @@ public class Data {
 	
 	public static boolean fileChanged = false, episodeChanged = false;
 	public static String currentEpisodeName = "";
+	
+	public static JLabel lblTileNrVal, lblSprFileVal, lblTileBgNrVal;
 	
 	public static File bgFile, tilesetFile;
 	

@@ -34,11 +34,11 @@ import data.Settings;
 import gui.windows.PekaEDGUI;
 import pekkakana.PK2Map;
 
-public class LevelPanel extends JPanel implements MouseListener, MouseMotionListener, MouseWheelListener {
+public class LevelPanel extends JPanel implements MouseListener, MouseMotionListener, MouseWheelListener, Runnable {
 	
 	private Thread thread;
 	
-	private int mx, my, layer, mouseButton;
+	private int mx, my, layer, mouseButton, mxFixed, myFixed;
 	private int viewX, viewY, viewW, viewH;
 	
 	private BufferedImage background, tileset;
@@ -113,7 +113,6 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 			viewH = (int) ((pkg.scrollPane2.getViewport().getViewRect().height / Data.scale) / 32);
 			
 			Graphics2D g2d = (Graphics2D) g;
-			//g2d.scale(Data.scale, Data.scale);
 			g2d.transform(af);
 			
 			// Not the best solution, but it works. This should be improved.
@@ -138,16 +137,11 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 			}
 			
 			if (Data.showSprites) {
-				for (int i = viewX; i < (viewX + viewW) + 16; i++) {
-					for (int j = viewY; j < (viewY + viewH) + 16; j++) { // 16 is an arbitrary value. This should be the size of the biggest sprites divided by 32
+				for (int i = viewX; i < (viewX + viewW) + 32; i++) {
+					for (int j = viewY; j < (viewY + viewH) + 32; j++) { // 32 is an arbitrary value. This should be the size of the biggest sprites divided by 32
 						if ((PK2Map.MAP_WIDTH * i + j) < Data.map.sprites.length && Data.map.sprites[PK2Map.MAP_WIDTH * i + j] != 255) {
 							if (!Data.map.spriteList.isEmpty() && Data.map.spriteList.get(Data.map.sprites[PK2Map.MAP_WIDTH * i + j]).image != null) {
 								g2d.drawImage(Data.map.spriteList.get(Data.map.sprites[PK2Map.MAP_WIDTH * i + j]).image, ((i * 32) - (Data.map.spriteList.get(Data.map.sprites[PK2Map.MAP_WIDTH * i + j]).image.getWidth() / 2) + 16), ((j * 32) - (Data.map.spriteList.get(Data.map.sprites[PK2Map.MAP_WIDTH * i + j]).image.getHeight() - 32)), null);
-							
-								if (Data.editMode == Constants.EDIT_MODE_SPRITES && Data.showSpriteRect) {
-									g.setColor(Color.white);
-									g.drawRect(i * 32, j * 32, 32, 32);
-								}
 							}
 						}
 					}
@@ -183,8 +177,6 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 				}
 			}
 			
-			//g2d.drawImage(buffer.getSubimage(0, 0, 1280, 720), 0, 0, (int) (buffer.getWidth() / Data.scale), (int) (buffer.getHeight() / Data.scale), null);
-			
 			// If the currently selected tool is the brush, draw the selected tiles at the position of the mouse cursor
 			if (Data.editMode == Constants.EDIT_MODE_TILES) {
 				if (Data.selectedTool == Data.TOOL_BRUSH) {
@@ -211,7 +203,8 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 							
 							while (i < Data.multiSelectionForeground.size()) {
 								drawTile(g, (mx + (x * 32)) - ((Data.sw * 32) / 2), (my + (y * 32)) - ((Data.sh * 32) / 2), Data.multiSelectionForeground.get(i));
-
+								//drawTile(g, ((mxFixed + 16) + (x * 32)) - ((Data.sw * 32) / 2), ((myFixed + 16) + (y * 32)) - ((Data.sh * 32) / 2), Data.multiSelectionForeground.get(i));
+								
 								y++;
 
 								if (y >= Data.sh) {
@@ -229,31 +222,47 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 						 * should also be drawn.
 						 */
 						if (Data.selectedTileBackground != 255) {
-							drawTile(g, mx - 16, my - 16, Data.selectedTileBackground);
+							drawTile(g, mxFixed, myFixed, Data.selectedTileBackground);
 						}
 						
 						if (Data.selectedTileForeground != 255) {
-							drawTile(g, mx - 16, my - 16, Data.selectedTileForeground);
+							drawTile(g, mxFixed, myFixed, Data.selectedTileForeground);
 						}
 					}
 				}
 			} else if (Data.editMode == Constants.EDIT_MODE_SPRITES) {
 				if (Data.selectedSprite != 255 && Data.selectedTool == Data.TOOL_BRUSH) {
 					if (!Data.map.spriteList.isEmpty()) {
-						g.drawImage(Data.map.spriteList.get(Data.selectedSprite).image, mx - (Data.map.spriteList.get(Data.selectedSprite).image.getWidth() / 2), my - (Data.map.spriteList.get(Data.selectedSprite).image.getHeight() / 2), null);
+						g2d.drawImage(Data.map.spriteList.get(Data.selectedSprite).image, mxFixed - (Data.map.spriteList.get(Data.selectedSprite).width / 2) + 16, myFixed - Data.map.spriteList.get(Data.selectedSprite).height + 32, null);
+						
+						g2d.setColor(Color.white);
+						g2d.drawRect(mxFixed, myFixed, 32, 32);
 					}
 				}
 			}
 			
+			if (Data.showSprites && Data.editMode == Constants.EDIT_MODE_SPRITES && Data.showSpriteRect) {
+				for (int i = viewX; i < (viewX + viewW) + 32; i++) {
+					for (int j = viewY; j < (viewY + viewH) + 32; j++) { // 32 is an arbitrary value. This should be the size of the biggest sprites divided by 32
+						if ((PK2Map.MAP_WIDTH * i + j) < Data.map.sprites.length && Data.map.sprites[PK2Map.MAP_WIDTH * i + j] != 255) {
+							if (!Data.map.spriteList.isEmpty() && Data.map.spriteList.get(Data.map.sprites[PK2Map.MAP_WIDTH * i + j]).image != null) {
+								g2d.setColor(Color.white);
+								g2d.drawRect(i * 32, j * 32, 32, 32);
+							}
+						}
+					}
+				}
+			}
+	
 			if (Data.dragging) {
-				g.setColor(Color.black);
-				g.drawRect(dx * 32, dy * 32, Data.sw * 32, Data.sh * 32);
+				g2d.setColor(Color.black);
+				g2d.drawRect(dx * 32, dy * 32, Data.sw * 32, Data.sh * 32);
 				
-				g.setColor(Color.white);
-				g.drawRect(dx * 32 + 1, dy * 32 + 1, Data.sw * 32 - 2, Data.sh * 32 - 2);
+				g2d.setColor(Color.white);
+				g2d.drawRect(dx * 32 + 1, dy * 32 + 1, Data.sw * 32 - 2, Data.sh * 32 - 2);
 				
-				g.setColor(Color.black);
-				g.drawRect(dx * 32 + 2, dy * 32 + 2, Data.sw * 32 - 4, Data.sh * 32 - 4);
+				g2d.setColor(Color.black);
+				g2d.drawRect(dx * 32 + 2, dy * 32 + 2, Data.sw * 32 - 4, Data.sh * 32 - 4);
 			}
 		}
 	}
@@ -268,6 +277,12 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 	private void drawTile(Graphics g, int x, int y, int tile) {
 		if (tile != 255 && tile != -1) {
 			g.drawImage(tiles.get(tile), x, y, null);
+		}
+	}
+	
+	private void drawInactiveTile(Graphics g, int x, int y, int tile) {
+		if (tile != 255 && tile != -1) {
+			g.drawImage(inactiveTiles.get(tile), x, y, null);
 		}
 	}
 	
@@ -384,6 +399,9 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 			mx = (int) ml.getX();
 			my = (int) ml.getY();
 			
+			mxFixed = (mx / 32) * 32;
+			myFixed = (my / 32) * 32;
+			
 			if (mouseButton == MouseEvent.BUTTON1) {
 				Data.fileChanged = true;
 				
@@ -410,7 +428,7 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 							if (!Data.multiSelectionBackground.isEmpty() && (Data.currentLayer == Constants.LAYER_BACKGROUND || Data.currentLayer == Constants.LAYER_BOTH)) {
 								int x = 0, y = 0, i = 0;
 								while (i < Data.multiSelectionBackground.size()) {
-									Data.map.setBackgroundTile(((mx + 16) + (x * 32)) - ((Data.sw * 32) / 2), ((my + 16) + (y * 32)) - ((Data.sh * 32) / 2), Data.multiSelectionBackground.get(i));
+									Data.map.setBackgroundTile(((mxFixed + 16) + (x * 32)) - ((Data.sw * 32) / 2), ((myFixed + 16) + (y * 32)) - ((Data.sh * 32) / 2), Data.multiSelectionBackground.get(i));
 									
 									y++;
 
@@ -423,9 +441,9 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 								}
 							}
 						} else {
-							if (Data.selectedTileForeground != 255) {
+							if (Data.currentLayer == Constants.LAYER_FOREGROUND || Data.currentLayer == Constants.LAYER_BOTH) {
 								Data.map.setForegroundTile(mx, my, Data.selectedTileForeground);
-							} else if (Data.selectedTileBackground != 255) {
+							} else if (Data.currentLayer == Constants.LAYER_BACKGROUND) {
 								Data.map.setBackgroundTile(mx, my, Data.selectedTileBackground);
 							}
 						}
@@ -503,6 +521,31 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 		mx = (int) ml.getX();
 		my = (int) ml.getY();
 		
+		mxFixed = (mx / 32) * 32;
+		myFixed = (my / 32) * 32;
+		
+		if (Data.map.getTileAt(mx, my, Constants.LAYER_FOREGROUND) != 255) {
+			Data.lblTileNrVal.setText(Integer.toString(Data.map.getTileAt(mx, my, Constants.LAYER_FOREGROUND)));
+		} else {
+			Data.lblTileNrVal.setText("None");
+		}
+		
+		if (Data.map.getTileAt(mx, my, Constants.LAYER_BACKGROUND) != 255) {
+			Data.lblTileBgNrVal.setText(Integer.toString(Data.map.getTileAt(mx, my, Constants.LAYER_BACKGROUND)));
+		} else {
+			Data.lblTileBgNrVal.setText("None");
+		}
+		
+		if (!Data.map.spriteList.isEmpty() && Data.map.getSpriteAt(mx, my) != 255) {
+			Data.lblSprFileVal.setText(Data.map.spriteList.get(Data.map.getSpriteAt(mx, my)).filename.getName());
+		} else {
+			Data.lblSprFileVal.setText("None");
+		}
+
+		
+		Data.lblTileNrVal.paintImmediately(Data.lblTileNrVal.getVisibleRect());
+		Data.lblSprFileVal.paintImmediately(Data.lblSprFileVal.getVisibleRect());
+		
 		if (!Data.multiSelectionBackground.isEmpty() || !Data.multiSelectionForeground.isEmpty() || Data.selectedTileBackground != 255 || Data.selectedTileForeground != 255 || Data.selectedSprite != 255) {
 			repaint();
 		}
@@ -559,9 +602,9 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 								}
 							}
 						} else {
-							if (Data.selectedTileForeground != 255) {
+							if (Data.currentLayer == Constants.LAYER_FOREGROUND || Data.currentLayer == Constants.LAYER_BOTH) {
 								Data.map.setForegroundTile(mx, my, Data.selectedTileForeground);
-							} else if (Data.selectedTileBackground != 255) {
+							} else if (Data.currentLayer == Constants.LAYER_BACKGROUND) {
 								Data.map.setBackgroundTile(mx, my, Data.selectedTileBackground);
 							}
 						}
@@ -583,11 +626,13 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 			} else if (e.getButton() == MouseEvent.BUTTON3) {
 				Data.fileChanged = true;
 				
-				if (Data.editMode == Constants.EDIT_MODE_TILES) {
+				if (Data.map.sprites[PK2Map.MAP_WIDTH * (mx / 32) + (my / 32)] == 255) {
 					/*
 					 * If the user doesn't have a sprite selected they can select one or multiple tiles from the level.
 					 * That is being handled in the following code.
 					 */
+					pkg.setEditMode(Constants.EDIT_MODE_TILES);
+					
 					switch (Data.selectedTool) {
 						case Data.TOOL_BRUSH:
 							int x = 0, y = 0;
@@ -618,8 +663,10 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 							Data.multiSelectLevel = false;
 							Data.multiSelectTiles = false;
 					}
-				} else if (Data.editMode == Constants.EDIT_MODE_SPRITES) {
+				} else {
 					if (Data.selectedTool == Data.TOOL_BRUSH) {
+						pkg.setEditMode(Constants.EDIT_MODE_SPRITES);
+						
 						Data.selectedSprite = Data.map.sprites[PK2Map.MAP_WIDTH * (mx / 32) + (my / 32)];
 					}
 				}
@@ -630,7 +677,6 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 			
 			repaint();
 			
-			// Change this
 			if (Data.mmp != null) {
 				Data.mmp.repaint();
 			}
@@ -716,42 +762,24 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 		Data.scale *= 1.055f;
 		Point pos = pkg.scrollPane2.getViewport().getViewPosition();
 		
-		/*
-		int newX = (int) ((pos.x * Data.scale) + ((pkg.scrollPane2.getVisibleRect().width * Data.scale) / 2));
-		int newY = (int) ((pos.y * Data.scale) + ((pkg.scrollPane2.getVisibleRect().height * Data.scale) / 2));
-		*/
-		
-		int newX = (int) (ml.x * (1.055f - 1f) + 1.055f * pos.x);
-		int newY = (int) (ml.y * (1.055f - 1f) + 1.055f * pos.y);
-
-		JViewport viewPort = (JViewport) SwingUtilities.getAncestorOfClass(JViewport.class, this);
-        if (viewPort != null) {
-            Rectangle view = viewPort.getViewRect();
-            view.x = newX;
-            view.y = newY;
-
-            viewPort.setViewPosition(new Point(newX, newY));
-            
-            revalidate();
-            repaint();
-            
-            Data.mmp.reposition();
-        }
-		
 		/* THIS SHIT AIN'T WORK
 		 * 
 		 * This is really annoying. This is supposed to make it so that the editor zooms in on the mouse cursors position.
 		 * It kinda works, but only when the zoom value is above 1.1f or whatever.
 		 * It doesn't work at all, when the zoom value is below 1.
 		 * 
-		  if (Data.scale > 1) {
+		 */ 
+		
+		int newX, newY;
+		
+		if (Data.scale > 1) {
 			newX = (int) (ml.x * (Data.scale - 1) + ((Data.scale * pos.x) - ((Data.scale - 0.05f) * pos.x)));
 			newY = (int) (ml.y * (Data.scale - 1) + ((Data.scale * pos.y) - ((Data.scale - 0.05f) * pos.y)));
 		} else {
 			newX = (int) (ml.x * (Data.scale - 1) + ((Data.scale * pos.x) - ((Data.scale - 0.05f) * pos.x)));
 			newY = (int) (ml.y * (Data.scale - 1) + ((Data.scale * pos.y) - ((Data.scale - 0.05f) * pos.y)));
 		}
-		 */
+		
 		
 		if (newX < 0) {
 			newX = 0;
@@ -761,8 +789,9 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 			newY = 0;
 		}
 	
-	    pkg.scrollPane2.getViewport().setViewPosition(new Point(newX, newY));
-
+		pkg.scrollPane2.getHorizontalScrollBar().setValue(pkg.scrollPane2.getHorizontalScrollBar().getValue() - newX);
+		pkg.scrollPane2.getVerticalScrollBar().setValue(pkg.scrollPane2.getVerticalScrollBar().getValue() - newY);
+		
 	    pkg.scrollPane2.revalidate();
 	    pkg.scrollPane2.repaint();
 	    pkg.scrollPane2.updateUI();
@@ -834,6 +863,11 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 		}
 		
 		repaint();
+	}
+
+	@Override
+	public void run() {
+
 	}
 
 	/*

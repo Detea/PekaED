@@ -8,6 +8,7 @@ import java.awt.Event;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -40,6 +41,7 @@ import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.Box;
 import javax.swing.ComponentInputMap;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JButton;
@@ -86,7 +88,6 @@ import gui.panels.TilePanel;
 import helpers.EpisodeExtractor;
 import pekkakana.PK2Map;
 import pekkakana.PK2Sprite;
-import javax.swing.DefaultComboBoxModel;
 
 public class PekaEDGUI {
 	private JFrame frame;
@@ -129,6 +130,8 @@ public class PekaEDGUI {
 		
 		lp = new LevelPanel();
 		tp = new TilePanel(this);
+		
+		tp.setPreferredSize(new Dimension(320, 480));
 		
 		mmp = new MiniMapPanel();
 		Data.mmp = mmp;
@@ -770,8 +773,36 @@ public class PekaEDGUI {
 		Data.lp = lp;
 		
 		JScrollPane scrollPane1 = new JScrollPane(tp, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		JPanel infoPanel = new JPanel();
+		JLabel lblTileNr = new JLabel("Foreground tile number: ");
+		JLabel lblTileNrVal = new JLabel("");
+		
+		JLabel lblTileBgNr = new JLabel("Background tile number: ");
+		JLabel lblTileBgNrVal = new JLabel("");
+		
+		JLabel lblSprFile = new JLabel("Sprite file:");
+		JLabel lblSprFileVal = new JLabel("");
+		
+		GridLayout gl = new GridLayout(0, 2);
+
+		infoPanel.setLayout(gl);
+		infoPanel.add(lblTileNr);
+		infoPanel.add(lblTileNrVal);
+		infoPanel.add(lblTileBgNr);
+		infoPanel.add(lblTileBgNrVal);
+		infoPanel.add(lblSprFile);
+		infoPanel.add(lblSprFileVal);
+		
+		Data.lblTileNrVal = lblTileNrVal;
+		Data.lblTileBgNrVal = lblTileBgNrVal;
+		Data.lblSprFileVal = lblSprFileVal;
+		
+		JPanel sPanelWest = new JPanel();
+		sPanelWest.add(scrollPane1, BorderLayout.CENTER);
+		sPanelWest.add(infoPanel, BorderLayout.SOUTH);
+		
 		scrollPane2 = new JScrollPane(Data.lp, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, scrollPane1, scrollPane2);
+		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, sPanelWest, scrollPane2);
 		
 		scrollPane2.getVerticalScrollBar().setUnitIncrement(32);
 		scrollPane2.getHorizontalScrollBar().setUnitIncrement(32);

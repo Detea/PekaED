@@ -457,6 +457,10 @@ public class PK2Map {
 		return 255;
 	}
 	
+	public int getSpriteAt(int x, int y) {
+		return sprites[PK2Map.MAP_WIDTH * (x / 32) + (y / 32)];
+	}
+	
 	public String getSprite(int i) {
 		return cleanString(prototypes[i]);
 	}

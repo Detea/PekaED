@@ -142,9 +142,11 @@ public class SetMapPositionDialog extends JDialog {
 			
 			g.drawImage(bg, 0, 0, null);
 			
-			for (int i = 0; i < xPos.size(); i++) {
-				if (icons.get(i) != ci.getSelectedIndex()) {
-					g.drawImage(otherIconList.get(icons.get(i)), xPos.get(i), yPos.get(i), null);
+			if (!xPos.isEmpty()) {
+				for (int i = 0; i < xPos.size(); i++) {
+					if (icons.get(i) != ci.getSelectedIndex()) {
+						g.drawImage(otherIconList.get(icons.get(i)), xPos.get(i), yPos.get(i), null);
+					}
 				}
 			}
 			
