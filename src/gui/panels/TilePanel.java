@@ -62,18 +62,20 @@ public class TilePanel extends JPanel implements MouseListener, MouseMotionListe
 
 			g.setColor(Color.BLACK);
 			g.drawRect(x + 2, y + 2, 27, 27);
-		}
 		
-		g.setColor(Color.WHITE);
-		g.setFont(new Font(g.getFont().getName(), Font.BOLD, 12));
-		
-		// Ensure that the tile number is always centered
-		if (in / 10 < 1) {
-			g.drawString("" + in, x + 13, y + 20);
-		} else if (in / 10 <= 10) {
-			g.drawString("" + in, x + 6, y + 20);
-		} else {
-			g.drawString("" + in, x + 4, y + 20);
+			if (Data.showTileNr) {
+				g.setColor(Color.WHITE);
+				g.setFont(new Font(g.getFont().getName(), Font.BOLD, 12));
+				
+				// Ensure that the tile number is always centered
+				if (in / 10 < 1) {
+					g.drawString("" + in, x + 13, y + 20);
+				} else if (in / 10 <= 10) {
+					g.drawString("" + in, x + 6, y + 20);
+				} else {
+					g.drawString("" + in, x + 4, y + 20);
+				}
+			}
 		}
 	}
 	

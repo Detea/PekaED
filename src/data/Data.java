@@ -59,7 +59,7 @@ public class Data {
 	public static LevelPanel lp;
 	public static MiniMapPanel mmp;
 	
-	public static boolean fileChanged = false, episodeChanged = false;
+	public static boolean fileChanged = false, episodeChanged = false, showTileNr = true;
 	public static String currentEpisodeName = "";
 	
 	public static JLabel lblTileNrVal, lblSprFileVal, lblTileBgNrVal;
