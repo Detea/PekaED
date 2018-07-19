@@ -39,7 +39,7 @@ public class Data {
 	public static boolean multiSelectTiles = false;
 	public static boolean dragging = false;
 	
-	public static boolean showSpriteRect = false;
+	public static boolean showSpriteRect = true;
 	
 	public static ArrayList<Integer> multiSelectionForeground = new ArrayList<Integer>();
 	public static ArrayList<Integer> multiSelectionBackground = new ArrayList<Integer>();

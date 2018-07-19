@@ -29,6 +29,9 @@ public class PekaED {
 				Settings.startInEnhancedMode = dis.readBoolean();
 				Constants.ENHANCED_LEVEL_LIMIT = dis.readInt();
 				
+				Data.showSpriteRect = dis.readBoolean();
+				Data.showTileNr = dis.readBoolean();
+				
 				Data.mode = Constants.MODE_ENHANCED;
 				
 				File pathFile = new File(Settings.BASE_PATH);

@@ -704,6 +704,8 @@ public class PekaEDGUI {
 		});
 		
 		JToggleButton btnHighlightSprites = new JToggleButton("Highlight Sprites");
+		btnHighlightSprites.setSelected(Data.showSpriteRect);
+		
 		btnHighlightSprites.addActionListener(new ActionListener() {
 
 			@Override
@@ -720,7 +722,7 @@ public class PekaEDGUI {
 		});
 		
 		JToggleButton btnShowTileNr = new JToggleButton("Show Tile Number");
-		btnShowTileNr.setSelected(true);
+		btnShowTileNr.setSelected(Data.showTileNr);
 		btnShowTileNr.addActionListener(new ActionListener() {
 
 			@Override
@@ -1274,7 +1276,6 @@ public class PekaEDGUI {
 				if (quit) {
 					Data.runThread = false;
 					
-					
 					if (Settings.loadEpisodeOnStartup && Data.currentEpisodeFile != null) {
 						// Maybe store path to last used episode in settings file?
 						
@@ -1290,6 +1291,8 @@ public class PekaEDGUI {
 							e1.printStackTrace();
 						}
 					}
+					
+					saveSettings();
 					
 					System.exit(0);
 				}
@@ -1752,6 +1755,25 @@ public class PekaEDGUI {
 			JOptionPane.showMessageDialog(null, "Can't create file '" + target.getName() + "'!", "Error", JOptionPane.ERROR_MESSAGE);
 			
 			e.printStackTrace();
+		}
+	}
+	
+	private void saveSettings() {
+		try {
+			DataOutputStream dos = new DataOutputStream(new FileOutputStream("settings"));
+			
+			dos.writeUTF(Settings.BASE_PATH);
+			dos.writeBoolean(Settings.loadEpisodeOnStartup);
+			dos.writeBoolean(Settings.startInEnhancedMode);
+			dos.writeInt(Constants.ENHANCED_LEVEL_LIMIT);
+			
+			dos.writeBoolean(Data.showSpriteRect);
+			dos.writeBoolean(Data.showTileNr);
+			
+			dos.flush();
+			dos.close();
+		} catch (IOException e1) {
+			e1.printStackTrace();
 		}
 	}
 }
