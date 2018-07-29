@@ -86,6 +86,14 @@ public class MapSettingsPanel extends JPanel {
 					
 				});
 				
+				if (Settings.tilesetPreview) {
+					FilePreviewPanel fpp = new FilePreviewPanel(FilePreviewPanel.TILESET);
+					
+					fc.setAccessory(fpp);
+					fc.addPropertyChangeListener(fpp);
+				}
+				
+				
 				int res = fc.showOpenDialog(null);
 				
 				if (res == JFileChooser.APPROVE_OPTION) {
@@ -135,6 +143,13 @@ public class MapSettingsPanel extends JPanel {
 					}
 					
 				});
+				
+				if (Settings.bgPreview) {
+					FilePreviewPanel fpp = new FilePreviewPanel(FilePreviewPanel.BACKGROUND);
+					
+					fc.setAccessory(fpp);
+					fc.addPropertyChangeListener(fpp);
+				}
 				
 				int res = fc.showOpenDialog(null);
 				

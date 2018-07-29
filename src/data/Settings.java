@@ -1,6 +1,9 @@
 package data;
 
+import java.awt.Event;
+import java.awt.event.KeyEvent;
 import java.io.File;
+import java.util.LinkedHashMap;
 
 public class Settings {
 	public static final String version = "1.0.1";
@@ -19,6 +22,43 @@ public class Settings {
 
 	public static boolean loadEpisodeOnStartup = false;
 	public static boolean startInEnhancedMode = false;
+
+	public static boolean showStatusbar = true;
+	
+	public static boolean spritePreview = true;
+	public static boolean tilesetPreview = true;
+	public static boolean bgPreview = true;
+	
+	public static LinkedHashMap<String, ShortcutKey> shortcuts = new LinkedHashMap<String, ShortcutKey>();
+	public static int[] shortcutKeyCodes = new int[18];
+	
+	public static void resetShortcuts() {
+		shortcuts.put("createLevel", new ShortcutKey(Event.CTRL_MASK, KeyEvent.VK_N));
+		shortcuts.put("openLevel", new ShortcutKey(Event.CTRL_MASK, KeyEvent.VK_O));
+		shortcuts.put("saveLevel", new ShortcutKey(Event.CTRL_MASK, KeyEvent.VK_S));
+		shortcuts.put("saveLevelAs", new ShortcutKey(Event.SHIFT_MASK, KeyEvent.VK_S));
+		shortcuts.put("testLevel", new ShortcutKey(0, KeyEvent.VK_F5));
+		shortcuts.put("brushTool", new ShortcutKey(0, KeyEvent.VK_E));
+		shortcuts.put("eraserTool", new ShortcutKey(0, KeyEvent.VK_R));
+		shortcuts.put("showSprites", new ShortcutKey(0, KeyEvent.VK_S));
+		shortcuts.put("highlightSprites", new ShortcutKey(0, KeyEvent.VK_H));
+		shortcuts.put("bothLayer", new ShortcutKey(0, KeyEvent.VK_1));
+		shortcuts.put("foregroundLayer", new ShortcutKey(0, KeyEvent.VK_2));
+		shortcuts.put("backgroundLayer", new ShortcutKey(0, KeyEvent.VK_3));
+		shortcuts.put("zoomIn", new ShortcutKey(0, KeyEvent.VK_PLUS));
+		shortcuts.put("zoomOut", new ShortcutKey(0, KeyEvent.VK_MINUS));
+		shortcuts.put("zoomReset", new ShortcutKey(0, KeyEvent.VK_SPACE));
+		shortcuts.put("tileMode", new ShortcutKey(Event.CTRL_MASK, KeyEvent.VK_1));
+		shortcuts.put("spriteMode", new ShortcutKey(Event.CTRL_MASK, KeyEvent.VK_2));
+		shortcuts.put("addSprite", new ShortcutKey(Event.CTRL_MASK, KeyEvent.VK_A));
+		
+		int i = 0;
+		for (String s : shortcuts.keySet()) {
+			shortcutKeyCodes[i] = shortcuts.get(s).key;
+			
+			i++;
+		}
+	}
 	
 	// Using File.separatorChar so that this program is platform independent
 	public static void setPaths() {

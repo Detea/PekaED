@@ -4,7 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.Dimension;
-import java.awt.Event;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -18,7 +17,6 @@ import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
-import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.BufferedWriter;
@@ -32,6 +30,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Vector;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -67,6 +67,7 @@ import javax.swing.JToolBar;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -109,6 +110,9 @@ public class PekaEDGUI {
 	
 	private MiniMapPanel mmp;
 	private JComboBox comboBox;
+	private final JPanel statusBar = new JPanel();
+	
+	private ActionMap actionMap;
 	
 	/**
 	 * @wbp.parser.entryPoint
@@ -139,7 +143,7 @@ public class PekaEDGUI {
 		msp = new MapSettingsPanel();
 		sp = new SpritePanel(this);
 		
-		settingsDialog = new SettingsDialog();
+		settingsDialog = new SettingsDialog(this);
 		
 		// Needed for loadLevel(). Could have used the Data class, but this code is already messy enough as is.
 		ep = new EpisodePanel(this);
@@ -159,11 +163,6 @@ public class PekaEDGUI {
 		
 		JMenuItem mifImportEpisode = new JMenuItem("Import Episode");
 		JMenuItem mifExportEpisode = new JMenuItem("Export Episode");
-		
-		mifNewLevel.setAccelerator(KeyStroke.getKeyStroke('N', KeyEvent.CTRL_DOWN_MASK));
-		mifOpenLevel.setAccelerator(KeyStroke.getKeyStroke('O', KeyEvent.CTRL_DOWN_MASK));
-		mifSaveLevel.setAccelerator(KeyStroke.getKeyStroke('S', KeyEvent.CTRL_DOWN_MASK));
-		mifSaveLevelAs.setAccelerator(KeyStroke.getKeyStroke('S', KeyEvent.CTRL_DOWN_MASK + KeyEvent.SHIFT_DOWN_MASK));
 		
 		mFile.add(mifNewLevel);
 		mFile.add(mifOpenLevel);
@@ -260,6 +259,8 @@ public class PekaEDGUI {
 						w.flush();
 						w.close();
 					} catch (IOException e) {
+						JOptionPane.showMessageDialog(null, "Couldn't create episode file!\n" + e.getMessage(), "Couldn't create episode file!", JOptionPane.ERROR_MESSAGE);
+						
 						e.printStackTrace();
 					}
 					
@@ -318,7 +319,6 @@ public class PekaEDGUI {
 					
 					if (fc.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
 						Thread t = new Thread(new Runnable() {
-
 							@Override
 							public void run() {
 								exportDialog.setVisible(true);
@@ -332,7 +332,7 @@ public class PekaEDGUI {
 								boolean done = EpisodeExtractor.extract(f);
 								
 								if (done) {
-									edLbl.setText("Done!");
+									edLbl.setText(EpisodeExtractor.doneMessage);
 								}
 								
 								try {
@@ -639,9 +639,6 @@ public class PekaEDGUI {
 		JToggleButton btFloodFill = new JToggleButton("FloodFil");
 		btEraser = new JToggleButton("Eraser");
 		
-		btBrush.setMnemonic('W');
-		btEraser.setMnemonic('E');
-		
 		Data.selectedTool = Data.TOOL_BRUSH;
 		btBrush.setSelected(true);
 		
@@ -881,13 +878,11 @@ public class PekaEDGUI {
 				
 				vr.x *= Data.scale;
 				vr.y *= Data.scale;
-				
-				scrollPane2.scrollRectToVisible(vr);
 
+				Data.lp.zoom();
+				
 				scrollPane2.revalidate();
 				scrollPane2.repaint();
-				
-				Data.lp.zoom();
 			}
 		});
 		spinner.setModel(new SpinnerNumberModel(new Float(100), new Float(20), null, new Float(1)));
@@ -940,7 +935,7 @@ public class PekaEDGUI {
 		frame.getContentPane().add(splitPane, BorderLayout.CENTER);
 		frame.getContentPane().add(sidePanel, BorderLayout.EAST);
 		
-		ActionMap actionMap = new ActionMapUIResource();
+		actionMap = new ActionMapUIResource();
 		actionMap.put("saveAction", new AbstractAction() {
 
 			@Override
@@ -1158,11 +1153,50 @@ public class PekaEDGUI {
 			
 		});
 		
+		actionMap.put("resetZoom", new AbstractAction() {
+			
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				Data.scale = 1;
+				
+				spinner.setValue(100f);
+				
+				Data.lp.zoom();
+			}
+			
+		});
+		
 		actionMap.put("testLevel", new AbstractAction() {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				testLevel();
+				if(Data.currentFile != null){
+					if (Data.fileChanged) {
+						int saveRes = showSaveWarning();
+						
+						if (saveRes == 0) {
+							saveLevel(Data.currentFile);
+							
+							Data.fileChanged = false;
+						}
+						
+						if (saveRes != 2) {
+							testLevel();
+						}
+					} else {
+						testLevel();
+					}
+				} else {
+					int saveRes = showSaveWarning();
+					
+					if (saveRes == 0) {
+						saveLevel(Data.currentFile);
+					};
+
+					if (saveRes != 2) {
+						testLevel();
+					}
+				}
 			}
 			
 		});
@@ -1204,32 +1238,7 @@ public class PekaEDGUI {
 			
 		});
 
-		InputMap keyMap = new ComponentInputMap((JComponent) frame.getContentPane());
-		keyMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_S, Event.CTRL_MASK), "saveAction");
-		keyMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_O, Event.CTRL_MASK), "loadAction");
-		keyMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_N, Event.CTRL_MASK), "newAction");
-		keyMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_A, Event.CTRL_MASK), "addSpriteAction");
-		keyMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_S, Event.CTRL_MASK | Event.SHIFT_MASK), "saveAsAction");
-		keyMap.put(KeyStroke.getKeyStroke("1"), "layerAction1");
-		keyMap.put(KeyStroke.getKeyStroke("2"), "layerAction2");
-		keyMap.put(KeyStroke.getKeyStroke("3"), "layerAction3");
-		
-		keyMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_PLUS, 0), "zoomInAction");
-		keyMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_MINUS, 0), "zoomOutAction");
-	
-		keyMap.put(KeyStroke.getKeyStroke("F5"), "testLevel");
-		
-		keyMap.put(KeyStroke.getKeyStroke("E"), "selectBrush");
-		keyMap.put(KeyStroke.getKeyStroke("R"), "selectEraser");
-		keyMap.put(KeyStroke.getKeyStroke("S"), "showSprites");
-
-		keyMap.put(KeyStroke.getKeyStroke("H"), "showSpriteRect");
-		
-		keyMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_1, Event.CTRL_MASK), "editModeTiles");
-		keyMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_2, Event.CTRL_MASK), "editModeSprites");
-		
-		SwingUtilities.replaceUIActionMap((JComponent) frame.getContentPane(), actionMap);
-		SwingUtilities.replaceUIInputMap((JComponent) frame.getContentPane(),  JComponent.WHEN_IN_FOCUSED_WINDOW, keyMap);
+		setShortcuts();
 		
 		frame.addWindowListener(new WindowListener() {
 
@@ -1287,7 +1296,8 @@ public class PekaEDGUI {
 							dos.flush();
 							dos.close();
 						} catch (IOException e1) {
-							// TODO Auto-generated catch block
+							JOptionPane.showMessageDialog(null, "Couldn't store information about current episode.\nThis means it won't be loaded on start up next time.\n" + e1.getMessage(), "Couldn't store information!", JOptionPane.ERROR_MESSAGE);
+							
 							e1.printStackTrace();
 						}
 					}
@@ -1353,6 +1363,63 @@ public class PekaEDGUI {
 	
 		Data.tp = tp;
 		
+		frame.setIconImage(img);
+		
+		frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+		
+		frame.pack();
+		frame.setVisible(true);
+		
+		frame.setSize(new Dimension(1280, 720));
+		frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+		
+		lp.setPekaGUI(this);
+		mmp.setPekaGUI(this);
+		
+		JLabel lblDsf = new JLabel("dsf");
+		
+		lblDsf.setHorizontalAlignment(SwingConstants.CENTER);
+		
+		Data.statusLabel = lblDsf;
+		
+		// Very lazy solution, but it's too fucking warm in my country, right now, it's fucked
+		if (Settings.showStatusbar) {
+			frame.getContentPane().add(statusBar, BorderLayout.SOUTH);
+			statusBar.setLayout(new BorderLayout(0, 0));
+			
+			statusBar.setPreferredSize(new Dimension(0, 25));
+			
+			JPanel panel = new JPanel();
+			statusBar.add(panel, BorderLayout.EAST);
+			
+			Component horizontalStrut_2 = Box.createHorizontalStrut(10);
+			panel.add(horizontalStrut_2);
+			
+			panel.add(lblDsf);
+		}
+		
+		scrollPane2.getHorizontalScrollBar().addAdjustmentListener(new AdjustmentListener() {
+
+			@Override
+			public void adjustmentValueChanged(AdjustmentEvent arg0) {
+				if (Data.mmp != null) {
+					Data.mmp.reposition();
+				}
+			}
+			
+		});
+		
+		scrollPane2.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {
+
+			@Override
+			public void adjustmentValueChanged(AdjustmentEvent arg0) {
+				if (Data.mmp != null) {
+					Data.mmp.reposition();
+				}
+			}
+			
+		});
+		
 		if (Settings.loadEpisodeOnStartup) {
 			try {
 				if (new File("lastepisode").exists()) {
@@ -1385,41 +1452,6 @@ public class PekaEDGUI {
 			newLevel();
 		}
 		
-		frame.setIconImage(img);
-		
-		frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-		
-		frame.pack();
-		frame.setVisible(true);
-		
-		frame.setSize(new Dimension(1280, 720));
-		frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-		
-		lp.setPekaGUI(this);
-		mmp.setPekaGUI(this);
-		
-		scrollPane2.getHorizontalScrollBar().addAdjustmentListener(new AdjustmentListener() {
-
-			@Override
-			public void adjustmentValueChanged(AdjustmentEvent arg0) {
-				if (Data.mmp != null) {
-					Data.mmp.reposition();
-				}
-			}
-			
-		});
-		
-		scrollPane2.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {
-
-			@Override
-			public void adjustmentValueChanged(AdjustmentEvent arg0) {
-				if (Data.mmp != null) {
-					Data.mmp.reposition();
-				}
-			}
-			
-		});
-		
 		//scrollPane2.getViewport().setSize(new Dimension((int) (scrollPane2.getViewport().getWidth() * 0.6), (int) (scrollPane2.getViewport().getHeight() * 0.6)));
 	}
 	
@@ -1444,6 +1476,37 @@ public class PekaEDGUI {
 		}
 	}
 	
+	public void setShortcuts() {
+		InputMap keyMap = new ComponentInputMap((JComponent) frame.getContentPane());
+		keyMap.put(KeyStroke.getKeyStroke(Settings.shortcuts.get("saveLevel").key, Settings.shortcuts.get("saveLevel").modifier), "saveAction");
+		keyMap.put(KeyStroke.getKeyStroke(Settings.shortcuts.get("openLevel").key, Settings.shortcuts.get("openLevel").modifier), "loadAction");
+		keyMap.put(KeyStroke.getKeyStroke(Settings.shortcuts.get("createLevel").key, Settings.shortcuts.get("createLevel").modifier), "newAction");
+		keyMap.put(KeyStroke.getKeyStroke(Settings.shortcuts.get("addSprite").key, Settings.shortcuts.get("addSprite").modifier), "addSpriteAction");
+		keyMap.put(KeyStroke.getKeyStroke(Settings.shortcuts.get("saveLevelAs").key, Settings.shortcuts.get("saveLevelAs").modifier), "saveAsAction");
+		keyMap.put(KeyStroke.getKeyStroke(Settings.shortcuts.get("bothLayer").key, Settings.shortcuts.get("bothLayer").modifier), "layerAction1");
+		keyMap.put(KeyStroke.getKeyStroke(Settings.shortcuts.get("foregroundLayer").key, Settings.shortcuts.get("foregroundLayer").modifier), "layerAction2");
+		keyMap.put(KeyStroke.getKeyStroke(Settings.shortcuts.get("backgroundLayer").key, Settings.shortcuts.get("backgroundLayer").modifier), "layerAction3");
+		
+		keyMap.put(KeyStroke.getKeyStroke(Settings.shortcuts.get("zoomIn").key, Settings.shortcuts.get("zoomIn").modifier), "zoomInAction");
+		keyMap.put(KeyStroke.getKeyStroke(Settings.shortcuts.get("zoomOut").key, Settings.shortcuts.get("zoomOut").modifier), "zoomOutAction");
+	
+		keyMap.put(KeyStroke.getKeyStroke(Settings.shortcuts.get("testLevel").key, Settings.shortcuts.get("testLevel").modifier), "testLevel");
+		
+		keyMap.put(KeyStroke.getKeyStroke(Settings.shortcuts.get("brushTool").key, Settings.shortcuts.get("brushTool").modifier), "selectBrush");
+		keyMap.put(KeyStroke.getKeyStroke(Settings.shortcuts.get("eraserTool").key, Settings.shortcuts.get("eraserTool").modifier), "selectEraser");
+		keyMap.put(KeyStroke.getKeyStroke(Settings.shortcuts.get("showSprites").key, Settings.shortcuts.get("showSprites").modifier), "showSprites");
+
+		keyMap.put(KeyStroke.getKeyStroke(Settings.shortcuts.get("highlightSprites").key, Settings.shortcuts.get("highlightSprites").modifier), "showSpriteRect");
+		
+		keyMap.put(KeyStroke.getKeyStroke(Settings.shortcuts.get("tileMode").key, Settings.shortcuts.get("tileMode").modifier), "editModeTiles");
+		keyMap.put(KeyStroke.getKeyStroke(Settings.shortcuts.get("spriteMode").key, Settings.shortcuts.get("spriteMode").modifier), "editModeSprites");
+
+		keyMap.put(KeyStroke.getKeyStroke(Settings.shortcuts.get("zoomReset").key, Settings.shortcuts.get("zoomReset").modifier), "resetZoom");
+		
+		SwingUtilities.replaceUIInputMap((JComponent) frame.getContentPane(),  JComponent.WHEN_IN_FOCUSED_WINDOW, keyMap);
+		SwingUtilities.replaceUIActionMap((JComponent) frame.getContentPane(), actionMap);
+	}
+	
 	private void testLevel() {
 		String cmd = Settings.BASE_PATH + File.separatorChar + "pk2.exe";
 		String args = "dev test \"" + Data.currentFile.getParentFile().getName() + "/" + Data.currentFile.getName() + "\"";
@@ -1451,6 +1514,8 @@ public class PekaEDGUI {
 			Runtime runTime = Runtime.getRuntime();
 			Process process = runTime.exec(cmd + " " + args);
 		} catch (IOException e) {
+			JOptionPane.showMessageDialog(null, "Can't test level!\n" + e.getMessage(), "Can't test level!", JOptionPane.ERROR_MESSAGE);
+			
 			e.printStackTrace();
 		}
 	}
@@ -1489,45 +1554,58 @@ public class PekaEDGUI {
 	}
 	
 	public void loadLevel(String file) {
-		Data.map = new PK2Map(file);
+		PK2Map oldMap = Data.map;
 		
-		Data.currentFile = new File(file);
+		Data.map = new PK2Map();
 		
-		if (new File(Data.currentFile.getParentFile().getAbsolutePath() + "\\" + Data.map.getBackground()).exists()) {
-			Data.bgFile = new File(Data.currentFile.getParentFile().getAbsolutePath() + "\\" + Data.map.getBackground());
+		boolean ok = Data.map.loadFile(file);
+		
+		if (ok) {
+			Data.currentFile = new File(file);
+			
+			if (new File(Data.currentFile.getParentFile().getAbsolutePath() + "\\" + Data.map.getBackground()).exists()) {
+				Data.bgFile = new File(Data.currentFile.getParentFile().getAbsolutePath() + "\\" + Data.map.getBackground());
+			} else {
+				Data.bgFile = new File(Settings.SCENERY_PATH + "\\" + Data.map.getBackground());
+			}
+			
+			if (new File(Data.currentFile.getParentFile().getAbsolutePath() + "\\" + Data.map.getTileset()).exists()) {
+				Data.tilesetFile = new File(Data.currentFile.getParentFile().getAbsolutePath() + "\\" + Data.map.getTileset());
+			} else {
+				Data.tilesetFile = new File(Settings.TILES_PATH + "\\" + Data.map.getTileset());
+			}
+			
+			lp.setMap();
+			tp.setTileset();
+			msp.setMap();
+			sp.setMap();
+			
+			Data.scale = 1f;
+			Data.zoomSpinner.setValue(100f);
+			Data.lp.zoom();
+			
+			lp.repaint();
+			mmp.repaint();
+			
+			Rectangle r = Data.map.calculateUsedArea(Data.map.layers[Constants.LAYER_BACKGROUND], "background2");
+			
+			scrollPane2.getVerticalScrollBar().setValue(r.y * 32);
+			scrollPane2.getHorizontalScrollBar().setValue(r.x * 32);
+			
+			Data.mmp.reposition();
+			Data.mmp.resizeViewportRect();
+			
+			Data.fileChanged = false;
+			
+			setFrameTitle();
+			
+			Calendar cal = Calendar.getInstance();
+	        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+	 
+			Data.statusLabel.setText("Level loaded! (" + sdf.format(cal.getTime()) + ")");
 		} else {
-			Data.bgFile = new File(Settings.SCENERY_PATH + "\\" + Data.map.getBackground());
+			Data.map = oldMap;
 		}
-		
-		if (new File(Data.currentFile.getParentFile().getAbsolutePath() + "\\" + Data.map.getTileset()).exists()) {
-			Data.tilesetFile = new File(Data.currentFile.getParentFile().getAbsolutePath() + "\\" + Data.map.getTileset());
-		} else {
-			Data.tilesetFile = new File(Settings.TILES_PATH + "\\" + Data.map.getTileset());
-		}
-		
-		lp.setMap();
-		tp.setTileset();
-		msp.setMap();
-		sp.setMap();
-		
-		Data.scale = 1f;
-		Data.zoomSpinner.setValue(100f);
-		Data.lp.zoom();
-		
-		lp.repaint();
-		mmp.repaint();
-		
-		Rectangle r = Data.map.calculateUsedArea(Data.map.layers[Constants.LAYER_BACKGROUND], "background2");
-		
-		scrollPane2.getVerticalScrollBar().setValue(r.y * 32);
-		scrollPane2.getHorizontalScrollBar().setValue(r.x * 32);
-		
-		Data.mmp.reposition();
-		Data.mmp.resizeViewportRect();
-		
-		Data.fileChanged = false;
-		
-		setFrameTitle();
 	}
 	
 	private void saveLevelAs() {
@@ -1592,24 +1670,37 @@ public class PekaEDGUI {
 		}
 		
 		Data.fileChanged = false;
+		
+		Data.statusLabel.setText("New level created");
+		
+		scrollPane2.getViewport().setViewPosition(new Point(0, 0));
 	}
 	
 	private void saveLevel(File file) {
-		if (file.exists())
-			file.delete();
-		
-		if (!file.getName().endsWith("map")) {
-			file = new File(file.getAbsolutePath() +  ".map");
+		if (file != null) {
+			if (file.exists())
+				file.delete();
+			
+			if (!file.getName().endsWith("map")) {
+				file = new File(file.getAbsolutePath() +  ".map");
+			}
+			
+			msp.saveChanges();
+			
+			Data.map.file = file;
+			Data.map.saveFile();
+			
+			Data.currentFile = file;
+			
+			setFrameTitle();
+			
+			Calendar cal = Calendar.getInstance();
+	        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+	 
+			Data.statusLabel.setText("Level saved! (Last save: " + sdf.format(cal.getTime()) + ")");
+		} else {
+			showSaveDialog();
 		}
-		
-		msp.saveChanges();
-		
-		Data.map.file = file;
-		Data.map.saveFile();
-		
-		Data.currentFile = file;
-		
-		setFrameTitle();
 	}
 	
 	private int showSaveWarning() {
@@ -1766,13 +1857,29 @@ public class PekaEDGUI {
 			dos.writeBoolean(Settings.loadEpisodeOnStartup);
 			dos.writeBoolean(Settings.startInEnhancedMode);
 			dos.writeInt(Constants.ENHANCED_LEVEL_LIMIT);
+			dos.writeBoolean(Settings.showStatusbar);
+
+			dos.writeBoolean(Settings.spritePreview);
+			dos.writeBoolean(Settings.tilesetPreview);
+			dos.writeBoolean(Settings.bgPreview);
 			
 			dos.writeBoolean(Data.showSpriteRect);
 			dos.writeBoolean(Data.showTileNr);
 			
+			int i = 0;
+			for (String s : Settings.shortcuts.keySet()) {
+				dos.writeUTF(s);
+				dos.writeInt(Settings.shortcuts.get(s).modifier);
+				dos.writeInt(Settings.shortcutKeyCodes[i]);
+				
+				i++;
+			}
+			
 			dos.flush();
 			dos.close();
 		} catch (IOException e1) {
+			JOptionPane.showMessageDialog(null, "Couldn't save save file!\n" + e1.getMessage(), "Couldn't save save file", JOptionPane.ERROR_MESSAGE);
+			
 			e1.printStackTrace();
 		}
 	}

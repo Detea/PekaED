@@ -134,6 +134,8 @@ public class SetPathDialog extends JDialog {
 								dos.close();
 								
 								Settings.setPaths();
+								Settings.resetShortcuts();
+								
 								dispose();
 								
 								new PekaEDGUI().setup();

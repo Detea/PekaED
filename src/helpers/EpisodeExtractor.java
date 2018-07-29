@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import javax.swing.JOptionPane;
+
 import data.Data;
 import data.Settings;
 import pekkakana.PK2Map;
@@ -27,6 +29,8 @@ public final class EpisodeExtractor {
 	private static ArrayList<String> trackList = new ArrayList<String>();
 	
 	private static ArrayList<String> sprites = new ArrayList<String>();
+	
+	public static String doneMessage;
 	
 	public static final boolean extract(File file) {
 		ArrayList<String> tiles = new ArrayList<String>();
@@ -144,11 +148,25 @@ public final class EpisodeExtractor {
 			
 			done = true;
 			
+			doneMessage = "Done!";
+			
 			zop.flush();
 		} catch (FileNotFoundException e) {
+			JOptionPane.showMessageDialog(null, "Couldn't find file!\n" + e.getMessage(), "Couldn't find file!", JOptionPane.ERROR_MESSAGE);
+			
 			e.printStackTrace();
+			
+			doneMessage = "Couldn't extract the episode!";
+			
+			done = true;
 		} catch (IOException e) {
+			JOptionPane.showMessageDialog(null, "Couldn't extract episode!\n" + e.getMessage(), "Couldn't finish!", JOptionPane.ERROR_MESSAGE);
+			
+			doneMessage = "Couldn't extract the episode!";
+			
 			e.printStackTrace();
+			
+			done = true;
 		} finally {
 			try {
 				zop.close();
@@ -164,24 +182,24 @@ public final class EpisodeExtractor {
 		return done;
 	}
 	
+	// Instead of getPath just add filename to the tracklist?
 	private static void addToFiles(String filename, String folder, ArrayList<String> list) {
-		if (!isVanilla(filename.trim(), list) && !trackList.contains(getPath(filename, folder).getAbsolutePath())) {
+		if (!isVanilla(filename.trim(), list) && !trackList.contains(getPath(filename.trim(), folder).getAbsolutePath())) {
 			File entry = getPath(filename, folder);
 			
-			ze.add(new ZipEntry("episodes\\" + Data.currentEpisodeName + "\\" + entry.getName()));
+			ze.add(new ZipEntry("episodes\\" + Data.currentEpisodeName + "\\" + entry.getName().trim()));
 			
 			if (entry != null) {
 				tmpFiles.add(entry);
 			}
 			
-			trackList.add(entry.getAbsolutePath());
+			trackList.add(entry.getAbsolutePath().trim());
 		}
 	}
 	
 	private static void addSpriteToFile(String filename) {
-		if (!isVanilla(filename, sprites) && !trackList.contains(getSpritePath(filename).getAbsolutePath())) {
+		if (!isVanilla(filename, sprites) && !trackList.contains(getSpritePath(filename.trim()).getAbsolutePath())) {
 			PK2Sprite spr = new PK2Sprite(filename);
-			spr.loadFile();
 			
 			File sprPath = getSpritePath(filename);
 			ze.add(new ZipEntry("episodes\\" + Data.currentEpisodeName + "\\" + filename));
@@ -191,12 +209,12 @@ public final class EpisodeExtractor {
 			
 			for (int i = 0; i < spr.soundFiles.length - 2; i++) { // Only 5 of the 7 sounds are actually used, the last 2 are always empty
 				if (!spr.cleanString(spr.soundFiles[i]).isEmpty()) {
-					if (!isVanilla(spr.cleanString(spr.soundFiles[i]), sprites)) {
+					if (!isVanilla(spr.cleanString(spr.soundFiles[i]), sprites) && !trackList.contains(getSpritePath(spr.cleanString(spr.soundFiles[i])).getAbsolutePath())) {
 						ze.add(new ZipEntry("episodes\\" + Data.currentEpisodeName + "\\" + spr.cleanString(spr.soundFiles[i])));
 						
 						tmpSprFiles.add(getSpritePath(spr.cleanString(spr.soundFiles[i])));
 
-						trackList.add(getSpritePath(spr.cleanString(spr.soundFiles[i])).getAbsolutePath());
+						trackList.add(getSpritePath(spr.cleanString(spr.soundFiles[i])).getAbsolutePath().trim());
 					}
 				}
 			}
@@ -205,7 +223,7 @@ public final class EpisodeExtractor {
 				ze.add(new ZipEntry("episodes\\" + Data.currentEpisodeName + "\\" + spr.cleanString(spr.imageFile)));
 				tmpSprFiles.add(new File(sprPath.getParentFile().getAbsolutePath() + "\\" + spr.cleanString(spr.imageFile)));
 				
-				trackList.add(sprPath.getParentFile().getAbsolutePath() + "\\" + spr.cleanString(spr.imageFile));
+				trackList.add(sprPath.getParentFile().getAbsolutePath() + "\\" + spr.cleanString(spr.imageFile).trim());
 			}
 			
 			addDependendSprites(spr.atkSprite1, spr);

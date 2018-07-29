@@ -3,9 +3,13 @@ package gui.panels;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.NoninvertibleTransformException;
+import java.awt.geom.Point2D;
 
 import javax.swing.JPanel;
 
@@ -20,6 +24,9 @@ public class MiniMapPanel extends JPanel implements MouseListener, MouseMotionLi
 	private int vw, vh; // viewport width, height
 	
 	private PekaEDGUI pkg;
+	
+	private AffineTransform af;
+	private AffineTransform is;
 	
 	public MiniMapPanel() {
 		setBackground(Color.lightGray);
@@ -39,8 +46,17 @@ public class MiniMapPanel extends JPanel implements MouseListener, MouseMotionLi
 	
 	public void resizeViewportRect() {
 		if (pkg != null) {
-			vw = (int) (pkg.scrollPane2.getViewport().getVisibleRect().width / Data.scale) / 32;
-			vh = (int) (pkg.scrollPane2.getViewport().getVisibleRect().height / Data.scale) / 32;
+			vw = (int) ((pkg.scrollPane2.getViewport().getVisibleRect().width / 32) / Data.scale);
+			vh = (int) ((pkg.scrollPane2.getViewport().getVisibleRect().height / 32) / Data.scale);
+			
+			af = AffineTransform.getScaleInstance(Data.scale, Data.scale);
+			
+			try {
+				is = af.createInverse();
+			} catch (NoninvertibleTransformException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 			
 			repaint();
 		}
@@ -63,6 +79,23 @@ public class MiniMapPanel extends JPanel implements MouseListener, MouseMotionLi
 		}
 		
 		repaint();
+		
+		/*vx = (int) ((vw / 2) + (pkg.scrollPane2.getHorizontalScrollBar().getValue() / 32) * Data.scale);
+		vy = (int) ((vh / 2) + (pkg.scrollPane2.getVerticalScrollBar().getValue() / 32) * Data.scale);
+		
+		if (vx - (vw / 2) < 0) {
+			vx = vw / 2;
+		} else if (vx + (vw / 2) > PK2Map.MAP_WIDTH) {
+			vx = PK2Map.MAP_WIDTH - (vw / 2);
+		}
+		
+		if (vy - (vh / 2) < 0) {
+			vy = vh / 2;
+		} else if (vy + (vh / 2) > PK2Map.MAP_HEIGHT) {
+			vy = PK2Map.MAP_HEIGHT - (vh / 2);
+		}
+		
+		repaint();*/
 	}
 	
 	public void paintComponent(Graphics g) {
@@ -87,7 +120,7 @@ public class MiniMapPanel extends JPanel implements MouseListener, MouseMotionLi
 			}
 			
 			g.setColor(Color.white);
-			g.drawRect(vx - (vw / 2), vy - (vh / 2), vw, vh);
+			g.drawRect((int) ((vx - (vw / 2)) / Data.scale), (int) ((vy - (vh / 2)) / Data.scale), vw, vh);
 		}
 	}
 
@@ -108,12 +141,40 @@ public class MiniMapPanel extends JPanel implements MouseListener, MouseMotionLi
 			vy = PK2Map.MAP_HEIGHT - (vh / 2);
 		}
 		
+		int px = (int) (((vx - (vw / 2)) * 32) * Data.scale);
+		int py = (int) (((vy - (vh / 2)) * 32) * Data.scale);
+		
+		pkg.scrollPane2.getViewport().setViewPosition(new Point(px, py));
+		
+		/*
 		pkg.scrollPane2.getVerticalScrollBar().setValue((vy - (vh / 2)) * 32);
 		pkg.scrollPane2.getHorizontalScrollBar().setValue((vx - (vw / 2)) * 32);
+		*/
 		
 		repaint();
 		
 		Data.lp.repaint();
+		
+		/*vx = e.getX();
+		vy = e.getY();
+		
+		if (vx - (vw / 2) < 0) 
+			vx = vw / 2;
+	
+		if (vy - (vh / 2) < 0)
+			vy = vh / 2;
+		
+		if (vx + vw / 2 > PK2Map.MAP_WIDTH)
+			vx = PK2Map.MAP_WIDTH - vw / 2;
+		
+		if (vy + vh / 2 > PK2Map.MAP_HEIGHT)
+			vy = PK2Map.MAP_HEIGHT - vh / 2;
+		
+		pkg.scrollPane2.getViewport().setViewPosition(new Point(((vx - (vw / 2)) * 32), ((vy - (vh / 2)) * 32)));
+		
+		reposition();
+		
+//		Data.lp.repaint();*/
 	}
 
 	@Override

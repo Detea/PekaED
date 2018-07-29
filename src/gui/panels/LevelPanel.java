@@ -34,7 +34,7 @@ import data.Settings;
 import gui.windows.PekaEDGUI;
 import pekkakana.PK2Map;
 
-public class LevelPanel extends JPanel implements MouseListener, MouseMotionListener, MouseWheelListener, Runnable {
+public class LevelPanel extends JPanel implements MouseListener, MouseMotionListener, MouseWheelListener {
 	
 	private Thread thread;
 	
@@ -64,6 +64,11 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 	
 	AffineTransform af;
 	AffineTransform is;
+	
+	byte[] firePixel;
+	BufferedImage fireImg;
+
+	private int timer;
 	
 	public LevelPanel() {
 		setBackground(Color.LIGHT_GRAY);
@@ -350,7 +355,7 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 					}
 				}
 			} catch (IOException e) {
-				//JOptionPane.showMessageDialog(this, "Couldn't read tileset file.\n'" + s + "'", "Error", JOptionPane.OK_OPTION);
+				JOptionPane.showMessageDialog(this, "Couldn't read tileset file.\n'" + e.getMessage() + "'", "Error", JOptionPane.OK_OPTION);
 			}
 		}
 	}
@@ -452,6 +457,8 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 							Data.map.sprites[PK2Map.MAP_WIDTH * (mx / 32) + (my / 32)] = Data.selectedSprite;
 						}
 					}
+					
+					updateInfo(mxFixed, myFixed);
 					break;
 
 				case Data.TOOL_ERASER:
@@ -523,28 +530,8 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 		
 		mxFixed = (mx / 32) * 32;
 		myFixed = (my / 32) * 32;
-		
-		if (Data.map.getTileAt(mx, my, Constants.LAYER_FOREGROUND) != 255) {
-			Data.lblTileNrVal.setText(Integer.toString(Data.map.getTileAt(mx, my, Constants.LAYER_FOREGROUND)));
-		} else {
-			Data.lblTileNrVal.setText("None");
-		}
-		
-		if (Data.map.getTileAt(mx, my, Constants.LAYER_BACKGROUND) != 255) {
-			Data.lblTileBgNrVal.setText(Integer.toString(Data.map.getTileAt(mx, my, Constants.LAYER_BACKGROUND)));
-		} else {
-			Data.lblTileBgNrVal.setText("None");
-		}
-		
-		if (!Data.map.spriteList.isEmpty() && Data.map.getSpriteAt(mx, my) != 255) {
-			Data.lblSprFileVal.setText(Data.map.spriteList.get(Data.map.getSpriteAt(mx, my)).filename.getName());
-		} else {
-			Data.lblSprFileVal.setText("None");
-		}
-
-		
-		Data.lblTileNrVal.paintImmediately(Data.lblTileNrVal.getVisibleRect());
-		Data.lblSprFileVal.paintImmediately(Data.lblSprFileVal.getVisibleRect());
+	
+		updateInfo(mxFixed, myFixed);
 		
 		if (!Data.multiSelectionBackground.isEmpty() || !Data.multiSelectionForeground.isEmpty() || Data.selectedTileBackground != 255 || Data.selectedTileForeground != 255 || Data.selectedSprite != 255) {
 			repaint();
@@ -613,6 +600,8 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 							Data.map.sprites[PK2Map.MAP_WIDTH * (mx / 32) + (my / 32)] = Data.selectedSprite;
 						}
 					}
+					
+					updateInfo(mx, my);
 					break;
 
 				case Data.TOOL_ERASER:
@@ -750,14 +739,38 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 		updateUI();
 		repaint();
 		
-		Data.mmp.reposition();
 		Data.mmp.resizeViewportRect();
+		Data.mmp.reposition();		
 		Data.mmp.repaint();
 		
 		pkg.scrollPane2.revalidate();
 		pkg.scrollPane2.updateUI();
 	}
 
+	private void updateInfo(int x, int y) {
+		if (Data.map.getTileAt(x, y, Constants.LAYER_FOREGROUND) != 255) {
+			Data.lblTileNrVal.setText(Integer.toString(Data.map.getTileAt(x, y, Constants.LAYER_FOREGROUND)));
+		} else {
+			Data.lblTileNrVal.setText("None");
+		}
+		
+		if (Data.map.getTileAt(x, y, Constants.LAYER_BACKGROUND) != 255) {
+			Data.lblTileBgNrVal.setText(Integer.toString(Data.map.getTileAt(x, y, Constants.LAYER_BACKGROUND)));
+		} else {
+			Data.lblTileBgNrVal.setText("None");
+		}
+		
+		if (!Data.map.spriteList.isEmpty() && Data.map.getSpriteAt(x, y) != 255) {
+			Data.lblSprFileVal.setText(Data.map.spriteList.get(Data.map.getSpriteAt(x, y)).filename.getName());
+		} else {
+			Data.lblSprFileVal.setText("None");
+		}
+
+		
+		Data.lblTileNrVal.paintImmediately(Data.lblTileNrVal.getVisibleRect());
+		Data.lblSprFileVal.paintImmediately(Data.lblSprFileVal.getVisibleRect());
+	}
+	
 	private void zoomIn(Point ml) {
 		Data.scale *= 1.055f;
 		Point pos = pkg.scrollPane2.getViewport().getViewPosition();
@@ -796,6 +809,10 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 	    pkg.scrollPane2.repaint();
 	    pkg.scrollPane2.updateUI();
 	    
+	    Data.mmp.reposition();
+	    Data.mmp.resizeViewportRect();
+	    Data.mmp.repaint();
+	    
 	    repaint();
 	}
 	
@@ -826,6 +843,10 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 
 	    pkg.scrollPane2.revalidate();
 	    pkg.scrollPane2.repaint();
+	    
+	    Data.mmp.reposition();
+	    Data.mmp.resizeViewportRect();
+	    Data.mmp.repaint();
 	}
 	
 	@Override
@@ -865,40 +886,56 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 		repaint();
 	}
 
-	@Override
-	public void run() {
-
-	}
-
 	/*
 	@Override
 	public void run() {
-		while (true) {
+		while (Data.animateTiles) {
 			try {
 				if (Data.lp != null) {
-					ani1++;
-			
-					if (ani1 > 64) {
-						ani1 = 60;
+					int color;
+					
+					for (int i = 0; i < 32; i++) {
+						for (int j = 0; j < 31; j++) {
+							color = firePixel[i + (j + 1) * 32];
+							
+							if (color != 255) {
+								color %= 32;
+								color -= Math.random() * 4;
+								
+								if (color < 0) {
+ 									color = 255;
+								} else {
+									if (color > 21) {
+										color += 128;
+									} else {
+										color += 64;
+									}
+								}
+							}
+						
+							System.out.println((byte) color);
+							
+							firePixel[i + j * 32] = (byte) color;
+						}
 					}
 					
-					ani2++;
+					timer++;
 					
-					if (ani2 > 69) {
-						ani2 = 65;
+					if (timer > 20) {
+						timer = 0;
 					}
 					
-					ani3++;
-					
-					if (ani3 > 74) {
-						ani3 = 70;
+					if (timer < 20) {
+						for (int l = 128; l < 160; l++) {
+							firePixel[l + 479 * 32] = (byte) (Math.random() * 15 + 144);
+						} 
+					} else {
+						for (int l = 128; l < 160; l++) {
+							firePixel[l + 479 * 32] = -1;
+						}
 					}
 					
-					ani4++;
-					
-					if (ani4 > 79) {
-						ani4 = 75;
-					}
+					tiles.set(144, fireImg);
 					
 					Data.lp.repaint();
 				}

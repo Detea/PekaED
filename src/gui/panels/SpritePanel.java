@@ -223,30 +223,44 @@ public class SpritePanel extends JPanel {
 			fc.setDialogTitle("Select a sprite to load");
 			fc.setFileFilter(new FileNameExtensionFilter("Pekka Kana 2 Sprite file", "spr"));
 			
+			if (Settings.spritePreview) {
+				FilePreviewPanel fpp = new FilePreviewPanel(FilePreviewPanel.SPRITE);
+				
+				fc.setAccessory(fpp);
+				fc.addPropertyChangeListener(fpp);
+			}
+			
 			int res = fc.showOpenDialog(null);
 			
 			if (res == JFileChooser.APPROVE_OPTION) {
 				if (fc.getSelectedFile().exists()) {
-					PK2Sprite s = new PK2Sprite(fc.getSelectedFile().getName());
-					
-					if (s.version[2] == '3') {
-						Vector v = new Vector();
-						v.addElement(" " + s.getName() + " (" + fc.getSelectedFile().getName() + ")");
-						
-						dfm.addRow(v);
-						
-						Data.map.addSprite(s, fc.getSelectedFile().getName());
-						
-						table.setRowSelectionInterval(dfm.getRowCount() - 1, dfm.getRowCount() - 1);
-						
-						pkg.setEditMode(Constants.EDIT_MODE_SPRITES);
-						
-						Data.selectedSprite = dfm.getRowCount() - 1;
-						Data.selectedTile = 255;
-						Data.selectedTileForeground = 255;
-						Data.selectedTileBackground = 255;
+					if (fc.getSelectedFile().getName().length() >= 13) {
+						JOptionPane.showMessageDialog(null, "Filename is too long! (" + fc.getSelectedFile().getName().length() + " characters)\nMaximum characters allowed is 12!", "Filename too long", JOptionPane.ERROR_MESSAGE);
 					} else {
-						JOptionPane.showMessageDialog(null, "Only sprites version 1.3 allowed!", "Wrong Sprite", JOptionPane.ERROR_MESSAGE);
+						PK2Sprite s = new PK2Sprite();
+						
+						if (s.checkVersion(fc.getSelectedFile())) {
+							s.loadFile(fc.getSelectedFile());
+							s.loadBufferedImage();
+							
+							Vector v = new Vector();
+							v.addElement(" " + s.getName() + " (" + fc.getSelectedFile().getName() + ")");
+
+							dfm.addRow(v);
+
+							Data.map.addSprite(s, fc.getSelectedFile().getName());
+
+							table.setRowSelectionInterval(dfm.getRowCount() - 1, dfm.getRowCount() - 1);
+
+							pkg.setEditMode(Constants.EDIT_MODE_SPRITES);
+
+							Data.selectedSprite = dfm.getRowCount() - 1;
+							Data.selectedTile = 255;
+							Data.selectedTileForeground = 255;
+							Data.selectedTileBackground = 255;
+						} else {
+							JOptionPane.showMessageDialog(null, "Only sprites version 1.2 and 1.3 allowed!", "Wrong Sprite", JOptionPane.ERROR_MESSAGE);
+						}
 					}
 				} else {
 					JOptionPane.showMessageDialog(null, "Coulnd't find file '" + fc.getSelectedFile().getName() + "'.", "Error", JOptionPane.OK_OPTION);

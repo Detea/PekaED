@@ -22,7 +22,8 @@ public class PK2Map {
 	public static final int MAP_SIZE = MAP_WIDTH * (MAP_HEIGHT + 32);
 	public static final int MAP_MAX_PROTOTYPES = 100;
 	
-	public char[] version = {0x31, 0x2E, 0x33, 0x00, 0xCD};
+	public char[] version13 = {0x31, 0x2E, 0x33, 0x00, 0xCD};
+	public char[] version = new char[version13.length];
 	public char[] tilesetImageFile = new char[13];
 	public char[] backgroundImageFile = new char[13];
 	public char[] musicFile = new char[13];
@@ -66,6 +67,12 @@ public class PK2Map {
 	}
 	
 	public PK2Map() {
+		reset();
+	}
+	
+	private void reset() {
+		spriteList.clear();
+		
 		setTileset(Settings.DEFAULT_TILESET);
 		setBackground(Settings.DEFAULT_BACKGROUND);
 		setMusic(Settings.DEFAULT_MUSIC);
@@ -79,8 +86,6 @@ public class PK2Map {
 			sprites[i] = 255;
 		}
 		
-		spriteList.clear();
-		
 		time = 0;
 		levelNumber = 1;
 		weather = 0;
@@ -91,6 +96,8 @@ public class PK2Map {
 		x = 0;
 		y = 0;
 		icon = 0;
+		
+		version = new char[] {0x31, 0x2E, 0x33, 0x00, 0xCD};
 	}
 	
 	public void loadIconData(String file) {
@@ -127,118 +134,168 @@ public class PK2Map {
 		}
 	}
 	
+	public boolean checkVersion(File filename) {
+		DataInputStream dis;
+		
+		boolean ret = false;
+		
+		try {
+			dis = new DataInputStream(new FileInputStream(filename));
+			
+			readAmount(version, dis);
+			
+			for (int i = 0; i < version.length - 1; i++) {
+				if (version[i] == version13[i]) {
+					ret = true;
+				} else {
+					ret = false;
+					
+					break;
+				}
+			}
+			
+			dis.close();
+		} catch (FileNotFoundException e) {
+			JOptionPane.showMessageDialog(null, "Couldn't find file '" + filename + "' to check version!", "Couldn't find file", JOptionPane.ERROR_MESSAGE);
+			
+			e.printStackTrace();
+		} catch (IOException e) {
+			JOptionPane.showMessageDialog(null, "Couldn't check file '" + filename + "'!", "Couldn't check file", JOptionPane.ERROR_MESSAGE);
+			
+			e.printStackTrace();
+		}
+		
+		return ret;
+	}
+	
 	/*
 	 * Loading a Pekka Kana 2 level file
 	 * 
 	 * Note:
 	 * (int) (dis.readByte() & 0xFF) is done, because Java doesn't support unsigned bytes. This converts the read byte to an unsigned one, stored in an integer.
 	 */
-	public void loadFile(String file) {
-		try {
-			DataInputStream dis = new DataInputStream(new FileInputStream(file));
+	public boolean loadFile(String file) {
+		boolean ok = true;
 		
-			for (int i = 0; i < MAP_SIZE; i++) {
-				layers[Constants.LAYER_BACKGROUND][i] = 255;
-				layers[Constants.LAYER_FOREGROUND][i] = 255;
-				sprites[i] = 255;
-			}
-			
-			readAmount(version, dis);
-			
-			readAmount(tilesetImageFile, dis);
-			readAmount(backgroundImageFile, dis);
-			readAmount(musicFile, dis);
-			readAmount(mapName, dis);
-			readAmount(authorName, dis);
-			
-			char[] amount = new char[8];
-			
-			readAmount(amount, dis);
-			levelNumber = Integer.parseInt(cleanString(amount));
-			
-			readAmount(amount, dis);
-			weather = Integer.parseInt(cleanString(amount));
-			
-			readAmount(amount, dis);
-			switch1Time = Integer.parseInt(cleanString(amount));
-			
-			readAmount(amount, dis);
-			switch2Time = Integer.parseInt(cleanString(amount));
-			
-			readAmount(amount, dis);
-			switch3Time = Integer.parseInt(cleanString(amount));
-			
-			readAmount(amount, dis);
-			time = Integer.parseInt(cleanString(amount));
-			
-			readAmount(amount, dis);
-			extra = Byte.parseByte(cleanString(amount));
-			
-			readAmount(amount, dis);
-			background = Byte.parseByte(cleanString(amount));
-			
-			readAmount(amount, dis);
-			playerSprite = Integer.parseInt(cleanString(amount));
-			
-			readAmount(amount, dis);
-			x = Integer.parseInt(cleanString(amount));
-			
-			readAmount(amount, dis);
-			y = Integer.parseInt(cleanString(amount));
-			
-			readAmount(amount, dis);
-			icon = Integer.parseInt(cleanString(amount));
-			
-			readAmount(amount, dis);
-			int protAmount = Integer.parseInt(cleanString(amount));
-		
-			for (int i = 0; i < protAmount; i++) {
-				char[] protNames = new char[13];
-				readAmount(protNames, dis);
-				prototypes[i] = protNames;
-			}
-			
-			int width, height;
-			
-			startX = readCleanConvert(amount, dis);
-			startY = readCleanConvert(amount, dis);
-			width = readCleanConvert(amount, dis);
-			height = readCleanConvert(amount, dis);
-			
-			for (int y = startY; y <= startY + height; y++) {
-				for (int x = startX; x <= startX + width; x++) {
-					layers[Constants.LAYER_BACKGROUND][MAP_WIDTH * x + y] = (int) (dis.readByte() & 0xFF);
+		if (!checkVersion(new File(file))) {
+			JOptionPane.showMessageDialog(null, "File has to be a Pekka Kana 2 map version 1.3!", "Couldn't load file", JOptionPane.ERROR_MESSAGE);
+
+			ok = false;
+		} else {
+			try {
+				for (int i = 0; i < MAP_SIZE; i++) {
+					layers[Constants.LAYER_BACKGROUND][i] = 255;
+					layers[Constants.LAYER_FOREGROUND][i] = 255;
+					sprites[i] = 255;
 				}
-			}
-			
-			startX = readCleanConvert(amount, dis);
-			startY = readCleanConvert(amount, dis);
-			width = readCleanConvert(amount, dis);
-			height = readCleanConvert(amount, dis);
-		
-			for (int y = startY; y <= startY + height; y++) {
-				for (int x = startX; x <= startX + width; x++) {
-					layers[Constants.LAYER_FOREGROUND][MAP_WIDTH * x + y] = (int) (dis.readByte() & 0xFF);
+				
+				DataInputStream dis = new DataInputStream(new FileInputStream(file));
+				
+				readAmount(version, dis);
+
+				readAmount(tilesetImageFile, dis);
+				readAmount(backgroundImageFile, dis);
+				readAmount(musicFile, dis);
+				readAmount(mapName, dis);
+				readAmount(authorName, dis);
+
+				char[] amount = new char[8];
+
+				readAmount(amount, dis);
+				levelNumber = Integer.parseInt(cleanString(amount));
+
+				readAmount(amount, dis);
+				weather = Integer.parseInt(cleanString(amount));
+
+				readAmount(amount, dis);
+				switch1Time = Integer.parseInt(cleanString(amount));
+
+				readAmount(amount, dis);
+				switch2Time = Integer.parseInt(cleanString(amount));
+
+				readAmount(amount, dis);
+				switch3Time = Integer.parseInt(cleanString(amount));
+
+				readAmount(amount, dis);
+				time = Integer.parseInt(cleanString(amount));
+
+				readAmount(amount, dis);
+				extra = Byte.parseByte(cleanString(amount));
+
+				readAmount(amount, dis);
+				background = Byte.parseByte(cleanString(amount));
+
+				readAmount(amount, dis);
+				playerSprite = Integer.parseInt(cleanString(amount));
+
+				readAmount(amount, dis);
+				x = Integer.parseInt(cleanString(amount));
+
+				readAmount(amount, dis);
+				y = Integer.parseInt(cleanString(amount));
+
+				readAmount(amount, dis);
+				icon = Integer.parseInt(cleanString(amount));
+
+				readAmount(amount, dis);
+				int protAmount = Integer.parseInt(cleanString(amount));
+
+				for (int i = 0; i < protAmount; i++) {
+					char[] protNames = new char[13];
+					readAmount(protNames, dis);
+					prototypes[i] = protNames;
 				}
-			}
-			
-			startX = readCleanConvert(amount, dis);
-			startY = readCleanConvert(amount, dis);
-			width = readCleanConvert(amount, dis);
-			height = readCleanConvert(amount, dis);
-			
-			for (int y = startY; y <= startY + height; y++) {
-				for (int x = startX; x <= startX + width; x++) {
-					sprites[MAP_WIDTH * x + y] = (int) (dis.readByte() & 0xFF);
+
+				int width, height;
+
+				startX = readCleanConvert(amount, dis);
+				startY = readCleanConvert(amount, dis);
+				width = readCleanConvert(amount, dis);
+				height = readCleanConvert(amount, dis);
+
+				for (int y = startY; y <= startY + height; y++) {
+					for (int x = startX; x <= startX + width; x++) {
+						layers[Constants.LAYER_BACKGROUND][MAP_WIDTH * x + y] = (int) (dis.readByte() & 0xFF);
+					}
 				}
+
+				startX = readCleanConvert(amount, dis);
+				startY = readCleanConvert(amount, dis);
+				width = readCleanConvert(amount, dis);
+				height = readCleanConvert(amount, dis);
+
+				for (int y = startY; y <= startY + height; y++) {
+					for (int x = startX; x <= startX + width; x++) {
+						layers[Constants.LAYER_FOREGROUND][MAP_WIDTH * x + y] = (int) (dis.readByte() & 0xFF);
+					}
+				}
+
+				startX = readCleanConvert(amount, dis);
+				startY = readCleanConvert(amount, dis);
+				width = readCleanConvert(amount, dis);
+				height = readCleanConvert(amount, dis);
+
+				for (int y = startY; y <= startY + height; y++) {
+					for (int x = startX; x <= startX + width; x++) {
+						sprites[MAP_WIDTH * x + y] = (int) (dis.readByte() & 0xFF);
+					}
+				}
+
+				dis.close();
+				
+				loadSpriteList();
+			} catch (FileNotFoundException e) {
+				JOptionPane.showMessageDialog(null, "File '" + file + "' not found.\n" + e.getMessage(), "Error", JOptionPane.OK_OPTION);
+
+				ok = false;
+			} catch (IOException e) {
+				JOptionPane.showMessageDialog(null, "Something went wrong while trying to read file '" + file + "\n" + e.getMessage(), "Error", JOptionPane.OK_OPTION);
+
+				ok = false;
 			}
-			
-			dis.close();
-		} catch (FileNotFoundException e) {
-			JOptionPane.showMessageDialog(null, "File '" + file + "' not found.", "Error", JOptionPane.OK_OPTION);
-		} catch (IOException e) {
-			JOptionPane.showMessageDialog(null, "Something went wrong while trying to read file '" + file + "\nError: " + e.getMessage(), "Error", JOptionPane.OK_OPTION);
 		}
+			
+		return ok;
 	}
 	
 	public void saveFile() {
@@ -348,11 +405,11 @@ public class PK2Map {
 			
 			Data.fileChanged = false;
 		} catch (FileNotFoundException e) {
-			JOptionPane.showMessageDialog(null, "File '" + file.getName() + "' not found.", "Error", JOptionPane.OK_OPTION);
+			JOptionPane.showMessageDialog(null, "Can't access file '" + file.getName() + "'!\n" + e.getMessage(), "Error", JOptionPane.OK_OPTION);
 			
 			e.printStackTrace();
 		} catch (IOException e) {
-			JOptionPane.showMessageDialog(null, "Something went wrong while trying to write file '" + file.getName() + "\nError: " + e.getMessage(), "Error", JOptionPane.OK_OPTION);
+			JOptionPane.showMessageDialog(null, "Something went wrong while trying to write file '" + file.getName() + "\n" + e.getMessage(), "Error", JOptionPane.OK_OPTION);
 			
 			e.printStackTrace();
 		}
@@ -361,7 +418,19 @@ public class PK2Map {
 	private void loadSpriteList() {
 		for (int i = 0; i < prototypes.length; i++) {
 			if (prototypes[i][0] != 0x0) {
-				spriteList.add(new PK2Sprite(cleanString(prototypes[i])));
+				File fi = null;
+				
+				if (new File(Settings.EPISODES_PATH + Data.currentEpisodeName + "\\" + cleanString(prototypes[i])).exists()) {
+					fi = new File(Settings.EPISODES_PATH + Data.currentEpisodeName + "\\" + cleanString(prototypes[i]));
+				} else {
+					fi = new File(Settings.SPRITE_PATH + "\\" + cleanString(prototypes[i]));
+				}
+				
+				if (fi.exists()) {
+					spriteList.add(new PK2Sprite(cleanString(prototypes[i])));
+				} else {
+					removeSprite(i);
+				}
 			}
 		}
 	}
@@ -403,14 +472,11 @@ public class PK2Map {
 	public String cleanString(char[] array) {
 		StringBuilder sb = new StringBuilder();
 		
-		int i = 0;
-		while (array[i] != 0x0) {
-			if (array[i] > 0xCC)
+		for (int i = 0; i < array.length; i++) {
+			if (array[i] >= 0xCC || array[i] == 0x0)
 				break;
 			
 			sb.append(array[i]);
-			
-			i++;
 		}
 		
 		return sb.toString();
@@ -643,7 +709,9 @@ public class PK2Map {
 			prototypes[i - 1] = prototypes[i];
 		}
 		
-		spriteList.remove(spr);
+		if (spr < spriteList.size()) {
+			spriteList.remove(spr);
+		}
 	}
 	
 	public String getCreator() {

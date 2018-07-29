@@ -59,6 +59,13 @@ public class Data {
 	public static LevelPanel lp;
 	public static MiniMapPanel mmp;
 	
+	public static JLabel statusLabel;
+	
+	public static int key;
+	public static boolean run = false;
+	
+	public static boolean animateTiles = true;
+	
 	public static boolean fileChanged = false, episodeChanged = false, showTileNr = true;
 	public static String currentEpisodeName = "";
 	

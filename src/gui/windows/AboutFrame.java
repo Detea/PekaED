@@ -168,6 +168,7 @@ public class AboutFrame extends JFrame {
 		
 		setIconImage(img);
 		
+		setResizable(false);
 		setVisible(true);
 	}
 }

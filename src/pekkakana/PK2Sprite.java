@@ -14,6 +14,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 import javax.imageio.ImageIO;
+import javax.swing.JOptionPane;
 
 import data.Data;
 import data.Settings;
@@ -23,7 +24,9 @@ public class PK2Sprite {
 	public char[] imageFile = new char[100];
 	public char[][] soundFiles = new char[7][100];
 	
-	public char[] version = {'1', '.', '3', '\0'};
+	public char[] version13 = {0x31, 0x2E, 0x33, 0x00};
+	public char[] version12 = {0x31, 0x2E, 0x32, 0x00};
+	public char[] version = new char[version13.length];
 	
 	public String ImageFileStr = "";
 	
@@ -52,7 +55,7 @@ public class PK2Sprite {
 	
 	double weight;
 	
-	boolean enemy;
+	public boolean enemy;
 	
 	int energy;
 	int damage;
@@ -101,7 +104,7 @@ public class PK2Sprite {
 	public PK2Sprite(String file) {
 		filename = new File(file);
 
-		loadFile();
+		loadFile(new File(file));
 		loadBufferedImage();
 	}
 	
@@ -114,41 +117,62 @@ public class PK2Sprite {
 		color = 255;
 	}
 	
-	public boolean checkVersion() {
+	public boolean checkVersion(File filename) {
 		DataInputStream dis;
 		
 		boolean ret = false;
 		
 		try {
-			dis = new DataInputStream(new FileInputStream(filename));
+			File fi = null;
 			
-			char[] version = {'1', '.', '3', '\0'};
+			// DON'T DO THIS!!!
+			// USE THE ACTUAL FILE PATH!!!!
+			// Maybe check if the user is in Settings.GAME_PATH
+			
+			if (new File(Settings.EPISODES_PATH + Data.currentEpisodeName + "\\" + filename).exists()) {
+				fi = new File(Settings.EPISODES_PATH + Data.currentEpisodeName + "\\" + filename);
+			} else {
+				fi = new File(Settings.SPRITE_PATH + "\\" + filename.getName());
+			}
+			
+			dis = new DataInputStream(new FileInputStream(fi));
 			
 			readAmount(version, dis);
 			
-			if (version[2] == '3') {
-				ret = true;
+			for (int i = 0; i < version.length; i++) {
+				if (version[i] == version13[i] || version[i] == version12[i]) {
+					ret = true;
+				} else {
+					ret = false;
+					
+					break;
+				}
 			}
 			
 			dis.close();
 		} catch (FileNotFoundException e) {
+			JOptionPane.showMessageDialog(null, "Couldn't find file '" + filename + "' to check version!", "Couldn't find file", JOptionPane.ERROR_MESSAGE);
+			
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			JOptionPane.showMessageDialog(null, "Couldn't check file '" + filename + "'!", "Couldn't check file", JOptionPane.ERROR_MESSAGE);
+			
 			e.printStackTrace();
 		}
 		
 		return ret;
 	}
 	
-	public void loadFile() {
+	public void loadFile(File filename) {
 		try {
+			this.filename = filename;
+			
 			File fi = null;
 			
 			if (new File(Settings.EPISODES_PATH + Data.currentEpisodeName + "\\" + filename).exists()) {
 				fi = new File(Settings.EPISODES_PATH + Data.currentEpisodeName + "\\" + filename);
 			} else {
-				fi = new File(Settings.SPRITE_PATH + "\\" + filename);
+				fi = new File(Settings.SPRITE_PATH + "\\" + filename.getName());
 			}
 			
 			DataInputStream dis = new DataInputStream(new FileInputStream(fi));
@@ -156,7 +180,24 @@ public class PK2Sprite {
 			for (int i = 0; i < version.length; i++) {
 				version[i] = (char) dis.readByte();
 			}
-	
+			
+			// Hacky as always! :D
+			// It would be cleaner to separate this into two methods, but this is easier
+						
+			if (version[2] == '2') {
+				imageFile = new char[13];
+				soundFiles = new char[7][13];
+				
+				transformationSprite = new char[13];
+				bonusSprite = new char[13];
+				atkSprite1 = new char[13];
+				atkSprite2 = new char[13];
+				
+				name = new char[32];
+				
+				AI = new int[5];
+			}
+			
 			type = Integer.reverseBytes(dis.readInt());
 			
 			for (int i = 0; i < imageFile.length; i++) {
@@ -240,7 +281,7 @@ public class PK2Sprite {
 			
 			score = Integer.reverseBytes(dis.readInt());
 			
-			for (int i = 0; i < 10; i++) {
+			for (int i = 0; i < AI.length; i++) {
 				AI[i] = Integer.reverseBytes(dis.readInt());
 			}
 			
@@ -287,31 +328,6 @@ public class PK2Sprite {
 			readAmount(atkSprite1, dis);
 			readAmount(atkSprite2, dis);
 			
-			tileCheck = dis.readBoolean();
-			
-			dis.readByte();
-			dis.readByte();
-			dis.readByte();
-			
-			soundFrequency = Integer.reverseBytes(dis.readInt());
-			randomFrequency = dis.readBoolean();
-			
-			wallUp = dis.readBoolean();
-			wallDown = dis.readBoolean();
-			wallRight = dis.readBoolean();
-			wallLeft = dis.readBoolean();
-			
-			dis.readByte();
-			dis.readByte();
-			dis.readByte();
-			
-			atkPause = Integer.reverseBytes(dis.readInt());
-			
-			glide = dis.readBoolean();
-			boss = dis.readBoolean();
-			bonusAlways = dis.readBoolean();
-			swim = dis.readBoolean();
-			
 			if (filename.getParentFile() != null && new File(filename.getParentFile().getAbsolutePath() + "\\" + cleanString(imageFile)).exists()) {
 				ImageFileStr = filename.getParentFile().getAbsolutePath() + "\\" + cleanString(imageFile);
 			} else {
@@ -320,8 +336,12 @@ public class PK2Sprite {
 			
 			loadBufferedImage();
 		} catch (FileNotFoundException e) {
+			JOptionPane.showMessageDialog(null, "Couldn't find sprite file '" + filename  + "'!\n" + e.getMessage(), "Couldn't find file!", JOptionPane.ERROR_MESSAGE);
+			
 			e.printStackTrace();
 		} catch (IOException e) {
+			JOptionPane.showMessageDialog(null, "Couldn't load sprite file '" + filename  + "'!\n" + e.getMessage(), "Couldn't load file!", JOptionPane.ERROR_MESSAGE);
+			
 			e.printStackTrace();
 		}
 	}
@@ -584,6 +604,8 @@ public class PK2Sprite {
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
+			JOptionPane.showMessageDialog(null, "Couldn't save sprite!\n" + e.getMessage(), "Couldn't save!", JOptionPane.ERROR_MESSAGE);
+			
 			e.printStackTrace();
 		}
 	}
@@ -643,7 +665,7 @@ public class PK2Sprite {
 		    		fx = frameX;
 		    	}
 		    	
-		    	if (fx + frameWidth < 640) {
+		    	if (result.getWidth() > 0 && fx + frameWidth < result.getWidth() && fx + frameWidth < 640) {
 		    		if (fy + frameHeight < result.getHeight()) {
 		    			frameList[i] = result.getSubimage(fx, fy, frameWidth, frameHeight);
 		    		}
@@ -654,6 +676,8 @@ public class PK2Sprite {
 			
 		    this.image = result.getSubimage(frameX, frameY, frameWidth, frameHeight);
 		} catch (IOException e) {
+			JOptionPane.showMessageDialog(null, "Couldn't load image file '" + ImageFileStr + "'!\n" + e.getMessage(), "Couldn't load image!", JOptionPane.ERROR_MESSAGE);
+			
 			e.printStackTrace();
 		}
 	}
