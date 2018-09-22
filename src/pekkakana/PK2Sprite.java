@@ -338,7 +338,7 @@ public class PK2Sprite {
 			loadBufferedImage();
 		} catch (Exception e) {
 			//JOptionPane.showMessageDialog(null, "Couldn't find sprite file '" + filename  + "'!\n" + e.getMessage(), "Couldn't find file!", JOptionPane.ERROR_MESSAGE);
-			JOptionPane.showMessageDialog(null, "An error happened, while trying to read the sprite: \"" + filename + "\"!\n" + e.getMessage(), "Sprite Error!", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(null, "Couldn't read sprite: \"" + filename + "\"." + e.getMessage(), "Sprite Error!", JOptionPane.ERROR_MESSAGE);
 			
 			e.printStackTrace();
 		} finally {
@@ -686,7 +686,7 @@ public class PK2Sprite {
 			
 		    this.image = result.getSubimage(frameX, frameY, frameWidth, frameHeight);
 		} catch (IOException e) {
-			JOptionPane.showMessageDialog(null, "Couldn't load image file \"" + ImageFileStr + "\",\nfrom sprite: \"" + filename + "\".", "Couldn't load sprites image!", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(null, "Couldn't load image file \"" + ImageFileStr + "\",\nfrom sprite: \"" + filename + "\".\n" + e.getMessage(), "Couldn't load sprites image!", JOptionPane.ERROR_MESSAGE);
 			
 			//e.printStackTrace();
 		}

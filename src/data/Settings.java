@@ -6,8 +6,6 @@ import java.io.File;
 import java.util.LinkedHashMap;
 
 public class Settings {
-	public static final String version = "1.0.1";
-	
 	public static String BASE_PATH = "";
 	public static String EPISODES_PATH = "";
 	public static String TILES_PATH = "";

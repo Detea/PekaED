@@ -151,7 +151,11 @@ public class SpritePanel extends JPanel {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				addSprite();
+				if (Data.map.spriteList.size() < 100) {
+					addSprite();
+				} else {
+					JOptionPane.showMessageDialog(null, "Sprite limit, of 100 sprites, reached!", "Reached sprite limit", JOptionPane.INFORMATION_MESSAGE);
+				}
 			}
 			
 		});
@@ -263,7 +267,7 @@ public class SpritePanel extends JPanel {
 						}
 					}
 				} else {
-					JOptionPane.showMessageDialog(null, "Coulnd't find file '" + fc.getSelectedFile().getName() + "'.", "Error", JOptionPane.OK_OPTION);
+					JOptionPane.showMessageDialog(null, "Coulnd't find file \"" + fc.getSelectedFile().getAbsolutePath() + "\".", "Error", JOptionPane.OK_OPTION);
 				}
 			}
 		}
