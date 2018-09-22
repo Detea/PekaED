@@ -355,7 +355,7 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 					}
 				}
 			} catch (IOException e) {
-				JOptionPane.showMessageDialog(this, "Couldn't read tileset file.\n'" + e.getMessage() + "'", "Error", JOptionPane.OK_OPTION);
+				JOptionPane.showMessageDialog(null, "Couldn't read tileset file \"" + Data.tilesetFile.getAbsolutePath() + "\".\n" + e.getMessage(), "Tileset error", JOptionPane.OK_OPTION);
 			}
 		}
 	}
@@ -368,7 +368,7 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 				Data.bgPalette = (IndexColorModel) background.getColorModel();
 				Data.bgImg = background;
 			} catch (IOException e) {
-				JOptionPane.showMessageDialog(this, "Couldn't read background file.\n'" + Data.bgFile.getName()+ "'", "Error", JOptionPane.OK_OPTION);
+				JOptionPane.showMessageDialog(null, "Couldn't read background file \"" + Data.bgFile.getAbsolutePath() + "\".\n" + e.getMessage(), "Background error", JOptionPane.OK_OPTION);
 			}
 		}
 	}

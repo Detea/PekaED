@@ -123,7 +123,7 @@ public class TilePanel extends JPanel implements MouseListener, MouseMotionListe
 				x = 0;
 				y = 0;
 			} catch (IOException e) {
-				JOptionPane.showMessageDialog(this, "Couldn't read tileset file.\n'" + Data.tilesetFile.getName() + "'", "Error", JOptionPane.OK_OPTION);
+				//JOptionPane.showMessageDialog(this, "Couldn't read tileset file.\n'" + Data.tilesetFile.getName() + "'", "Error", JOptionPane.OK_OPTION);
 			}
 		}
 		
