@@ -921,10 +921,37 @@ public class PekaEDGUI {
 			public void actionPerformed(ActionEvent arg0) {
 				if (comboBox.getSelectedIndex() == 1) {
 					Data.mode = Constants.MODE_ENHANCED;
+					
+					msp.spinner_4.setEnabled(false);
+					msp.spinner_5.setEnabled(false);
+					msp.spinner_6.setEnabled(false);
+					msp.spinner_7.setEnabled(false);
+					msp.spinner_8.setEnabled(false);
+					msp.spinner_9.setEnabled(false);
+				
+					msp.comboBox_3.setEnabled(false);
 				} else if (comboBox.getSelectedIndex() == 0) {
 					Data.mode = Constants.MODE_LEGACY;
+					
+					msp.spinner_4.setEnabled(false);
+					msp.spinner_5.setEnabled(false);
+					msp.spinner_6.setEnabled(false);
+					msp.spinner_7.setEnabled(false);
+					msp.spinner_8.setEnabled(false);
+					msp.spinner_9.setEnabled(false);
+				
+					msp.comboBox_3.setEnabled(false);
 				} else {
 					Data.mode = Constants.MODE_CE;
+					
+					msp.spinner_4.setEnabled(true);
+					msp.spinner_5.setEnabled(true);
+					msp.spinner_6.setEnabled(true);
+					msp.spinner_7.setEnabled(true);
+					msp.spinner_8.setEnabled(true);
+					msp.spinner_9.setEnabled(true);
+				
+					msp.comboBox_3.setEnabled(true);
 				}
 			}
 		});

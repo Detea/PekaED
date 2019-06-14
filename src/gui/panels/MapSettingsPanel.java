@@ -35,8 +35,8 @@ public class MapSettingsPanel extends JPanel {
 	private JTextField textField_3;
 	private JTextField textField_4;
 	
-	JSpinner spinner, spinner_1, spinner_2, spinner_3, spinner_4, spinner_5, spinner_6, spinner_7, spinner_8, spinner_9;
-	JComboBox comboBox, comboBox_1, comboBox_2, comboBox_3;
+	public JSpinner spinner, spinner_1, spinner_2, spinner_3, spinner_4, spinner_5, spinner_6, spinner_7, spinner_8, spinner_9;
+	public JComboBox comboBox, comboBox_1, comboBox_2, comboBox_3;
 
 	PK2Map map;
 	
