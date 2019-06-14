@@ -503,7 +503,11 @@ public class SettingsDialog extends JDialog {
 			JButton btnReset_1 = new JButton("Reset");
 			btnReset_1.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
-					txtPkceexeTestlevel.setText("pk2ce.exe dev test %level%");
+					if (Data.mode == Constants.MODE_ENHANCED) {
+						txtPkceexeTestlevel.setText("pk2.exe dev test %level%");
+					} else if (Data.mode == Constants.MODE_CE) {
+						txtPkceexeTestlevel.setText("pk2ce.exe dev test %level%");
+					}
 				}
 			});
 			btnReset_1.setBounds(336, 400, 89, 23);
