@@ -221,7 +221,7 @@ public class SpritePanel extends JPanel {
 	}
 	
 	public void addSprite() {
-		if (Data.map.spriteList.size() < Constants.SPRITE_LIMIT) {
+		if (Data.map.spriteList.size() < Constants.SPRITE_LIMIT || Data.mode == Constants.MODE_CE) {
 			JFileChooser fc = new JFileChooser(Settings.BASE_PATH + File.separatorChar + "sprites");
 			
 			fc.setDialogTitle("Select a sprite to load");
