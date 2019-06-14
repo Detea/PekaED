@@ -58,7 +58,7 @@ public class PK2Map {
 	public int[] sprites = new int[MAP_SIZE];
 	
 	// The program should really only use prototypesList, but that would mean that I'd have to rewrite a lot of code and might break a ton of things, so... this works lol
-	public char[][] prototypes = new char[MAP_MAX_PROTOTYPES][13];
+	//public char[][] prototypes = new char[MAP_MAX_PROTOTYPES][13];
 	public List<String> prototypesList = new ArrayList<String>();
 
 	boolean[] edges = new boolean[MAP_SIZE];
@@ -225,10 +225,14 @@ public class PK2Map {
 	public boolean loadFile(String file) {
 		boolean ok = true;
 		
+		this.file = new File(file);
+		
 		int version = checkVersion(new File(file));
 		
 		try {
 			DataInputStream dis = new DataInputStream(new FileInputStream(file));
+			
+			Data.currentEpisodeName = this.file.getParent();
 			
 			if (version == 3) {
 				prototypesList.clear();
@@ -804,8 +808,8 @@ public class PK2Map {
 			
 			if (Data.mode != Constants.MODE_CE && new File(Settings.EPISODES_PATH + Data.currentEpisodeName + "\\" + prototypesList.get(i)).exists()) {
 				fi = new File(Settings.EPISODES_PATH + Data.currentEpisodeName + "\\" + prototypesList.get(i));
-			} else if (Data.mode == Constants.MODE_CE && new File(Settings.EPISODES_PATH + Data.currentEpisodeName + "\\sprites\\" + prototypesList.get(i)).exists()) {
-				fi = new File(Settings.EPISODES_PATH + Data.currentEpisodeName + "\\sprites\\" + prototypesList.get(i));
+			} else if (Data.mode == Constants.MODE_CE && new File(file.getParent() + "\\sprites\\" + prototypesList.get(i)).exists()) {
+				fi = new File(file.getParent() + "\\sprites\\" + prototypesList.get(i));
 			} else {
 				fi = new File(Settings.SPRITE_PATH + "\\" + prototypesList.get(i));
 			}
@@ -819,17 +823,10 @@ public class PK2Map {
 	}
 	
 	public void addSprite(PK2Sprite spr, String filename) {
-		if (spriteList.size() < MAP_MAX_PROTOTYPES) {
+		if (spriteList.size() < MAP_MAX_PROTOTYPES || Data.mode == Constants.MODE_CE) {
 			spriteList.add(spr);
 			
 			prototypesList.add(filename);
-			
-			/*
-			if (spriteList.size() > 1) {
-				setCharString(prototypes[spriteList.size() - 1], filename);
-			} else {
-				setCharString(prototypes[0], filename);
-			}*/
 		}
 	}
 	
@@ -1208,9 +1205,11 @@ public class PK2Map {
 		}
 		
 		// Same as the sprites, except with their names
-		for (int i = spr + 1; i < prototypes.length; i++) {
+		/*for (int i = spr + 1; i < prototypes.length; i++) {
 			prototypes[i - 1] = prototypes[i];
-		}
+		}*/
+		
+		prototypesList.remove(spr);
 		
 		if (spr < spriteList.size()) {
 			spriteList.remove(spr);

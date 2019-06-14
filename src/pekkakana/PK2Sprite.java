@@ -16,6 +16,7 @@ import java.nio.ByteOrder;
 import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
 
+import data.Constants;
 import data.Data;
 import data.Settings;
 
@@ -135,12 +136,25 @@ public class PK2Sprite {
 		try {
 			File fi = null;
 			
-			if (new File(Settings.EPISODES_PATH + Data.currentEpisodeName + "\\" + filename).exists()) {
-				fi = new File(Settings.EPISODES_PATH + Data.currentEpisodeName + "\\" + filename);
+			if (!Data.currentEpisodeName.isEmpty()) {
+				if (Data.mode != Constants.MODE_CE && new File(Data.currentEpisodeName + "\\" + filename.getName()).exists()) {
+					fi = new File(Data.currentEpisodeName + "\\" + filename.getName());
+				} else if (Data.mode == Constants.MODE_CE && new File(Data.currentEpisodeName + "\\sprites\\" + filename.getName()).exists()) {
+					fi = new File(Data.currentEpisodeName + "\\sprites\\" + filename.getName());
+				} else {
+					fi = new File(Settings.SPRITE_PATH + "\\" + filename.getName());
+				}
+			} else {
+				fi = filename;
+			}
+			
+			/*
+			if (new File(filename.getParentFile().getParent() + "\\sprites\\" + filename.getName()).exists()) {
+				fi = new File(filename.getParentFile().getParent() + "\\sprites\\" + filename.getName());
 			} else {
 				fi = new File(Settings.SPRITE_PATH + "\\" + filename.getName());
-			}
-				
+			}*/
+			
 			dis = new DataInputStream(new FileInputStream(fi));
 			
 			readAmount(version, dis);
@@ -173,11 +187,21 @@ public class PK2Sprite {
 			this.filename = filename;
 			
 			File fi = null;
-			
-			if (new File(Settings.EPISODES_PATH + Data.currentEpisodeName + "sprites\\" + filename.getName()).exists()) {
-				fi = new File(Settings.EPISODES_PATH + Data.currentEpisodeName + "sprites\\" + filename.getName());
+	
+			if (!Data.currentEpisodeName.isEmpty()) {
+				if (Data.mode != Constants.MODE_CE && new File(Data.currentEpisodeName + "\\" + filename.getName()).exists()) {
+					fi = new File(Data.currentEpisodeName + "\\" + filename.getName());
+				} else if (Data.mode == Constants.MODE_CE && new File(Data.currentEpisodeName + "\\sprites\\" + filename.getName()).exists()) {
+					fi = new File(Data.currentEpisodeName + "\\sprites\\" + filename.getName());
+				} else {
+					fi = new File(Settings.SPRITE_PATH + "\\" + filename.getName());
+				}
 			} else {
-				fi = new File(Settings.SPRITE_PATH + "\\" + filename.getName());
+				if (filename.exists()) {
+					fi = filename;
+				} else {
+					fi = new File(Settings.SPRITE_PATH + "\\" + filename.getName());
+				}
 			}
 			
 			dis = new DataInputStream(new FileInputStream(fi));
