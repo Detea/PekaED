@@ -1547,6 +1547,8 @@ public class PekaEDGUI {
 				if (new File("lastepisode").exists()) {
 					DataInputStream dis = new DataInputStream(new FileInputStream("lastepisode"));
 					String episodePath = dis.readUTF();
+
+					dis.close();
 					
 					if (!episodePath.isEmpty()) {
 						File f = new File(episodePath);
@@ -1562,6 +1564,10 @@ public class PekaEDGUI {
 							setFrameTitle();
 						}
 					}
+				} else {
+					Settings.loadEpisodeOnStartup = false;
+					
+					newLevel();
 				}
 			} catch (FileNotFoundException e1) {
 				// log this
