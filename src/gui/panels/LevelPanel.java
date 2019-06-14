@@ -964,7 +964,7 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 		
 	    pkg.scrollPane2.revalidate();
 	    pkg.scrollPane2.repaint();
-	    pkg.scrollPane2.updateUI();
+	    //pkg.scrollPane2.updateUI();
 	    
 	    Data.mmp.reposition();
 	    Data.mmp.resizeViewportRect();
@@ -995,7 +995,7 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 		if (newY < 0) {
 			newY = 0;
 		}
-		
+
 	    pkg.scrollPane2.getViewport().setViewPosition(new Point(newX, newY));
 
 	    pkg.scrollPane2.revalidate();
@@ -1024,6 +1024,8 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 			Data.zoomSpinner.setValue((float) (Data.scale * 100));
 			
 			zoom();
+			
+			pkg.setShortcuts(pkg.actionMap);
 		} else {
 			if (e.isAltDown()) {
 				if (e.getWheelRotation() > 0) {

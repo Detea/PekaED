@@ -120,7 +120,7 @@ public class PekaEDGUI {
 	private JComboBox comboBox;
 	private final JPanel statusBar = new JPanel();
 	
-	private ActionMap actionMap;
+	public ActionMap actionMap;
 	
 	/**
 	 * @wbp.parser.entryPoint
@@ -1073,7 +1073,7 @@ public class PekaEDGUI {
 			public void actionPerformed(ActionEvent arg0) {
 				cbLayers.setSelectedIndex(0);
 				Data.currentLayer = 2;
-				
+
 				Data.lp.repaint();
 			}
 			
@@ -1085,7 +1085,7 @@ public class PekaEDGUI {
 			public void actionPerformed(ActionEvent arg0) {
 				cbLayers.setSelectedIndex(1);
 				Data.currentLayer = 0;
-				
+			
 				Data.lp.repaint();
 			}
 			
@@ -1097,7 +1097,7 @@ public class PekaEDGUI {
 			public void actionPerformed(ActionEvent arg0) {
 				cbLayers.setSelectedIndex(2);
 				Data.currentLayer = 1;
-				
+	
 				Data.lp.repaint();
 			}
 			
