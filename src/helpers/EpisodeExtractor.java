@@ -92,9 +92,9 @@ public final class EpisodeExtractor {
 		for (File fs : files) {
 			PK2Map m = new PK2Map(fs.getAbsolutePath());
 
-			addToFiles(m.getBackground(), Settings.SCENERY_PATH, scenery);
-			addToFiles(m.getTileset(), Settings.TILES_PATH, tiles);
-			addToFiles(m.getMusic(), Settings.MUSIC_PATH, music);
+			addToFiles(m.backgroundImageFile, Settings.SCENERY_PATH, scenery);
+			addToFiles(m.tilesetImageFile, Settings.TILES_PATH, tiles);
+			addToFiles(m.musicFile, Settings.MUSIC_PATH, music);
 		
 			for (PK2Sprite s : m.spriteList) {
 				addSpriteToFile(s.filename.getName());

@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.Dimension;
+import java.awt.Event;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -17,6 +18,7 @@ import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.BufferedWriter;
@@ -31,6 +33,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Vector;
 import java.util.zip.ZipEntry;
@@ -39,7 +42,9 @@ import java.util.zip.ZipOutputStream;
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
+import javax.swing.BorderFactory;
 import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.ComponentInputMap;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
@@ -71,6 +76,7 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.border.EtchedBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
@@ -79,6 +85,8 @@ import javax.swing.plaf.ActionMapUIResource;
 
 import data.Constants;
 import data.Data;
+import data.DoAction;
+import data.DoManager;
 import data.Settings;
 import gui.panels.EpisodePanel;
 import gui.panels.LevelPanel;
@@ -155,8 +163,8 @@ public class PekaEDGUI {
 		JMenu mFile = new JMenu("File");
 		JMenuItem mifNewLevel = new JMenuItem("New Level");
 		JMenuItem mifOpenLevel = new JMenuItem("Open Level");
-		JMenuItem mifSaveLevel = new JMenuItem("Save level");
-		JMenuItem mifSaveLevelAs = new JMenuItem("Save Level as...");
+		JMenuItem mifSaveLevel = new JMenuItem("Save Level");
+		JMenuItem mifSaveLevelAs = new JMenuItem("Save Level As...");
 		JMenuItem mifNewEpisode = new JMenuItem("New Episode");
 		JMenuItem mifOpenEpisode = new JMenuItem("Open Episode");
 		JMenuItem mifSaveEpisode = new JMenuItem("Save Episode");
@@ -247,6 +255,7 @@ public class PekaEDGUI {
 					fc.getSelectedFile().mkdir();
 					
 					Data.currentEpisodePath = fc.getSelectedFile().getAbsolutePath();
+					Data.lastPath = fc.getSelectedFile();
 					
 					File episodeFile = new File(fc.getSelectedFile().getAbsolutePath() + File.separatorChar + fc.getSelectedFile().getName() + ".episode");
 		
@@ -454,6 +463,14 @@ public class PekaEDGUI {
 			
 		});
 		
+		JMenuItem mntmEpisodeSettings = new JMenuItem("Episode settings");
+		mntmEpisodeSettings.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				new EpisodeSettingsDialog();
+			}
+		});
+		mExtras.add(mntmEpisodeSettings);
+		
 		mExtras.add(mieSettings);
 		mExtras.add(mieAbout);
 		mExtras.add(mieHelp);
@@ -654,18 +671,6 @@ public class PekaEDGUI {
 			
 		});
 		
-		btFloodFill.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				Data.selectedTool = Data.TOOL_FLOODFILL;
-				
-				btBrush.setSelected(false);
-				btEraser.setSelected(false);
-			}
-			
-		});
-		
 		btEraser.addActionListener(new ActionListener() {
 
 			@Override
@@ -680,7 +685,6 @@ public class PekaEDGUI {
 		
 		toolbar.add(btBrush);
 		toolbar.add(btEraser);
-		//toolbar.add(btFloodFill);
 	
 		JToggleButton btShowSprites = new JToggleButton("Show Sprites");
 
@@ -917,8 +921,10 @@ public class PekaEDGUI {
 			public void actionPerformed(ActionEvent arg0) {
 				if (comboBox.getSelectedIndex() == 1) {
 					Data.mode = Constants.MODE_ENHANCED;
-				} else {
+				} else if (comboBox.getSelectedIndex() == 0) {
 					Data.mode = Constants.MODE_LEGACY;
+				} else {
+					Data.mode = Constants.MODE_CE;
 				}
 			}
 		});
@@ -926,7 +932,7 @@ public class PekaEDGUI {
 		Component horizontalStrut_1 = Box.createHorizontalStrut(20);
 		horizontalStrut_1.setMaximumSize(new Dimension(3, 32767));
 		toolbar.add(horizontalStrut_1);
-		comboBox.setModel(new DefaultComboBoxModel(new String[] {"Legacy", "Enhanced"}));
+		comboBox.setModel(new DefaultComboBoxModel(new String[] {"Legacy", "Enhanced", "C.E."}));
 		comboBox.setMaximumSize(new Dimension(100, 25));
 		toolbar.add(comboBox);
 		
@@ -951,6 +957,10 @@ public class PekaEDGUI {
 
 						@Override
 						public boolean accept(File f) {
+							if (Data.mode == Constants.MODE_CE) {
+								return f.isDirectory() || f.getName().endsWith(".map") || f.getName().endsWith(".cemap");
+							}
+							
 							return f.isDirectory() || f.getName().endsWith(".map") && f.getName().length() < 39;
 						}
 
@@ -995,6 +1005,10 @@ public class PekaEDGUI {
 
 					@Override
 					public boolean accept(File f) {
+						if (Data.mode == Constants.MODE_CE) {
+							return f.isDirectory() || f.getName().endsWith(".map") || f.getName().endsWith(".cemap");
+						}
+						
 						return f.isDirectory() || f.getName().endsWith(".map") && f.getName().length() < 39;
 					}
 
@@ -1237,8 +1251,40 @@ public class PekaEDGUI {
 			}
 			
 		});
+		
+		actionMap.put("undo", new AbstractAction() {
 
-		setShortcuts();
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				if (!Data.undoStack.isEmpty()) {
+					ArrayList<DoAction> a = Data.undoStack.pop();
+					
+					Data.redoStack.push(a);
+					DoManager.undo(a);
+					
+					Data.lp.repaint();
+				}
+			}
+			
+		});
+		
+		actionMap.put("redo", new AbstractAction() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				if (!Data.redoStack.isEmpty()) {
+					ArrayList<DoAction> a = Data.redoStack.pop();
+					
+					Data.undoStack.push(a);
+					DoManager.redo(a);
+					
+					Data.lp.repaint();
+				}
+			}
+			
+		});
+
+		setShortcuts(actionMap);
 		
 		frame.addWindowListener(new WindowListener() {
 
@@ -1382,7 +1428,19 @@ public class PekaEDGUI {
 		
 		Data.statusLabel = lblDsf;
 		
-		// Very lazy solution, but it's too fucking warm in my country, right now, it's fucked
+		JLabel lblPosX = new JLabel("X: ");
+		JLabel lblPosY = new JLabel("Y: ");
+
+		JLabel lblPosXVal = new JLabel(" ");
+		JLabel lblPosYVal = new JLabel(" ");
+		
+		JLabel lblSpriteEstimate = new JLabel("Sprites (placed): ");
+		JLabel lblSprEstVal = new JLabel("");
+		
+		Data.lblPosXVal = lblPosXVal;
+		Data.lblPosYVal = lblPosYVal;
+		Data.lblSprEstVal = lblSprEstVal;
+		
 		if (Settings.showStatusbar) {
 			frame.getContentPane().add(statusBar, BorderLayout.SOUTH);
 			statusBar.setLayout(new BorderLayout(0, 0));
@@ -1390,12 +1448,49 @@ public class PekaEDGUI {
 			statusBar.setPreferredSize(new Dimension(0, 25));
 			
 			JPanel panel = new JPanel();
-			statusBar.add(panel, BorderLayout.EAST);
+			statusBar.add(panel, BorderLayout.CENTER);
 			
-			Component horizontalStrut_2 = Box.createHorizontalStrut(10);
-			panel.add(horizontalStrut_2);
+			BoxLayout b = new BoxLayout(panel, BoxLayout.X_AXIS);
+
+			panel.setLayout(b);
+			panel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
+			
+			JSeparator s = new JSeparator(SwingConstants.VERTICAL);
+			s.setPreferredSize(new Dimension(8, 20));
+			s.setMaximumSize(s.getPreferredSize());
+			
+			JSeparator s2 = new JSeparator(SwingConstants.VERTICAL);
+			s2.setPreferredSize(new Dimension(8, 20));
+			s2.setMaximumSize(s2.getPreferredSize());
+			
+			lblPosXVal.setPreferredSize(new Dimension(30, 20));
+			lblPosYVal.setPreferredSize(new Dimension(30, 20));
+			
+			lblSpriteEstimate.setMaximumSize(lblSpriteEstimate.getPreferredSize());
+			
+			panel.add(Box.createHorizontalStrut(10));
 			
 			panel.add(lblDsf);
+			panel.add(Box.createHorizontalGlue());
+			
+			panel.add(s);
+			
+			panel.add(lblSpriteEstimate);
+			panel.add(lblSprEstVal);
+			
+			panel.add(Box.createHorizontalStrut(10));
+			
+			panel.add(s2);
+			
+			panel.add(Box.createHorizontalStrut(10));
+			
+			panel.add(lblPosX);
+			panel.add(lblPosXVal);
+	
+			panel.add(lblPosY);
+			panel.add(lblPosYVal);
+			
+			panel.add(Box.createHorizontalStrut(10));
 		}
 		
 		scrollPane2.getHorizontalScrollBar().addAdjustmentListener(new AdjustmentListener() {
@@ -1466,53 +1561,112 @@ public class PekaEDGUI {
 		}
 	}
 	
-	private void setEditorMode(int mode) {
-		if (mode == 0) {
-			Data.mode = Constants.MODE_LEGACY;
-			Data.EPISODE_LEVEL_LIMIT = Constants.LEGACY_LEVEL_LIMIT;
-		} else if (mode == 1) {
-			Data.mode = Constants.MODE_ENHANCED;
-			Data.EPISODE_LEVEL_LIMIT = Constants.ENHANCED_LEVEL_LIMIT;
-		}
+	public void setShortcuts(ActionMap actionMap) {
+		InputMap keyMap = new ComponentInputMap((JComponent) scrollPane2);
+		
+		addShortcut(keyMap, "saveLevel", "saveAction");
+		addShortcut(keyMap, "openLevel", "loadAction");
+		addShortcut(keyMap, "createLevel", "newAction");
+		addShortcut(keyMap, "saveLevelAs", "saveAsAction");
+		
+		addShortcut(keyMap, "addSprite", "addSpriteAction");
+		
+		addShortcut(keyMap, "bothLayer", "layerAction1");
+		addShortcut(keyMap, "foregroundLayer", "layerAction2");
+		addShortcut(keyMap, "backgroundLayer", "layerAction3");
+		
+		addShortcut(keyMap, "zoomIn", "zoomInAction");
+		addShortcut(keyMap, "zoomOut", "zoomOutAction");
+		addShortcut(keyMap, "zoomReset", "resetZoom");
+
+		addShortcut(keyMap, "testLevel", "testLevel");
+		
+		addShortcut(keyMap, "brushTool", "selectBrush");
+		addShortcut(keyMap, "eraserTool", "selectEraser");
+		
+		addShortcut(keyMap, "showSprites", "showSprites");
+		addShortcut(keyMap, "highlightSprites", "showSpriteRect");
+		
+		addShortcut(keyMap, "tileMode", "editModeTiles");
+		addShortcut(keyMap, "spriteMode", "editModeSprites");
+
+		addShortcut(keyMap, "undoAction", "undo");
+		addShortcut(keyMap, "redoAction", "redo");
+		
+		SwingUtilities.replaceUIInputMap((JComponent) scrollPane2,  JComponent.WHEN_FOCUSED, keyMap);
+		SwingUtilities.replaceUIActionMap((JComponent) scrollPane2, actionMap);
 	}
 	
-	public void setShortcuts() {
-		InputMap keyMap = new ComponentInputMap((JComponent) frame.getContentPane());
-		keyMap.put(KeyStroke.getKeyStroke(Settings.shortcuts.get("saveLevel").key, Settings.shortcuts.get("saveLevel").modifier), "saveAction");
-		keyMap.put(KeyStroke.getKeyStroke(Settings.shortcuts.get("openLevel").key, Settings.shortcuts.get("openLevel").modifier), "loadAction");
-		keyMap.put(KeyStroke.getKeyStroke(Settings.shortcuts.get("createLevel").key, Settings.shortcuts.get("createLevel").modifier), "newAction");
-		keyMap.put(KeyStroke.getKeyStroke(Settings.shortcuts.get("addSprite").key, Settings.shortcuts.get("addSprite").modifier), "addSpriteAction");
-		keyMap.put(KeyStroke.getKeyStroke(Settings.shortcuts.get("saveLevelAs").key, Settings.shortcuts.get("saveLevelAs").modifier), "saveAsAction");
-		keyMap.put(KeyStroke.getKeyStroke(Settings.shortcuts.get("bothLayer").key, Settings.shortcuts.get("bothLayer").modifier), "layerAction1");
-		keyMap.put(KeyStroke.getKeyStroke(Settings.shortcuts.get("foregroundLayer").key, Settings.shortcuts.get("foregroundLayer").modifier), "layerAction2");
-		keyMap.put(KeyStroke.getKeyStroke(Settings.shortcuts.get("backgroundLayer").key, Settings.shortcuts.get("backgroundLayer").modifier), "layerAction3");
+	private void addShortcut(InputMap keyMap, String shortcutStr, String methodStr) {
+		String str = "", mask = "";
 		
-		keyMap.put(KeyStroke.getKeyStroke(Settings.shortcuts.get("zoomIn").key, Settings.shortcuts.get("zoomIn").modifier), "zoomInAction");
-		keyMap.put(KeyStroke.getKeyStroke(Settings.shortcuts.get("zoomOut").key, Settings.shortcuts.get("zoomOut").modifier), "zoomOutAction");
-	
-		keyMap.put(KeyStroke.getKeyStroke(Settings.shortcuts.get("testLevel").key, Settings.shortcuts.get("testLevel").modifier), "testLevel");
+		switch (Settings.shortcuts.get(shortcutStr).modifier) {
+			case Event.CTRL_MASK:
+				str = "CTRL";
+				break;
+				
+			case Event.SHIFT_MASK:
+				str = "SHIFT";
+				break;
+				
+			case Event.META_MASK:
+				str = "META";
+				break;
+				
+			case Event.ALT_MASK:
+				str = "ALT";
+				break;
+				
+			default:
+				str = "";
+				break;
+		}
 		
-		keyMap.put(KeyStroke.getKeyStroke(Settings.shortcuts.get("brushTool").key, Settings.shortcuts.get("brushTool").modifier), "selectBrush");
-		keyMap.put(KeyStroke.getKeyStroke(Settings.shortcuts.get("eraserTool").key, Settings.shortcuts.get("eraserTool").modifier), "selectEraser");
-		keyMap.put(KeyStroke.getKeyStroke(Settings.shortcuts.get("showSprites").key, Settings.shortcuts.get("showSprites").modifier), "showSprites");
-
-		keyMap.put(KeyStroke.getKeyStroke(Settings.shortcuts.get("highlightSprites").key, Settings.shortcuts.get("highlightSprites").modifier), "showSpriteRect");
+		switch (Settings.shortcuts.get(shortcutStr).mask) {
+			case Event.CTRL_MASK:
+				mask = "CTRL";
+				break;
+				
+			case Event.SHIFT_MASK:
+				mask = "SHIFT";
+				break;
+				
+			case Event.META_MASK:
+				mask = "META";
+				break;
+				
+			case Event.ALT_MASK:
+				mask = "ALT";
+				break;
+				
+			default:
+				mask = "";
+				break;
+		}
 		
-		keyMap.put(KeyStroke.getKeyStroke(Settings.shortcuts.get("tileMode").key, Settings.shortcuts.get("tileMode").modifier), "editModeTiles");
-		keyMap.put(KeyStroke.getKeyStroke(Settings.shortcuts.get("spriteMode").key, Settings.shortcuts.get("spriteMode").modifier), "editModeSprites");
-
-		keyMap.put(KeyStroke.getKeyStroke(Settings.shortcuts.get("zoomReset").key, Settings.shortcuts.get("zoomReset").modifier), "resetZoom");
-		
-		SwingUtilities.replaceUIInputMap((JComponent) frame.getContentPane(),  JComponent.WHEN_IN_FOCUSED_WINDOW, keyMap);
-		SwingUtilities.replaceUIActionMap((JComponent) frame.getContentPane(), actionMap);
+		keyMap.put(KeyStroke.getKeyStroke(str.toLowerCase() + " " + mask.toLowerCase() + " pressed " + KeyEvent.getKeyText(Settings.shortcuts.get(shortcutStr).key)), methodStr);
 	}
 	
 	private void testLevel() {
-		String cmd = Settings.BASE_PATH + File.separatorChar + "pk2.exe";
-		String args = "dev test \"" + Data.currentFile.getParentFile().getName() + "/" + Data.currentFile.getName() + "\"";
+		String file = "\"" + Data.currentFile.getParentFile().getName() + "/" + Data.currentFile.getName() + "\"";
+		String args = Settings.parameters.replace("%level%", file);
+		
+		String[] exe = Settings.parameters.split(" ");
+		
+		String cmd = exe[0];
+		
+		args = args.substring(exe[0].length() + 1, args.length());
+		
+		System.out.println(Settings.BASE_PATH + "\\" + cmd + " - " + args);
+		
+		// Maybe find a better solution lol
+		if (cmd.isEmpty()) {
+			return;
+		}
+
 		try{
 			Runtime runTime = Runtime.getRuntime();
-			Process process = runTime.exec(cmd + " " + args);
+			Process process = runTime.exec("\"" + Settings.BASE_PATH + "\\" + cmd + "\"" + " " + args);
 		} catch (IOException e) {
 			JOptionPane.showMessageDialog(null, "Can't test level!\n" + e.getMessage(), "Can't test level!", JOptionPane.ERROR_MESSAGE);
 			
@@ -1542,14 +1696,22 @@ public class PekaEDGUI {
 	}
 	
 	public void showLoadDialog() {
-		JFileChooser fc = new JFileChooser(Settings.EPISODES_PATH);
+		JFileChooser fc = new JFileChooser(Data.lastPath);
 		
-		fc.setFileFilter(new FileNameExtensionFilter("Pekka Kana 2 Level", "map", "MAP"));
+		if (Data.mode == Constants.MODE_CE) {
+			fc.setFileFilter(new FileNameExtensionFilter("Pekka Kana 2 Level (*.map | *.cemap)", "map", "cemap"));
+		} else {
+			fc.setFileFilter(new FileNameExtensionFilter("Pekka Kana 2 Level (*.map)", "map"));
+		}
 		
 		int res = fc.showOpenDialog(frame);
 		
 		if (res == JFileChooser.APPROVE_OPTION) {
+			Data.lastPath = fc.getSelectedFile().getParentFile();
+			
 			loadLevel(fc.getSelectedFile().getAbsolutePath());
+			
+			setShortcuts(actionMap);
 		}
 	}
 	
@@ -1563,16 +1725,16 @@ public class PekaEDGUI {
 		if (ok) {
 			Data.currentFile = new File(file);
 			
-			if (new File(Data.currentFile.getParentFile().getAbsolutePath() + "\\" + Data.map.getBackground()).exists()) {
-				Data.bgFile = new File(Data.currentFile.getParentFile().getAbsolutePath() + "\\" + Data.map.getBackground());
+			if (new File(Data.currentFile.getParentFile().getAbsolutePath() + "\\" + Data.map.backgroundImageFile).exists()) {
+				Data.bgFile = new File(Data.currentFile.getParentFile().getAbsolutePath() + "\\" + Data.map.backgroundImageFile);
 			} else {
-				Data.bgFile = new File(Settings.SCENERY_PATH + "\\" + Data.map.getBackground());
+				Data.bgFile = new File(Settings.SCENERY_PATH + "\\" + Data.map.backgroundImageFile);
 			}
 			
-			if (new File(Data.currentFile.getParentFile().getAbsolutePath() + "\\" + Data.map.getTileset()).exists()) {
-				Data.tilesetFile = new File(Data.currentFile.getParentFile().getAbsolutePath() + "\\" + Data.map.getTileset());
+			if (new File(Data.currentFile.getParentFile().getAbsolutePath() + "\\" + Data.map.tilesetImageFile).exists()) {
+				Data.tilesetFile = new File(Data.currentFile.getParentFile().getAbsolutePath() + "\\" + Data.map.tilesetImageFile);
 			} else {
-				Data.tilesetFile = new File(Settings.TILES_PATH + "\\" + Data.map.getTileset());
+				Data.tilesetFile = new File(Settings.TILES_PATH + "\\" + Data.map.tilesetImageFile);
 			}
 			
 			lp.setMap();
@@ -1638,7 +1800,22 @@ public class PekaEDGUI {
 		
 		setFrameTitle();
 		
-		Data.selectedTile = 0;
+		Data.selectedTileForeground = 0;
+		Data.selectedTileBackground = 255;
+		Data.selectedSprite = 255;
+		
+		Data.multiSelectionForeground.clear();
+		Data.multiSelectionBackground.clear();
+		
+		Data.sx = 0;
+		Data.sy = 0;
+		Data.sw = 0;
+		Data.sh = 0;
+		
+		Data.multiSelectTiles = false;
+		Data.multiSelectLevel = false;
+		
+		tp.in = 0;
 		
 		Data.bgFile = new File(Settings.SCENERY_PATH + "\\" + Settings.DEFAULT_BACKGROUND);
 		Data.tilesetFile = new File(Settings.TILES_PATH + "\\" + Settings.DEFAULT_TILESET);
@@ -1681,8 +1858,14 @@ public class PekaEDGUI {
 			if (file.exists())
 				file.delete();
 			
-			if (!file.getName().endsWith("map")) {
-				file = new File(file.getAbsolutePath() +  ".map");
+			if (Data.mode == Constants.MODE_CE) {
+				if (!file.getName().endsWith("cemap")) {
+					file = new File(file.getAbsolutePath() +  ".cemap");
+				}
+			} else {
+				if (!file.getName().endsWith("map")) {
+					file = new File(file.getAbsolutePath() +  ".map");
+				}
 			}
 			
 			msp.saveChanges();
@@ -1853,11 +2036,19 @@ public class PekaEDGUI {
 		try {
 			DataOutputStream dos = new DataOutputStream(new FileOutputStream("settings"));
 			
+			byte[] version = { '1', '.', '4'};
+			
+			dos.write(version);
+			
 			dos.writeUTF(Settings.BASE_PATH);
 			dos.writeBoolean(Settings.loadEpisodeOnStartup);
 			dos.writeBoolean(Settings.startInEnhancedMode);
+			dos.writeBoolean(Settings.startInCEMode);
 			dos.writeInt(Constants.ENHANCED_LEVEL_LIMIT);
 			dos.writeBoolean(Settings.showStatusbar);
+			
+			dos.writeBoolean(Settings.autoSwitchModes);
+			dos.writeBoolean(Settings.useDevMode);
 
 			dos.writeBoolean(Settings.spritePreview);
 			dos.writeBoolean(Settings.tilesetPreview);
@@ -1866,10 +2057,15 @@ public class PekaEDGUI {
 			dos.writeBoolean(Data.showSpriteRect);
 			dos.writeBoolean(Data.showTileNr);
 			
+			dos.writeInt(Settings.doLimit);
+			
+			dos.writeUTF(Settings.parameters);
+			
 			int i = 0;
 			for (String s : Settings.shortcuts.keySet()) {
 				dos.writeUTF(s);
 				dos.writeInt(Settings.shortcuts.get(s).modifier);
+				dos.writeInt(Settings.shortcuts.get(s).mask);
 				dos.writeInt(Settings.shortcutKeyCodes[i]);
 				
 				i++;

@@ -10,11 +10,10 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferInt;
 import java.awt.image.IndexColorModel;
+import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import data.Constants;
@@ -25,8 +24,9 @@ import gui.windows.PekaEDGUI;
 public class TilePanel extends JPanel implements MouseListener, MouseMotionListener {
 
 	BufferedImage tileset;	
-	int x, y, w, h, dx, dy, fx, fy, in;
+	public int x, y, w, h, dx, dy, fx, fy, in, xx, yy;
 	private PekaEDGUI pk;
+	boolean inPanel = false;
 	
 	private int[][] tileTable = new int[320 / 32][480 / 32]; // shouldn't be hardcoded, in case there will be support for bigger tile sets, but there probably won't
 	
@@ -69,11 +69,23 @@ public class TilePanel extends JPanel implements MouseListener, MouseMotionListe
 				
 				// Ensure that the tile number is always centered
 				if (in / 10 < 1) {
-					g.drawString("" + in, x + 13, y + 20);
+					if (inPanel) {
+						g.drawString("" + (in + 1), x + 13, y + 20);
+					} else {
+						g.drawString("" + (in + 1), xx + 13, yy + 20);
+					}
 				} else if (in / 10 <= 10) {
-					g.drawString("" + in, x + 6, y + 20);
+					if (inPanel) {
+						g.drawString("" + (in + 1), x + 6, y + 20);
+					} else {
+						g.drawString("" + (in + 1), xx + 6, yy + 20);
+					}
 				} else {
-					g.drawString("" + in, x + 4, y + 20);
+					if (inPanel) {
+						g.drawString("" + (in + 1), x + 4, y + 20);
+					} else {
+						g.drawString("" + (in + 1), xx + 4, yy + 20);
+					}
 				}
 			}
 		}
@@ -124,6 +136,14 @@ public class TilePanel extends JPanel implements MouseListener, MouseMotionListe
 				y = 0;
 			} catch (IOException e) {
 				//JOptionPane.showMessageDialog(this, "Couldn't read tileset file.\n'" + Data.tilesetFile.getName() + "'", "Error", JOptionPane.OK_OPTION);
+				if (!new File(Settings.TILES_PATH + Settings.DEFAULT_TILESET).exists()) {
+					try {
+						tileset = ImageIO.read(getClass().getResource("/missingTileset.png"));
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+				}
 			}
 		}
 		
@@ -150,10 +170,7 @@ public class TilePanel extends JPanel implements MouseListener, MouseMotionListe
 	public void mouseDragged(MouseEvent e) {
 		int mx = (e.getX() / 32);
 		int my = (e.getY() / 32);
-		
-		Data.multiSelectTiles = true;
-		Data.multiSelectLevel = false;
-		
+			
 		if (mx < Data.sx) {
 			Data.sw = Data.sx - mx;
 			
@@ -185,6 +202,11 @@ public class TilePanel extends JPanel implements MouseListener, MouseMotionListe
 			Data.sh = (tileset.getHeight() / 32) - Data.sy;
 		}
 		
+		if (Data.sw > 1 || Data.sh > 1) {
+			Data.multiSelectTiles = true;
+			Data.multiSelectLevel = false;
+		}
+		
 		repaint();
 	}
 
@@ -209,14 +231,19 @@ public class TilePanel extends JPanel implements MouseListener, MouseMotionListe
 
 	@Override
 	public void mouseEntered(MouseEvent e) {
-		// TODO Auto-generated method stub
-		
+		inPanel = true;
 	}
 
 	@Override
 	public void mouseExited(MouseEvent e) {
-		// TODO Auto-generated method stub
+		x = xx;
+		y = yy;
 		
+		in = tileTable[y / 32][x / 32];
+		
+		inPanel = false;
+		
+		repaint();
 	}
 
 	@Override
@@ -258,6 +285,9 @@ public class TilePanel extends JPanel implements MouseListener, MouseMotionListe
 			
 			x *= 32;
 			y *= 32;
+			
+			xx = x;
+			yy = y;
 			
 			pk.setEditMode(Constants.EDIT_MODE_TILES);
 			

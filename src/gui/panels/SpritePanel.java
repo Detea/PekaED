@@ -225,7 +225,7 @@ public class SpritePanel extends JPanel {
 			JFileChooser fc = new JFileChooser(Settings.BASE_PATH + File.separatorChar + "sprites");
 			
 			fc.setDialogTitle("Select a sprite to load");
-			fc.setFileFilter(new FileNameExtensionFilter("Pekka Kana 2 Sprite file", "spr"));
+			fc.setFileFilter(new FileNameExtensionFilter("Pekka Kana 2 Sprite file", "spr", "cespr"));
 			
 			if (Settings.spritePreview) {
 				FilePreviewPanel fpp = new FilePreviewPanel(FilePreviewPanel.SPRITE);
@@ -238,12 +238,12 @@ public class SpritePanel extends JPanel {
 			
 			if (res == JFileChooser.APPROVE_OPTION) {
 				if (fc.getSelectedFile().exists()) {
-					if (fc.getSelectedFile().getName().length() >= 13) {
+					if (fc.getSelectedFile().getName().length() >= 13 && Data.mode != Constants.MODE_CE) {
 						JOptionPane.showMessageDialog(null, "Filename is too long! (" + fc.getSelectedFile().getName().length() + " characters)\nMaximum characters allowed is 12!", "Filename too long", JOptionPane.ERROR_MESSAGE);
 					} else {
 						PK2Sprite s = new PK2Sprite();
 						
-						if (s.checkVersion(fc.getSelectedFile())) {
+						if (s.checkVersion(fc.getSelectedFile()) > -1) {
 							s.loadFile(fc.getSelectedFile());
 							s.loadBufferedImage();
 							
@@ -263,7 +263,7 @@ public class SpritePanel extends JPanel {
 							Data.selectedTileForeground = 255;
 							Data.selectedTileBackground = 255;
 						} else {
-							JOptionPane.showMessageDialog(null, "Only sprites version 1.2 and 1.3 allowed!", "Wrong Sprite", JOptionPane.ERROR_MESSAGE);
+							JOptionPane.showMessageDialog(null, "Only sprites version 1.2, 1.3, 1.4 allowed!", "Wrong Sprite", JOptionPane.ERROR_MESSAGE);
 						}
 					}
 				} else {

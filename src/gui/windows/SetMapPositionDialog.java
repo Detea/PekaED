@@ -10,7 +10,6 @@ import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferInt;
-import java.awt.image.IndexColorModel;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -21,6 +20,7 @@ import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
 
+import data.Constants;
 import data.Data;
 import data.Settings;
 import pekkakana.PK2Map;
@@ -78,11 +78,17 @@ public class SetMapPositionDialog extends JDialog {
 			});
 			
 			try {
-				String filePath = Settings.BASE_PATH + File.separatorChar + "gfx" + File.separatorChar + "MAP.bmp";
+				String filePath = Settings.BASE_PATH + "\\gfx\\" + "MAP.bmp";
 				
 				if (Data.currentFile != null) {
-					if (new File(Data.currentFile.getParentFile().getAbsolutePath() + "\\MAP.bmp").exists()) {
-						filePath = Data.currentFile.getParentFile().getAbsolutePath() + "\\MAP.bmp";
+					if (Data.mode == Constants.MODE_CE) {
+						if (new File(Data.currentFile.getParentFile().getAbsolutePath() + "\\gfx\\" + "\\MAP.bmp").exists()) {
+							filePath = Data.currentFile.getParentFile().getAbsolutePath() + "\\gfx\\" + "\\MAP.bmp";
+						}
+					} else {
+						if (new File(Data.currentFile.getParentFile().getAbsolutePath() + "\\MAP.bmp").exists()) {
+							filePath = Data.currentFile.getParentFile().getAbsolutePath() + "\\MAP.bmp";
+						}
 					}
 				}
 				
@@ -169,6 +175,8 @@ public class SetMapPositionDialog extends JDialog {
 		public void mousePressed(MouseEvent e) {
 			sx.setValue(e.getX() - (27 / 2));
 			sy.setValue(e.getY() - (27 / 2));
+			
+			Data.fileChanged = true;
 			
 			repaint();
 		}

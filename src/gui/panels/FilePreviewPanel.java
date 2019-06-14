@@ -40,7 +40,7 @@ public class FilePreviewPanel extends JPanel implements PropertyChangeListener {
 
 	JLabel lblSprNameVal, lblSprEnemyVal, lblSprCreationVal, lblSprModifiedVal, lblSprTypeVal;
 	
-	String[] typeStr = new String[] {"Character Sprite", "Bonus Item Sprite", "Ammo Sprite", "Teleport Sprite", "Background Sprite"};
+	String[] typeStr = new String[] {"Character Sprite", "Bonus Item Sprite", "Ammo Sprite", "Teleport Sprite", "Background Sprite", "Collectable Sprite", "Checkpoint Sprite", "Exit Sprite"};
 	
 	public FilePreviewPanel(int preview) {
 		this.preview = preview;
@@ -124,13 +124,12 @@ public class FilePreviewPanel extends JPanel implements PropertyChangeListener {
 					try {
 						image = ImageIO.read(new File(name));
 					} catch (IOException e1) {
-						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
-				} else if (name.toLowerCase().endsWith(".spr")) {
+				} else if (name.toLowerCase().endsWith(".spr") || name.toLowerCase().endsWith(".cespr")) {
 					PK2Sprite spr = new PK2Sprite();
 					
-					if (spr.checkVersion(new File(name))) {
+					if (spr.checkVersion(new File(name)) > -1) {
 						spr.loadFile(new File(name));
 						spr.loadBufferedImage();
 						

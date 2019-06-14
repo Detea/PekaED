@@ -16,20 +16,43 @@ import gui.windows.PekaEDGUI;
 import gui.windows.SetPathDialog;
 
 public class PekaED {
+	
 	public static void main(String[] args) {
 		File settingsFile = new File("settings");
 		
 		if (settingsFile.exists()) {
 			try {
+				// TODO Read new options
+				
 				DataInputStream dis = new DataInputStream(new FileInputStream("settings"));
+				
+				byte[] v = { '1', '.', '4'};
+				byte[] version = new byte[3];
+				dis.read(version);
+				
+				for (int i = 0; i < 3; i++) {
+					if (version[i] != v[i]) {
+						dis.close();
+						
+						settingsFile.delete();
+						
+						new SetPathDialog();
+						
+						return;
+					}
+				}
 				
 				Settings.BASE_PATH = dis.readUTF();
 				Settings.setPaths();
 				
 				Settings.loadEpisodeOnStartup = dis.readBoolean();
 				Settings.startInEnhancedMode = dis.readBoolean();
+				Settings.startInCEMode = dis.readBoolean();
 				Constants.ENHANCED_LEVEL_LIMIT = dis.readInt();
 				Settings.showStatusbar = dis.readBoolean();
+				
+				Settings.autoSwitchModes = dis.readBoolean();
+				Settings.useDevMode = dis.readBoolean();
 				
 				Settings.spritePreview = dis.readBoolean();
 				Settings.tilesetPreview = dis.readBoolean();
@@ -38,20 +61,30 @@ public class PekaED {
 				Data.showSpriteRect = dis.readBoolean();
 				Data.showTileNr = dis.readBoolean();
 				
-				int key, mod;
+				Settings.doLimit = dis.readInt();
+				
+				Settings.parameters = dis.readUTF();
+				
+				int key, mod, mask;
 				String action;
 				
-				// Load shortcuts, shouldn't hardcode size
-				for (int i = 0; i < 18; i++) {
+				for (int i = 0; i < 20; i++) {
 					action = dis.readUTF();
 					mod = dis.readInt();
+					mask = dis.readInt();
 					key = dis.readInt();
-					Settings.shortcuts.put(action, new ShortcutKey(mod, key));
+					Settings.shortcuts.put(action, new ShortcutKey(mod, mask, key));
 					
 					Settings.shortcutKeyCodes[i] = key;
 				}
 				
-				Data.mode = Constants.MODE_ENHANCED;
+				if (Settings.startInEnhancedMode) {
+					Data.mode = Constants.MODE_ENHANCED;
+				} else if (Settings.startInCEMode) {
+					Data.mode = Constants.MODE_CE;
+				} else {
+					Data.mode = Constants.MODE_LEGACY;
+				}
 				
 				File pathFile = new File(Settings.BASE_PATH);
 				

@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.IndexColorModel;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Stack;
 
 import javax.swing.JLabel;
 import javax.swing.JSpinner;
@@ -15,8 +16,7 @@ import pekkakana.PK2Map;
 
 public class Data {
 	public static final int TOOL_BRUSH = 0;
-	public static final int TOOL_FLOODFILL = 1;
-	public static final int TOOL_ERASER = 2;
+	public static final int TOOL_ERASER = 1;
 	
 	public static int selectedTool = 0;
 	public static int selectedTile = 0, selectedSprite = 255;
@@ -34,10 +34,14 @@ public class Data {
 	
 	public static boolean showSprites = true;
 	
+	public static int spriteAmount = 0;
+	
 	public static boolean runThread = true;
 	public static boolean multiSelectLevel = false;
 	public static boolean multiSelectTiles = false;
 	public static boolean dragging = false;
+	
+	public static boolean showSpriteWarning = true;
 	
 	public static boolean showSpriteRect = true;
 	
@@ -69,11 +73,19 @@ public class Data {
 	public static boolean fileChanged = false, episodeChanged = false, showTileNr = true;
 	public static String currentEpisodeName = "";
 	
-	public static JLabel lblTileNrVal, lblSprFileVal, lblTileBgNrVal;
+	public static JLabel lblTileNrVal, lblSprFileVal, lblTileBgNrVal, lblPosXVal, lblPosYVal, lblSprEstVal;
 	
 	public static File bgFile, tilesetFile;
+	
+	public static File lastPath = new File(Settings.EPISODES_PATH);
 	
 	public static IndexColorModel bgPalette;
 	public static BufferedImage bgImg;
 	public static JSpinner zoomSpinner;
+	
+	public static BufferedImage missingSprite;
+	
+	public static Stack<ArrayList<DoAction>> undoStack = new Stack<ArrayList<DoAction>>();
+	public static Stack<ArrayList<DoAction>> redoStack = new Stack<ArrayList<DoAction>>();
+	public static ArrayList<DoAction> tmpStack = new ArrayList<DoAction>();
 }

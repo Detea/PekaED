@@ -101,6 +101,17 @@ public class PK2Sprite {
 	public boolean bonusAlways;
 	public boolean swim;
 	
+	// version 1.4
+	public String message = "";
+	
+	public int message_duration = 0;
+	
+	public boolean showWhenShot = false;
+	public boolean showOnCollision = false;
+	
+	public int transformationValue = 0;
+	public int attackPriority = 0;
+	
 	public PK2Sprite(String file) {
 		filename = new File(file);
 
@@ -116,36 +127,29 @@ public class PK2Sprite {
 		color = 255;
 	}
 	
-	public boolean checkVersion(File filename) {
+	public int checkVersion(File filename) {
 		DataInputStream dis;
 		
-		boolean ret = false;
+		int ret = -1;
 		
 		try {
 			File fi = null;
-			
-			// DON'T DO THIS!!!
-			// USE THE ACTUAL FILE PATH!!!!
-			// Maybe check if the user is in Settings.GAME_PATH
 			
 			if (new File(Settings.EPISODES_PATH + Data.currentEpisodeName + "\\" + filename).exists()) {
 				fi = new File(Settings.EPISODES_PATH + Data.currentEpisodeName + "\\" + filename);
 			} else {
 				fi = new File(Settings.SPRITE_PATH + "\\" + filename.getName());
 			}
-			
+				
 			dis = new DataInputStream(new FileInputStream(fi));
 			
 			readAmount(version, dis);
-			
-			for (int i = 0; i < version.length; i++) {
-				if (version[i] == version13[i] || version[i] == version12[i]) {
-					ret = true;
-				} else {
-					ret = false;
-					
-					break;
-				}
+
+			// TODO reimplement this hacky bs, this is more or less ok for now, because of lazyness
+			if (version[2] == '3' || version[2] == '2') {
+				ret = 3;
+			} else if (version[2] == '4') {
+				ret = 4;
 			}
 			
 			dis.close();
@@ -170,164 +174,21 @@ public class PK2Sprite {
 			
 			File fi = null;
 			
-			if (new File(Settings.EPISODES_PATH + Data.currentEpisodeName + "\\" + filename).exists()) {
-				fi = new File(Settings.EPISODES_PATH + Data.currentEpisodeName + "\\" + filename);
+			if (new File(Settings.EPISODES_PATH + Data.currentEpisodeName + "sprites\\" + filename.getName()).exists()) {
+				fi = new File(Settings.EPISODES_PATH + Data.currentEpisodeName + "sprites\\" + filename.getName());
 			} else {
 				fi = new File(Settings.SPRITE_PATH + "\\" + filename.getName());
 			}
 			
 			dis = new DataInputStream(new FileInputStream(fi));
 			
-			for (int i = 0; i < version.length; i++) {
-				version[i] = (char) dis.readByte();
+			int res = checkVersion(fi);
+			
+			if (res == 4) {
+				loadVersion14(dis);
+			} else if (res == 3) {
+				loadVersion13(dis);
 			}
-			
-			// Hacky as always! :D
-			// It would be cleaner to separate this into two methods, but this is easier
-						
-			if (version[2] == '2') {
-				imageFile = new char[13];
-				soundFiles = new char[7][13];
-				
-				transformationSprite = new char[13];
-				bonusSprite = new char[13];
-				atkSprite1 = new char[13];
-				atkSprite2 = new char[13];
-				
-				name = new char[32];
-				
-				AI = new int[5];
-			}
-			
-			type = Integer.reverseBytes(dis.readInt());
-			
-			for (int i = 0; i < imageFile.length; i++) {
-				imageFile[i] = (char) (dis.readByte() & 0xFF);
-			}
-			
-			for (int i = 0; i < soundFiles.length; i++) {
-				char[] amount = new char[soundFiles[0].length];
-				readAmount(amount, dis);
-				soundFiles[i] = amount;
-			}
-			
-
-			// read data that isn't needed, but is yet present
-			for (int i = 0; i < sounds.length; i++) {
-				sounds[i] = dis.readInt();
-			}
-			
-			frames = (int) (dis.readByte() & 0xFF);
-			
-			for (int i = 0; i < animation.length; i++) {
-				byte[] sequence = new byte[10];
-				int frames = 0;
-				boolean loop = false;
-				
-				for (int j = 0; j < sequence.length; j++) {
-					sequence[j] = dis.readByte();
-				}
-				
-				frames = (int) (dis.readByte() & 0xFF);
-				loop = dis.readBoolean();
-				
-				animation[i] = new PK2SpriteAnimation(sequence, frames, loop);
-			}
-			
-			animations = (int) (dis.readByte() & 0xFF);
-			frameRate = (int) (dis.readByte() & 0xFF);
-			
-			dis.readByte(); //Padding? not documented, though
-			
-			frameX = Integer.reverseBytes(dis.readInt());
-			frameY = Integer.reverseBytes(dis.readInt());
-			
-			frameWidth = Integer.reverseBytes(dis.readInt());
-			frameHeight = Integer.reverseBytes(dis.readInt());
-			frameDistance = Integer.reverseBytes(dis.readInt());
-			
-			// read the sprite's name
-			//readAmount(name, dis);
-			for (int i = 0; i < 32; i++) {
-				name[i] = (char) dis.readByte();
-			}
-			
-			width = Integer.reverseBytes(dis.readInt());
-			height = Integer.reverseBytes(dis.readInt());
-			
-			weight = dis.readDouble();
-			
-			ByteBuffer b = ByteBuffer.allocate(8);
-			
-			b.putDouble(weight);
-	
-			b.order(ByteOrder.LITTLE_ENDIAN);
-			
-			weight = b.getDouble(0);
-			
-			enemy = dis.readBoolean();
-			
-			dis.readByte();
-			dis.readByte();
-			dis.readByte();
-			
-			energy = Integer.reverseBytes(dis.readInt());
-			damage = Integer.reverseBytes(dis.readInt());
-			
-			damageType = dis.readByte() & 0xFF;
-			immunity = dis.readByte() & 0xFF;
-			
-			dis.readByte();
-			dis.readByte();
-			
-			score = Integer.reverseBytes(dis.readInt());
-			
-			for (int i = 0; i < AI.length; i++) {
-				AI[i] = Integer.reverseBytes(dis.readInt());
-			}
-			
-			maxJump = dis.readByte() & 0xFF;
-			
-			dis.readByte();
-			dis.readByte();
-			dis.readByte();
-			
-			maxSpeed = dis.readDouble();
-			
-			ByteBuffer b2 = ByteBuffer.allocate(8);
-			b2.putDouble(maxSpeed);
-			b2.order(ByteOrder.LITTLE_ENDIAN);
-			
-			maxSpeed = b2.getDouble(0);
-			
-			loadingTime = Integer.reverseBytes(dis.readInt());
-			
-			color = dis.readByte() & 0xFF;
-			
-			obstacle = dis.readBoolean();
-			
-			dis.readByte();
-			dis.readByte();
-			
-			destruction = Integer.reverseBytes(dis.readInt());
-			
-			key = dis.readBoolean();
-			shakes = dis.readBoolean();
-			
-			bonuses = dis.readByte() & 0xFF;
-			
-			dis.readByte();
-			
-			attack1Duration = Integer.reverseBytes(dis.readInt());
-			attack2Duration = Integer.reverseBytes(dis.readInt());
-			
-			parallaxFactor = Integer.reverseBytes(dis.readInt());
-			
-			readAmount(transformationSprite, dis);
-			readAmount(bonusSprite, dis);
-
-			readAmount(atkSprite1, dis);
-			readAmount(atkSprite2, dis);
 			
 			if (filename.getParentFile() != null && new File(filename.getParentFile().getAbsolutePath() + "\\" + cleanString(imageFile)).exists()) {
 				ImageFileStr = filename.getParentFile().getAbsolutePath() + "\\" + cleanString(imageFile);
@@ -336,6 +197,8 @@ public class PK2Sprite {
 			}
 			
 			loadBufferedImage();
+			
+			dis.close();
 		} catch (Exception e) {
 			//JOptionPane.showMessageDialog(null, "Couldn't find sprite file '" + filename  + "'!\n" + e.getMessage(), "Couldn't find file!", JOptionPane.ERROR_MESSAGE);
 			JOptionPane.showMessageDialog(null, "Couldn't read sprite: \"" + filename + "\"." + e.getMessage(), "Sprite Error!", JOptionPane.ERROR_MESSAGE);
@@ -356,9 +219,319 @@ public class PK2Sprite {
 		}*/
 	}
 	
+	// TODO cut this down and only load the necessary stuff
+	private void loadVersion14(DataInputStream dis) throws IOException {
+		char[] version = {'1', '.', '4', '\0'};
+		
+		for (int i = 0; i < version.length; i++) {
+			version[i] = (char) dis.readByte();
+		}
+
+		type = Integer.reverseBytes(dis.readInt());
+		
+		int len = Integer.reverseBytes(dis.readInt());
+		imageFile = new char[len];
+		readAmount(imageFile, dis);
+		
+		for (int i = 0; i < 5; i++) {
+			char[] amount = new char[soundFiles[0].length];
+			readAmount(amount, dis);
+			soundFiles[i] = amount;
+		}
+
+		frames = (int) (dis.readByte() & 0xFF);
+
+		for (int i = 0; i < 10; i++) {
+			byte[] sequence = new byte[10];
+			int frames = 0;
+			boolean loop = false;
+			
+			for (int j = 0; j < sequence.length; j++) {
+				sequence[j] = dis.readByte();
+			}
+			
+			frames = (int) (dis.readByte() & 0xFF);
+			loop = dis.readBoolean();
+			
+			animation[i] = new PK2SpriteAnimation(sequence, frames, loop);
+		}
+		
+		animations = (int) (dis.readByte() & 0xFF);
+		frameRate = (int) (dis.readByte() & 0xFF);
+
+		frameX = Integer.reverseBytes(dis.readInt());
+		frameY = Integer.reverseBytes(dis.readInt());
+		frameWidth = Integer.reverseBytes(dis.readInt());
+		frameHeight = Integer.reverseBytes(dis.readInt());
+		
+		len = Integer.reverseBytes(dis.readInt());
+		name = new char[len];
+		readAmount(name, dis);
+		
+		width = Integer.reverseBytes(dis.readInt());
+		height = Integer.reverseBytes(dis.readInt());
+		
+		weight = dis.readDouble();
+		
+		ByteBuffer b = ByteBuffer.allocate(8);
+		
+		b.putDouble(weight);
+
+		b.order(ByteOrder.LITTLE_ENDIAN);
+		
+		weight = b.getDouble(0);
+		
+		enemy = dis.readBoolean();
+		
+		energy = Integer.reverseBytes(dis.readInt());
+		damage = Integer.reverseBytes(dis.readInt());
+		
+		damageType = dis.readByte() & 0xFF;
+		immunity = dis.readByte() & 0xFF;
+
+		score = Integer.reverseBytes(dis.readInt());
+		
+		for (int i = 0; i < 10; i++) {
+			AI[i] = Integer.reverseBytes(dis.readInt());
+		}
+		
+		maxJump = dis.readByte() & 0xFF;
+		
+		maxSpeed = dis.readDouble();
+		
+		ByteBuffer b2 = ByteBuffer.allocate(8);
+		b2.putDouble(maxSpeed);
+		b2.order(ByteOrder.LITTLE_ENDIAN);
+		
+		maxSpeed = b2.getDouble(0);
+		
+		loadingTime = Integer.reverseBytes(dis.readInt());
+		
+		color = dis.readByte() & 0xFF;
+		
+		obstacle = dis.readBoolean();
+
+		destruction = Integer.reverseBytes(dis.readInt());
+		
+		key = dis.readBoolean();
+		shakes = dis.readBoolean();
+		
+		bonuses = dis.readByte() & 0xFF;
+		
+		attack1Duration = Integer.reverseBytes(dis.readInt());
+		attack2Duration = Integer.reverseBytes(dis.readInt());
+		
+		parallaxFactor = Integer.reverseBytes(dis.readInt());
+		
+		len = Integer.reverseBytes(dis.readInt());
+		transformationSprite = new char[len];
+		readAmount(transformationSprite, dis);
+		
+		len = Integer.reverseBytes(dis.readInt());
+		bonusSprite = new char[len];
+		readAmount(bonusSprite, dis);
+
+		len = Integer.reverseBytes(dis.readInt());
+		atkSprite1 = new char[len];
+		readAmount(atkSprite1, dis);
+		
+		len = Integer.reverseBytes(dis.readInt());
+		atkSprite2 = new char[len];
+		readAmount(atkSprite2, dis);
+		
+		tileCheck = dis.readBoolean();
+		
+		soundFrequency = Integer.reverseBytes(dis.readInt());
+		randomFrequency = dis.readBoolean();
+		
+		wallUp = dis.readBoolean();
+		wallDown = dis.readBoolean();
+		wallRight = dis.readBoolean();
+		wallLeft = dis.readBoolean();
+
+		atkPause = Integer.reverseBytes(dis.readInt());
+		
+		glide = dis.readBoolean();
+		boss = dis.readBoolean();
+		bonusAlways = dis.readBoolean();
+		swim = dis.readBoolean();
+		
+		len = Integer.reverseBytes(dis.readInt());
+		char[] message = new char[len];
+		readAmount(message, dis);
+		this.message = new String(message);
+		
+		message_duration = Integer.reverseBytes(dis.readInt());
+		showWhenShot = dis.readBoolean();
+		showOnCollision = dis.readBoolean();
+		transformationValue = Integer.reverseBytes(dis.readInt());
+		attackPriority = Integer.reverseBytes(dis.readInt());
+	}
+	
+	private void loadVersion13(DataInputStream dis) throws IOException {
+		for (int i = 0; i < version.length; i++) {
+			version[i] = (char) dis.readByte();
+		}
+		
+		// Hacky as always! :D
+		// It would be cleaner to separate this into two methods, but this is easier
+					
+		if (version[2] == '2') {
+			imageFile = new char[13];
+			soundFiles = new char[7][13];
+			
+			transformationSprite = new char[13];
+			bonusSprite = new char[13];
+			atkSprite1 = new char[13];
+			atkSprite2 = new char[13];
+			
+			name = new char[32];
+			
+			AI = new int[5];
+		}
+		
+		type = Integer.reverseBytes(dis.readInt());
+		
+		for (int i = 0; i < imageFile.length; i++) {
+			imageFile[i] = (char) (dis.readByte() & 0xFF);
+		}
+		
+		for (int i = 0; i < soundFiles.length; i++) {
+			char[] amount = new char[soundFiles[0].length];
+			readAmount(amount, dis);
+			soundFiles[i] = amount;
+		}
+		
+
+		// read data that isn't needed, but is yet present
+		for (int i = 0; i < sounds.length; i++) {
+			sounds[i] = dis.readInt();
+		}
+		
+		frames = (int) (dis.readByte() & 0xFF);
+		
+		for (int i = 0; i < animation.length; i++) {
+			byte[] sequence = new byte[10];
+			int frames = 0;
+			boolean loop = false;
+			
+			for (int j = 0; j < sequence.length; j++) {
+				sequence[j] = dis.readByte();
+			}
+			
+			frames = (int) (dis.readByte() & 0xFF);
+			loop = dis.readBoolean();
+			
+			animation[i] = new PK2SpriteAnimation(sequence, frames, loop);
+		}
+		
+		animations = (int) (dis.readByte() & 0xFF);
+		frameRate = (int) (dis.readByte() & 0xFF);
+		
+		dis.readByte(); //Padding? not documented, though
+		
+		frameX = Integer.reverseBytes(dis.readInt());
+		frameY = Integer.reverseBytes(dis.readInt());
+		
+		frameWidth = Integer.reverseBytes(dis.readInt());
+		frameHeight = Integer.reverseBytes(dis.readInt());
+		frameDistance = Integer.reverseBytes(dis.readInt());
+		
+		// read the sprite's name
+		//readAmount(name, dis);
+		for (int i = 0; i < 32; i++) {
+			name[i] = (char) dis.readByte();
+		}
+		
+		width = Integer.reverseBytes(dis.readInt());
+		height = Integer.reverseBytes(dis.readInt());
+		
+		weight = dis.readDouble();
+		
+		ByteBuffer b = ByteBuffer.allocate(8);
+		
+		b.putDouble(weight);
+
+		b.order(ByteOrder.LITTLE_ENDIAN);
+		
+		weight = b.getDouble(0);
+		
+		enemy = dis.readBoolean();
+		
+		dis.readByte();
+		dis.readByte();
+		dis.readByte();
+		
+		energy = Integer.reverseBytes(dis.readInt());
+		damage = Integer.reverseBytes(dis.readInt());
+		
+		damageType = dis.readByte() & 0xFF;
+		immunity = dis.readByte() & 0xFF;
+		
+		dis.readByte();
+		dis.readByte();
+		
+		score = Integer.reverseBytes(dis.readInt());
+		
+		for (int i = 0; i < AI.length; i++) {
+			AI[i] = Integer.reverseBytes(dis.readInt());
+		}
+		
+		maxJump = dis.readByte() & 0xFF;
+		
+		dis.readByte();
+		dis.readByte();
+		dis.readByte();
+		
+		maxSpeed = dis.readDouble();
+		
+		ByteBuffer b2 = ByteBuffer.allocate(8);
+		b2.putDouble(maxSpeed);
+		b2.order(ByteOrder.LITTLE_ENDIAN);
+		
+		maxSpeed = b2.getDouble(0);
+		
+		loadingTime = Integer.reverseBytes(dis.readInt());
+		
+		color = dis.readByte() & 0xFF;
+		
+		obstacle = dis.readBoolean();
+		
+		dis.readByte();
+		dis.readByte();
+		
+		destruction = Integer.reverseBytes(dis.readInt());
+		
+		key = dis.readBoolean();
+		shakes = dis.readBoolean();
+		
+		bonuses = dis.readByte() & 0xFF;
+		
+		dis.readByte();
+		
+		attack1Duration = Integer.reverseBytes(dis.readInt());
+		attack2Duration = Integer.reverseBytes(dis.readInt());
+		
+		parallaxFactor = Integer.reverseBytes(dis.readInt());
+		
+		readAmount(transformationSprite, dis);
+		readAmount(bonusSprite, dis);
+
+		readAmount(atkSprite1, dis);
+		readAmount(atkSprite2, dis);
+	}
+	
 	public void saveFile(File file) {
+		DataOutputStream dis = null;
+		FileOutputStream fs = null;
+		
 		try {
-			DataOutputStream dis = new DataOutputStream(new FileOutputStream(file));
+			if (file.exists()) {
+				file.delete();
+			}
+			
+			fs = new FileOutputStream(file);
+			dis = new DataOutputStream(fs);
 			
 			char[] version = {'1', '.', '3', '\0'};
 			
@@ -610,14 +783,23 @@ public class PK2Sprite {
 			dis.writeByte(0xCC);
 			
 			dis.flush();
+			fs.close();
 			dis.close();
-		} catch (FileNotFoundException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
-		} catch (IOException e) {
+		} /*catch (IOException e) {
 			JOptionPane.showMessageDialog(null, "Couldn't save sprite!\n" + e.getMessage(), "Couldn't save!", JOptionPane.ERROR_MESSAGE);
 			
 			e.printStackTrace();
-		}
+		} finally {
+			try {
+				fs.close();
+				dis.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}*/
 	}
 	
 	private void readAmount(char[] array, DataInputStream dis) throws IOException {
@@ -687,6 +869,8 @@ public class PK2Sprite {
 		    this.image = result.getSubimage(frameX, frameY, frameWidth, frameHeight);
 		} catch (IOException e) {
 			JOptionPane.showMessageDialog(null, "Couldn't load image file \"" + ImageFileStr + "\",\nfrom sprite: \"" + filename + "\".\n" + e.getMessage(), "Couldn't load sprites image!", JOptionPane.ERROR_MESSAGE);
+			
+			image = Data.missingSprite;
 			
 			//e.printStackTrace();
 		}
