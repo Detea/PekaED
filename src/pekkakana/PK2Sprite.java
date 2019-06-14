@@ -38,7 +38,7 @@ public class PK2Sprite {
 	
 	public PK2SpriteAnimation[] animation = new PK2SpriteAnimation[20];
 	
-	public int animations; // number of animations
+	public int animations;
 	public int frameRate = 1;
 	
 	public int frameX, frameY;
