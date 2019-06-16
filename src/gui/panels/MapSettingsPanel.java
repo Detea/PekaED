@@ -140,7 +140,11 @@ public class MapSettingsPanel extends JPanel {
 
 					@Override
 					public boolean accept(File e) {
-						return e.isDirectory() | e.getName().toLowerCase().endsWith(".bmp") | e.getName().toLowerCase().endsWith(".pcx") && e.getName().length() < 13;
+						if (Data.mode == Constants.MODE_CE) {
+							return e.isDirectory() | e.getName().toLowerCase().endsWith(".bmp") | e.getName().toLowerCase().endsWith(".pcx");
+						} else {
+							return e.isDirectory() | e.getName().toLowerCase().endsWith(".bmp") | e.getName().toLowerCase().endsWith(".pcx") && e.getName().length() < 13;
+						}
 					}
 
 					@Override
@@ -198,7 +202,11 @@ public class MapSettingsPanel extends JPanel {
 
 					@Override
 					public boolean accept(File e) {
-						return e.isDirectory() | e.getName().toLowerCase().endsWith(".bmp") | e.getName().toLowerCase().endsWith(".pcx") && e.getName().length() < 13;
+						if (Data.mode == Constants.MODE_CE) {
+							return e.isDirectory() | e.getName().toLowerCase().endsWith(".bmp") | e.getName().toLowerCase().endsWith(".pcx");
+						} else {
+							return e.isDirectory() | e.getName().toLowerCase().endsWith(".bmp") | e.getName().toLowerCase().endsWith(".pcx") && e.getName().length() < 13;
+						}
 					}
 
 					@Override
@@ -263,7 +271,11 @@ public class MapSettingsPanel extends JPanel {
 							acceptCondition |= e.getName().toLowerCase().endsWith(".ogg") | e.getName().toLowerCase().endsWith(".mp3");
 						}
 						
-						return e.isDirectory() | acceptCondition && e.getName().length() < 13;
+						if (Data.mode == Constants.MODE_CE) {
+							return e.isDirectory() | acceptCondition;
+						} else {
+							return e.isDirectory() | acceptCondition && e.getName().length() < 13;
+						}
 					}
 
 					@Override

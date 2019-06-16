@@ -131,6 +131,10 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 						 g2d.drawImage(background, i * background.getWidth(), j * background.getHeight(), null);
 					 }
 				}
+				
+				//g2d.drawImage(background, viewX * 32, viewY * 32, null);
+				//g2d.drawImage(background, pkg.scrollPane2.getViewport().getViewRect().x, pkg.scrollPane2.getViewport().getViewRect().y, null);
+				//g2d.drawImage(background, pkg.scrollPane2.getViewport().getViewRect().x + background.getW, pkg.scrollPane2.getViewport().getViewRect().y, null);
 			} else {
 				g2d.setColor(Color.BLACK);
 				g2d.fillRect(0, 0, PK2Map.MAP_WIDTH * 32, PK2Map.MAP_HEIGHT * 32);
@@ -304,6 +308,11 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 		if (tile != 255 && tile != -1) {
 			g.drawImage(inactiveTiles.get(tile), x, y, null);
 		}
+	}
+	
+	// TODO implement vertical and horizontal flipping
+	public void flipSelection(int dir) {
+		
 	}
 	
 	public void setTileset() {
@@ -896,6 +905,8 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 		
 		pkg.scrollPane2.revalidate();
 		pkg.scrollPane2.updateUI();
+		
+		pkg.setShortcuts(pkg.actionMap);
 	}
 
 	private void updateInfo(int x, int y) {
@@ -970,6 +981,8 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 	    Data.mmp.resizeViewportRect();
 	    Data.mmp.repaint();
 	    
+	    pkg.setShortcuts(pkg.actionMap);
+	    
 	    repaint();
 	}
 	
@@ -1024,8 +1037,6 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 			Data.zoomSpinner.setValue((float) (Data.scale * 100));
 			
 			zoom();
-			
-			pkg.setShortcuts(pkg.actionMap);
 		} else {
 			if (e.isAltDown()) {
 				if (e.getWheelRotation() > 0) {

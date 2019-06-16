@@ -68,7 +68,7 @@ public class PekaED {
 				int key, mod, mask;
 				String action;
 				
-				for (int i = 0; i < 20; i++) {
+				for (int i = 0; i < 21; i++) {
 					action = dis.readUTF();
 					mod = dis.readInt();
 					mask = dis.readInt();
@@ -77,6 +77,9 @@ public class PekaED {
 					
 					Settings.shortcutKeyCodes[i] = key;
 				}
+				
+				Settings.loadLastLevel = dis.readBoolean();
+				Data.lastLevel = dis.readUTF();
 				
 				if (Settings.startInEnhancedMode) {
 					Data.mode = Constants.MODE_ENHANCED;

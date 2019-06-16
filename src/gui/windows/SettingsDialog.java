@@ -52,7 +52,7 @@ public class SettingsDialog extends JDialog {
 	private final JPanel contentPanel = new JPanel();
 	private JTextField textField;
 	private JRadioButton rdbtnLoadLastEpisode, rdbtnCreateEmptyLevel;
-	private JRadioButton rdbtnEnhancedMode, rdbtnLegacyMode, rdbtnCeMode;
+	private JRadioButton rdbtnEnhancedMode, rdbtnLegacyMode, rdbtnCeMode, rdbtnLoadLastLevel;
 	private JCheckBox chckbxShowStatusBar, chckbxAutomaticallySwitchModes;	
 	
 	private JSpinner spinner;
@@ -83,9 +83,9 @@ public class SettingsDialog extends JDialog {
 		setIconImage(img);
 		
 		setTitle("Settings");
-		setBounds(100, 100, 441, 524);
+		setBounds(100, 100, 441, 562);
 		getContentPane().setLayout(null);
-		contentPanel.setBounds(0, 0, 433, 397);
+		contentPanel.setBounds(0, 0, 433, 500);
 		
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		getContentPane().add(contentPanel);
@@ -96,12 +96,12 @@ public class SettingsDialog extends JDialog {
 		contentPanel.setLayout(null);
 		
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-		tabbedPane.setPreferredSize(new Dimension(300, 400));
-		tabbedPane.setBounds(5, 5, 428, 460);
+		tabbedPane.setPreferredSize(new Dimension(300, 500));
+		tabbedPane.setBounds(5, 5, 428, 487);
 		contentPanel.add(tabbedPane, BorderLayout.CENTER);
 		
 		JPanel panel = new JPanel();
-		panel.setMinimumSize(new Dimension(300, 400));
+		panel.setMinimumSize(new Dimension(300, 500));
 		panel.setPreferredSize(new Dimension(300, 500));
 		tabbedPane.addTab("General", null, panel, null);
 		panel.setLayout(null);
@@ -187,11 +187,6 @@ public class SettingsDialog extends JDialog {
 		panel.add(rdbtnLoadLastEpisode);
 		rbGroup.add(rdbtnLoadLastEpisode);
 		
-		rdbtnCreateEmptyLevel = new JRadioButton("Create empty level");
-		rdbtnCreateEmptyLevel.setBounds(10, 330, 124, 23);
-		panel.add(rdbtnCreateEmptyLevel);
-		rbGroup.add(rdbtnCreateEmptyLevel);
-		
 		rdbtnLegacyMode = new JRadioButton("Legacy mode");
 		rdbtnLegacyMode.setBounds(143, 330, 109, 23);
 		panel.add(rdbtnLegacyMode);
@@ -210,6 +205,16 @@ public class SettingsDialog extends JDialog {
 		rdbtnCeMode.setBounds(261, 304, 109, 23);
 		bgMode.add(rdbtnCeMode);
 		panel.add(rdbtnCeMode);
+		
+		rdbtnLoadLastLevel = new JRadioButton("Load last level");
+		rdbtnLoadLastLevel.setBounds(10, 330, 109, 23);
+		panel.add(rdbtnLoadLastLevel);
+		rbGroup.add(rdbtnLoadLastLevel);
+		
+		rdbtnCreateEmptyLevel = new JRadioButton("Create empty level");
+		rdbtnCreateEmptyLevel.setBounds(10, 356, 124, 23);
+		panel.add(rdbtnCreateEmptyLevel);
+		rbGroup.add(rdbtnCreateEmptyLevel);
 		
 		JPanel panel_1 = new JPanel();
 		tabbedPane.addTab("Shortcuts", null, panel_1, null);
@@ -237,9 +242,10 @@ public class SettingsDialog extends JDialog {
 					setBackground(t.getBackground());
 				}
 				
+				/*
 				if (((String) val).equals((String) getSelectedItem())) {
 					changedKeys = true;
-				}
+				}*/
 				
 				setSelectedItem(val);
 				
@@ -283,6 +289,7 @@ public class SettingsDialog extends JDialog {
 				{"Add sprite", new Integer(0), new Integer(0), null},
 				{"Undo", new Integer(0), new Integer(0), null},
 				{"Redo", new Integer(0), new Integer(0), null},
+				{"Flip selection vertically", new Integer(0), new Integer(0), null},
 			},
 			new String[] {
 				"Function", "Modifier", "Mask", "Key"
@@ -480,38 +487,38 @@ public class SettingsDialog extends JDialog {
 		});
 		
 		JButton okButton = new JButton("OK");
-		okButton.setBounds(303, 462, 47, 23);
+		okButton.setBounds(303, 499, 47, 23);
 		getContentPane().add(okButton);
 		{
 			getRootPane().setDefaultButton(okButton);
 		}
 		{
 			JButton cancelButton = new JButton("Cancel");
-			cancelButton.setBounds(360, 462, 65, 23);
+			cancelButton.setBounds(360, 499, 65, 23);
 			getContentPane().add(cancelButton);
 			
 			JLabel lblParameters = new JLabel("Parameters:");
-			lblParameters.setBounds(10, 404, 65, 14);
-			getContentPane().add(lblParameters);
+			lblParameters.setBounds(10, 391, 65, 14);
+			panel.add(lblParameters);
 			
 			txtPkceexeTestlevel = new JTextField();
 			txtPkceexeTestlevel.setText("pk2ce.exe dev test %level%");
-			txtPkceexeTestlevel.setBounds(10, 429, 415, 20);
-			getContentPane().add(txtPkceexeTestlevel);
+			txtPkceexeTestlevel.setBounds(10, 416, 403, 20);
+			panel.add(txtPkceexeTestlevel);
 			txtPkceexeTestlevel.setColumns(10);
 			
 			JButton btnReset_1 = new JButton("Reset");
 			btnReset_1.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent arg0) {
-					if (Data.mode == Constants.MODE_ENHANCED) {
+					if (Data.mode == Constants.MODE_ENHANCED || Data.mode == Constants.MODE_LEGACY) {
 						txtPkceexeTestlevel.setText("pk2.exe dev test %level%");
 					} else if (Data.mode == Constants.MODE_CE) {
 						txtPkceexeTestlevel.setText("pk2ce.exe dev test %level%");
 					}
 				}
 			});
-			btnReset_1.setBounds(336, 400, 89, 23);
-			getContentPane().add(btnReset_1);
+			btnReset_1.setBounds(324, 387, 89, 23);
+			panel.add(btnReset_1);
 			
 			// This could be done under the addActionListener for okButton, but it is really short
 			cancelButton.addActionListener(new ActionListener() {
@@ -555,6 +562,8 @@ public class SettingsDialog extends JDialog {
 				Settings.parameters = txtPkceexeTestlevel.getText();
 				
 				Settings.doLimit = slider.getValue();
+				
+				Settings.loadLastLevel = rdbtnLoadLastLevel.isSelected();
 				
 				int mod = 0, key, i = 0, mask = 0;
 				
@@ -676,6 +685,8 @@ public class SettingsDialog extends JDialog {
 		
 		if (Settings.loadEpisodeOnStartup) {
 			rdbtnLoadLastEpisode.setSelected(true);
+		} else if (Settings.loadLastLevel) {
+			rdbtnLoadLastLevel.setSelected(true);
 		} else {
 			rdbtnCreateEmptyLevel.setSelected(true);
 		}
@@ -753,6 +764,8 @@ public class SettingsDialog extends JDialog {
 		
 		if (Settings.loadEpisodeOnStartup) {
 			rdbtnLoadLastEpisode.setSelected(true);
+		} else if (Settings.loadLastLevel) {
+			rdbtnLoadLastLevel.setSelected(true);
 		} else {
 			rdbtnCreateEmptyLevel.setSelected(true);
 		}

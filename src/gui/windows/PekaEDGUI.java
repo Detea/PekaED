@@ -1207,6 +1207,15 @@ public class PekaEDGUI {
 			
 		});
 		
+		actionMap.put("flipVerticallyAction", new AbstractAction() {
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				Data.lp.flipSelection(0);
+			}
+			
+		});
+		
 		actionMap.put("testLevel", new AbstractAction() {
 
 			@Override
@@ -1310,8 +1319,6 @@ public class PekaEDGUI {
 			}
 			
 		});
-
-		setShortcuts(actionMap);
 		
 		frame.addWindowListener(new WindowListener() {
 
@@ -1373,6 +1380,10 @@ public class PekaEDGUI {
 							
 							e1.printStackTrace();
 						}
+					}
+					
+					if (Data.currentFile != null) {
+						Data.lastLevel = Data.currentFile.getAbsolutePath();
 					}
 					
 					saveSettings();
@@ -1576,9 +1587,13 @@ public class PekaEDGUI {
 				// log this
 				//e1.printStackTrace();
 			}
+		} else if (Settings.loadLastLevel && !Data.lastLevel.isEmpty()) {
+			loadLevel(Data.lastLevel);
 		} else {
 			newLevel();
 		}
+		
+		setShortcuts(actionMap);
 		
 		//scrollPane2.getViewport().setSize(new Dimension((int) (scrollPane2.getViewport().getWidth() * 0.6), (int) (scrollPane2.getViewport().getHeight() * 0.6)));
 	}
@@ -1611,7 +1626,7 @@ public class PekaEDGUI {
 		addShortcut(keyMap, "zoomIn", "zoomInAction");
 		addShortcut(keyMap, "zoomOut", "zoomOutAction");
 		addShortcut(keyMap, "zoomReset", "resetZoom");
-
+		
 		addShortcut(keyMap, "testLevel", "testLevel");
 		
 		addShortcut(keyMap, "brushTool", "selectBrush");
@@ -1626,13 +1641,15 @@ public class PekaEDGUI {
 		addShortcut(keyMap, "undoAction", "undo");
 		addShortcut(keyMap, "redoAction", "redo");
 		
+		addShortcut(keyMap, "flipVertically", "flipVerticallyAction");
+		
 		SwingUtilities.replaceUIInputMap((JComponent) scrollPane2,  JComponent.WHEN_FOCUSED, keyMap);
 		SwingUtilities.replaceUIActionMap((JComponent) scrollPane2, actionMap);
 	}
 	
 	private void addShortcut(InputMap keyMap, String shortcutStr, String methodStr) {
 		String str = "", mask = "";
-		
+
 		switch (Settings.shortcuts.get(shortcutStr).modifier) {
 			case Event.CTRL_MASK:
 				str = "CTRL";
@@ -1689,8 +1706,6 @@ public class PekaEDGUI {
 		String cmd = exe[0];
 		
 		args = args.substring(exe[0].length() + 1, args.length());
-		
-		System.out.println(Settings.BASE_PATH + "\\" + cmd + " - " + args);
 		
 		// Maybe find a better solution lol
 		if (cmd.isEmpty()) {
@@ -2103,6 +2118,9 @@ public class PekaEDGUI {
 				
 				i++;
 			}
+			
+			dos.writeBoolean(Settings.loadLastLevel);
+			dos.writeUTF(Data.lastLevel);
 			
 			dos.flush();
 			dos.close();

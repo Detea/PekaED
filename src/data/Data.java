@@ -83,6 +83,8 @@ public class Data {
 	public static BufferedImage bgImg;
 	public static JSpinner zoomSpinner;
 	
+	public static String lastLevel = "";
+	
 	public static BufferedImage missingSprite;
 	
 	public static Stack<ArrayList<DoAction>> undoStack = new Stack<ArrayList<DoAction>>();

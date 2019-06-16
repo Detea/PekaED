@@ -24,6 +24,8 @@ public class Settings {
 	
 	public static boolean showStatusbar = true;
 	
+	public static boolean loadLastLevel = false;
+	
 	public static boolean spritePreview = true;
 	public static boolean tilesetPreview = true;
 	public static boolean bgPreview = true;
@@ -32,12 +34,12 @@ public class Settings {
 	
 	public static boolean autoSwitchModes = true;
 	
-	public static String parameters = "";
+	public static String parameters = "pk2ce.exe dev test %level%";
 	
 	public static int doLimit = 100;
 	
 	public static LinkedHashMap<String, ShortcutKey> shortcuts = new LinkedHashMap<String, ShortcutKey>();
-	public static int[] shortcutKeyCodes = new int[20];
+	public static int[] shortcutKeyCodes = new int[21];
 	
 	public static void resetShortcuts() {
 		shortcuts.put("createLevel", new ShortcutKey(Event.CTRL_MASK, 0, KeyEvent.VK_N));
@@ -60,6 +62,7 @@ public class Settings {
 		shortcuts.put("addSprite", new ShortcutKey(Event.CTRL_MASK, 0, KeyEvent.VK_A));
 		shortcuts.put("undoAction", new ShortcutKey(Event.CTRL_MASK, 0, KeyEvent.VK_Z));
 		shortcuts.put("redoAction", new ShortcutKey(Event.CTRL_MASK, 0, KeyEvent.VK_Y));
+		shortcuts.put("flipVertically", new ShortcutKey(0, 0, KeyEvent.VK_V));
 		
 		int i = 0;
 		for (String s : shortcuts.keySet()) {
