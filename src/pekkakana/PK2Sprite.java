@@ -251,7 +251,7 @@ public class PK2Sprite {
 			version[i] = (char) dis.readByte();
 		}
 
-		type = Integer.reverseBytes(dis.readInt());
+		type = dis.readByte();
 		
 		int len = Integer.reverseBytes(dis.readInt());
 		imageFile = new char[len];
