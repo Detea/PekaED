@@ -1,6 +1,7 @@
 package gui.panels;
 
 
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -25,8 +26,6 @@ import data.Data;
 import data.Settings;
 import gui.windows.SetMapPositionDialog;
 import pekkakana.PK2Map;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 
 public class MapSettingsPanel extends JPanel {
 	private JTextField textField;
@@ -518,6 +517,8 @@ public class MapSettingsPanel extends JPanel {
 		});
 		spinner_9.setBounds(71, 510, 84, 20);
 		add(spinner_9);
+
+		setPreferredSize(new Dimension(200, 550));
 		
 		//setMap();
 	}

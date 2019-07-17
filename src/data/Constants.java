@@ -1,5 +1,6 @@
 package data;
 
+// A good programmer would probably use an enum and not put everything into one thing, but I'm not, so I can do this :D
 public class Constants {
 	public final static int LAYER_FOREGROUND = 0;
 	public final static int LAYER_BACKGROUND = 1;
@@ -22,4 +23,7 @@ public class Constants {
 	public final static int ACTION_REDO = 1;
 	public final static int DO_TILE = 2;
 	public final static int DO_SPRITE = 3;
+	
+	public final static int FLIP_HORIZONTAL = 0;
+	public final static int FLIP_VERTICAL = 1;
 }

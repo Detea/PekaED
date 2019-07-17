@@ -275,28 +275,33 @@ public class PK2Map {
 			musicFile = readString(dis);
 			mapName = readString(dis);
 			authorName = readString(dis);
-
+			
 			levelNumber = Integer.reverseBytes(dis.readInt());
-
 			weather = Integer.reverseBytes(dis.readInt());
-
+			
 			switch1Time = Integer.reverseBytes(dis.readInt());
 			switch2Time = Integer.reverseBytes(dis.readInt());
 			switch3Time = Integer.reverseBytes(dis.readInt());
-
+			
 			time = Integer.reverseBytes(dis.readInt());
-
+			
+			extra = Integer.reverseBytes(dis.readInt());
+			
 			playerSprite = Integer.reverseBytes(dis.readInt());
-
+			
 			x = Integer.reverseBytes(dis.readInt());
 			y = Integer.reverseBytes(dis.readInt());
-
+			
 			icon = Integer.reverseBytes(dis.readInt());
-
+			
 			int protAmount = Integer.reverseBytes(dis.readInt());
-
+			
 			for (int i = 0; i < protAmount; i++) {
-				prototypesList.add(readString(dis));
+				String s = "";
+				
+				s = readString(dis);
+
+				prototypesList.add(s);
 			}
 
 			int width, height;
@@ -352,7 +357,7 @@ public class PK2Map {
 			
 			for (int i = 0; i < sprites.length; i++) {
 				if (sprites[i] != 255 && sprites[i] >= spriteList.size() && !confirmed && contAsk) {
-					int res = JOptionPane.showConfirmDialog(null, "PekaED detected the use of a sprite that isn't actually used.\nDo you want to remove it?", "Faulty sprite detected", JOptionPane.YES_NO_OPTION);
+					int res = JOptionPane.showConfirmDialog(null, "PekaED detected the use of a sprite that isn't actually used.\nSprite: " + sprites[i] + " List size: " + spriteList.size(), "Faulty sprite detected", JOptionPane.YES_NO_OPTION);
 
 					if (res == JOptionPane.YES_OPTION) {
 						confirmed = true;
@@ -377,10 +382,14 @@ public class PK2Map {
 		} catch (FileNotFoundException e) {
 			JOptionPane.showMessageDialog(null, "File '" + file + "' not found.\n" + e.getMessage(), "Error", JOptionPane.OK_OPTION);
 
+			e.printStackTrace();
+			
 			ok = false;
 		} catch (IOException e) {
 			JOptionPane.showMessageDialog(null, "Something went wrong while trying to read file '" + file + "\n" + e.getMessage(), "Error", JOptionPane.OK_OPTION);
 
+			e.printStackTrace();
+			
 			ok = false;
 		}
 		
@@ -462,9 +471,9 @@ public class PK2Map {
 
 			readAmount(amount, dis);
 			int protAmount = Integer.parseInt(cleanString(amount));
-
+			
 			for (int i = 0; i < protAmount; i++) {
-				char[] protNames = new char[13];
+				char[] protNames = new char[0xD];
 				readAmount(protNames, dis);
 				//prototypes[i] = protNames;
 				
@@ -519,7 +528,7 @@ public class PK2Map {
 			
 			for (int i = 0; i < sprites.length; i++) {
 				if (sprites[i] != 255 && sprites[i] >= spriteList.size() && !confirmed && contAsk) {
-					int res = JOptionPane.showConfirmDialog(null, "PekaED detected the use of a sprite that isn't actually used.\nDo you want to remove it?", "Faulty sprite detected", JOptionPane.YES_NO_OPTION);
+					int res = JOptionPane.showConfirmDialog(null, "PekaED detected the use of a sprite that isn't actually used.\nDo you want to remove it?\nSprite: " + sprites[i] + " List size: " + spriteList.size(), "Faulty sprite detected", JOptionPane.YES_NO_OPTION);
 
 					if (res == JOptionPane.YES_OPTION) {
 						confirmed = true;
@@ -592,6 +601,7 @@ public class PK2Map {
 			dos.writeInt(Integer.reverseBytes(switch2Time));
 			dos.writeInt(Integer.reverseBytes(switch3Time));
 			dos.writeInt(Integer.reverseBytes(time));
+			dos.writeInt(Integer.reverseBytes(extra));
 			dos.writeInt(Integer.reverseBytes(playerSprite));
 			dos.writeInt(Integer.reverseBytes(x));
 			dos.writeInt(Integer.reverseBytes(y));
@@ -641,6 +651,7 @@ public class PK2Map {
 				}
 			}
 			
+			// Why the fuck does this use a String for the layer parameter? What was I thinking back in 2017 lol
 			r = calculateUsedArea(sprites, "Sprites");
 			
 			width = r.width - r.x;
@@ -805,9 +816,9 @@ public class PK2Map {
 	private void loadSpriteList() {
 		for (int i = 0; i < prototypesList.size(); i++) {
 			File fi = null;
-			
-			if (Data.mode != Constants.MODE_CE && new File(Settings.EPISODES_PATH + Data.currentEpisodeName + "\\" + prototypesList.get(i)).exists()) {
-				fi = new File(Settings.EPISODES_PATH + Data.currentEpisodeName + "\\" + prototypesList.get(i));
+
+			if (Data.mode != Constants.MODE_CE && new File(Data.currentEpisodeName + "\\" + prototypesList.get(i)).exists()) {
+				fi = new File(Data.currentEpisodeName + "\\" + prototypesList.get(i));
 			} else if (Data.mode == Constants.MODE_CE && new File(file.getParent() + "\\sprites\\" + prototypesList.get(i)).exists()) {
 				fi = new File(file.getParent() + "\\sprites\\" + prototypesList.get(i));
 			} else {
@@ -817,7 +828,8 @@ public class PK2Map {
 			if (fi.exists()) {
 				spriteList.add(new PK2Sprite(prototypesList.get(i)));
 			} else {
-				removeSprite(i);
+				spriteList.add(null);
+				//removeSprite(i);
 			}
 		}
 	}
@@ -830,23 +842,50 @@ public class PK2Map {
 		}
 	}
 	
-	private void writeString(String s, DataOutputStream dos) throws IOException {
-		for (int i = 0; i < s.length(); i++) {
-			dos.writeByte(s.charAt(i));
+	private void writeString(String str, DataOutputStream dos) throws IOException {
+		dos.writeByte(str.length());
+	
+		for (int i = 0; i < str.length(); i++) {
+			dos.writeByte((byte) str.charAt(i));
 		}
-		
-		dos.writeByte(0);
 	}
 	
-	private String readString(DataInputStream dos) throws IOException {
+	private String readString(DataInputStream dis) throws IOException {
 		StringBuilder sb = new StringBuilder();
 		
-		char c;
-		while ((c = (char) dos.readByte()) != 0) {
-			sb.append(c);
+		byte len = dis.readByte();
+		
+		for (int i = 0; i < len; i++) {
+			sb.append((char) dis.readByte());
 		}
 		
 		return sb.toString();
+	}
+	
+	private String readString(int size, DataInputStream dos) throws IOException {
+		StringBuilder sb = new StringBuilder();
+		
+		for (int i = 0; i < size; i++) {
+			sb.append((char) dos.readByte());
+		}
+		
+		String str = "";
+		
+		for (int i = 0; i < sb.length(); i++) {
+			if (sb.charAt(i) != 0x0 && sb.charAt(i) != 0xCC) {
+				str += sb.charAt(i);
+			} else {
+				break;
+			}
+		}
+		
+		/*
+		char c;
+		while ((c = (char) dos.readByte()) != 0) {
+			sb.append(c);
+		}*/
+		
+		return str;
 	}
 	
 	private void readAmount(char[] array, DataInputStream dis) throws IOException {

@@ -192,7 +192,10 @@ public class SpritePanel extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				if (Data.map.spriteList.get(table.getSelectedRow()).type == 1) {
-					table.getModel().setValueAt(false, Data.map.playerSprite, 1);
+					if (Data.map.playerSprite < Data.map.spriteList.size()) {
+						table.getModel().setValueAt(false, Data.map.playerSprite, 1);
+					}
+					
 					table.getModel().setValueAt(true, table.getSelectedRow(), 1);
 					
 					Data.map.playerSprite = table.getSelectedRow();
@@ -281,14 +284,16 @@ public class SpritePanel extends JPanel {
 		dfm.getDataVector().clear();
 		
 		for (int i = 0; i < Data.map.spriteList.size(); i++) {
-			Vector<String> v = new Vector<String>();
-			v.addElement(" " + Data.map.spriteList.get(i).getName() + " (" + Data.map.spriteList.get(i).filename + ")");
-			
-			if (Data.map.spriteList.get(i).type == 1 && Data.map.playerSprite == i) {
-				v.addElement("true");
+			if (Data.map.spriteList.get(i) != null) {
+				Vector<String> v = new Vector<String>();
+				v.addElement(" " + Data.map.spriteList.get(i).getName() + " (" + Data.map.spriteList.get(i).filename + ")");
+				
+				if (Data.map.spriteList.get(i).type == 1 && Data.map.playerSprite == i) {
+					v.addElement("true");
+				}
+				
+				dfm.addRow(v);
 			}
-			
-			dfm.addRow(v);
 		}
 	}
 }

@@ -48,6 +48,8 @@ public class Data {
 	public static ArrayList<Integer> multiSelectionForeground = new ArrayList<Integer>();
 	public static ArrayList<Integer> multiSelectionBackground = new ArrayList<Integer>();
 	
+	public static int[][] multiForeground = new int[0][0];
+
 	public static ArrayList<File> episodeFiles = new ArrayList<File>();
 	
 	public static File currentFile, currentEpisodeFile;

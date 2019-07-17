@@ -32,7 +32,7 @@ public class SetMapPositionDialog extends JDialog {
 	
 	ArrayList<Integer> xPos = new ArrayList<Integer>();
 	ArrayList<Integer> yPos = new ArrayList<Integer>();
-	ArrayList<Integer> icons = new ArrayList<Integer>();	
+	ArrayList<Integer> icons = new ArrayList<Integer>(); // Move this to Data.
 
 	public SetMapPositionDialog(JSpinner sx, JSpinner sy, JComboBox ci) {
 		this.sx = sx;

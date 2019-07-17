@@ -243,7 +243,6 @@ public class PK2Sprite {
 		}*/
 	}
 	
-	// TODO cut this down and only load the necessary stuff
 	private void loadVersion14(DataInputStream dis) throws IOException {
 		char[] version = {'1', '.', '4', '\0'};
 		
@@ -253,143 +252,27 @@ public class PK2Sprite {
 
 		type = dis.readByte();
 		
-		int len = Integer.reverseBytes(dis.readInt());
-		imageFile = new char[len];
-		readAmount(imageFile, dis);
+		imageFile = readString(dis).toCharArray();
+		name = readString(dis).toCharArray();
 		
-		for (int i = 0; i < 5; i++) {
-			char[] amount = new char[soundFiles[0].length];
-			readAmount(amount, dis);
-			soundFiles[i] = amount;
-		}
-
-		frames = (int) (dis.readByte() & 0xFF);
-
-		for (int i = 0; i < 10; i++) {
-			byte[] sequence = new byte[10];
-			int frames = 0;
-			boolean loop = false;
-			
-			for (int j = 0; j < sequence.length; j++) {
-				sequence[j] = dis.readByte();
-			}
-			
-			frames = (int) (dis.readByte() & 0xFF);
-			loop = dis.readBoolean();
-			
-			animation[i] = new PK2SpriteAnimation(sequence, frames, loop);
-		}
-		
-		animations = (int) (dis.readByte() & 0xFF);
-		frameRate = (int) (dis.readByte() & 0xFF);
-
 		frameX = Integer.reverseBytes(dis.readInt());
 		frameY = Integer.reverseBytes(dis.readInt());
 		frameWidth = Integer.reverseBytes(dis.readInt());
 		frameHeight = Integer.reverseBytes(dis.readInt());
 		
-		len = Integer.reverseBytes(dis.readInt());
-		name = new char[len];
-		readAmount(name, dis);
+		color = dis.readByte() & 0xFF;
+	}
+	
+	private String readString(DataInputStream dis) throws IOException {
+		StringBuilder sb = new StringBuilder();
 		
-		width = Integer.reverseBytes(dis.readInt());
-		height = Integer.reverseBytes(dis.readInt());
+		byte len = dis.readByte();
 		
-		weight = dis.readDouble();
-		
-		ByteBuffer b = ByteBuffer.allocate(8);
-		
-		b.putDouble(weight);
-
-		b.order(ByteOrder.LITTLE_ENDIAN);
-		
-		weight = b.getDouble(0);
-		
-		enemy = dis.readBoolean();
-		
-		energy = Integer.reverseBytes(dis.readInt());
-		damage = Integer.reverseBytes(dis.readInt());
-		
-		damageType = dis.readByte() & 0xFF;
-		immunity = dis.readByte() & 0xFF;
-
-		score = Integer.reverseBytes(dis.readInt());
-		
-		for (int i = 0; i < 10; i++) {
-			AI[i] = Integer.reverseBytes(dis.readInt());
+		for (int i = 0; i < len; i++) {
+			sb.append((char) dis.readByte());
 		}
 		
-		maxJump = dis.readByte() & 0xFF;
-		
-		maxSpeed = dis.readDouble();
-		
-		ByteBuffer b2 = ByteBuffer.allocate(8);
-		b2.putDouble(maxSpeed);
-		b2.order(ByteOrder.LITTLE_ENDIAN);
-		
-		maxSpeed = b2.getDouble(0);
-		
-		loadingTime = Integer.reverseBytes(dis.readInt());
-		
-		color = dis.readByte() & 0xFF;
-		
-		obstacle = dis.readBoolean();
-
-		destruction = Integer.reverseBytes(dis.readInt());
-		
-		key = dis.readBoolean();
-		shakes = dis.readBoolean();
-		
-		bonuses = dis.readByte() & 0xFF;
-		
-		attack1Duration = Integer.reverseBytes(dis.readInt());
-		attack2Duration = Integer.reverseBytes(dis.readInt());
-		
-		parallaxFactor = Integer.reverseBytes(dis.readInt());
-		
-		len = Integer.reverseBytes(dis.readInt());
-		transformationSprite = new char[len];
-		readAmount(transformationSprite, dis);
-		
-		len = Integer.reverseBytes(dis.readInt());
-		bonusSprite = new char[len];
-		readAmount(bonusSprite, dis);
-
-		len = Integer.reverseBytes(dis.readInt());
-		atkSprite1 = new char[len];
-		readAmount(atkSprite1, dis);
-		
-		len = Integer.reverseBytes(dis.readInt());
-		atkSprite2 = new char[len];
-		readAmount(atkSprite2, dis);
-		
-		tileCheck = dis.readBoolean();
-		
-		soundFrequency = Integer.reverseBytes(dis.readInt());
-		randomFrequency = dis.readBoolean();
-		
-		wallUp = dis.readBoolean();
-		wallDown = dis.readBoolean();
-		wallRight = dis.readBoolean();
-		wallLeft = dis.readBoolean();
-
-		atkPause = Integer.reverseBytes(dis.readInt());
-		
-		glide = dis.readBoolean();
-		boss = dis.readBoolean();
-		bonusAlways = dis.readBoolean();
-		swim = dis.readBoolean();
-		
-		len = Integer.reverseBytes(dis.readInt());
-		char[] message = new char[len];
-		readAmount(message, dis);
-		this.message = new String(message);
-		
-		message_duration = Integer.reverseBytes(dis.readInt());
-		showWhenShot = dis.readBoolean();
-		showOnCollision = dis.readBoolean();
-		transformationValue = Integer.reverseBytes(dis.readInt());
-		attackPriority = Integer.reverseBytes(dis.readInt());
+		return sb.toString();
 	}
 	
 	private void loadVersion13(DataInputStream dis) throws IOException {

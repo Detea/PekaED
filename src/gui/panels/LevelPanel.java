@@ -21,6 +21,7 @@ import java.awt.image.IndexColorModel;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 
 import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
@@ -204,20 +205,20 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 			// If the currently selected tool is the brush, draw the selected tiles at the position of the mouse cursor
 			if (Data.editMode == Constants.EDIT_MODE_TILES) {
 				if (Data.selectedTool == Data.TOOL_BRUSH) {
-					if (!Data.multiSelectionForeground.isEmpty() || !Data.multiSelectionBackground.isEmpty()) {
+					if (!Data.multiSelectionForeground.isEmpty() || !Data.multiSelectionBackground.isEmpty() /*Data.multiForeground.length > 0 && Data.multiForeground[0].length > 0*/) {
 						if (Data.currentLayer == Constants.LAYER_BACKGROUND || Data.currentLayer == Constants.LAYER_BOTH) {
 							int x = 0, y = 0, i = 0;
 							
-							while (i < Data.multiSelectionBackground.size()) {
-								drawTile(g2d, (mx + (x * 32)) - ((Data.sw * 32) / 2), (my + (y * 32)) - ((Data.sh * 32) / 2), Data.multiSelectionBackground.get(i));
+							while (/*y < Data.sh*/ i < Data.multiSelectionBackground.size()) {
+								drawTile(g2d, ((mx / 32) * 32) + (x * 32), ((my / 32) * 32) + (y * 32), /*Data.multiForeground[y][x]*/Data.multiSelectionBackground.get(i));
 
 								y++;
 
-								if (y >= Data.sh) {
+								if (y == Data.sh) {
 									x++;
 									y = 0;
 								}
-
+								
 								i++;
 							}
 						}
@@ -225,17 +226,19 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 						if (Data.currentLayer == Constants.LAYER_FOREGROUND || Data.currentLayer == Constants.LAYER_BOTH) {
 							int x = 0, y = 0, i = 0;
 							
-							while (i < Data.multiSelectionForeground.size()) {
-								drawTile(g2d, (mx + (x * 32)) - ((Data.sw * 32) / 2), (my + (y * 32)) - ((Data.sh * 32) / 2), Data.multiSelectionForeground.get(i));
+							while (/*x < Data.sw*/ i < Data.multiSelectionForeground.size()) {
+								//drawTile(g2d, ((mx / 32) * 32) + (x * 32), ((my / 32) * 32) + (y * 32), Data.multiForeground[y][x]);
+								drawTile(g2d, ((mx / 32) * 32) + (x * 32), ((my / 32) * 32) + (y * 32), Data.multiSelectionForeground.get(i));
 								//drawTile(g, ((mxFixed + 16) + (x * 32)) - ((Data.sw * 32) / 2), ((myFixed + 16) + (y * 32)) - ((Data.sh * 32) / 2), Data.multiSelectionForeground.get(i));
 								
 								y++;
 
-								if (y >= Data.sh) {
+								if (y == Data.sh) {
 									x++;
+									
 									y = 0;
 								}
-
+								
 								i++;
 							}
 						}
@@ -312,7 +315,97 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 	
 	// TODO implement vertical and horizontal flipping
 	public void flipSelection(int dir) {
+		if (dir == Constants.FLIP_HORIZONTAL) {
+			
+		} else if (dir == Constants.FLIP_VERTICAL) {
+			flipVertically();
+		}
 		
+		repaint();
+	}
+	
+	private void flipHorizontally() {
+		
+	}
+	
+	private void flipVertically() {
+		if (!Data.multiSelectionForeground.isEmpty()) {
+			ArrayList<Integer> tmp = new ArrayList<Integer>();
+			ArrayList<Integer> tmp2 = new ArrayList<Integer>();			
+			
+			for (int s : Data.multiSelectionForeground) {
+				System.out.println(s);
+			}
+			
+			System.out.println("-----");
+			
+			int x = 0, y = 0, i = 0;
+			while (x < Data.sw) {
+				tmp.add(Data.multiSelectionForeground.get(y * Data.sw + x));
+				
+				y++;
+
+				if (y == Data.sh) {
+					x++;
+					
+					y = 0;
+			
+					for (int t : tmp)
+						System.out.println("before: " + t);
+					
+					Collections.reverse(tmp);
+					
+					System.out.println();
+					
+					for (int t : tmp)
+						System.out.println("after: " + t);
+					
+					System.out.println("+++++++++");
+					
+					tmp2.addAll(tmp);
+					
+					tmp.clear();
+				}
+			}
+			
+			System.out.println("-----");
+			
+			for (int s : tmp2) {
+				System.out.println(s);
+			}
+			
+			Data.multiSelectionForeground.clear();
+			Data.multiSelectionForeground.addAll(tmp2);
+		}
+		
+		if (!Data.multiSelectionBackground.isEmpty()) {
+			ArrayList<Integer> tmp = new ArrayList<Integer>();
+			ArrayList<Integer> tmp2 = new ArrayList<Integer>();			
+			
+			int x = 0, y = 0, i = 0;
+			while (i < Data.multiSelectionBackground.size()) {
+				tmp.add(Data.multiSelectionBackground.get(y * Data.sw + x));
+				
+				x++;
+
+				if (x >= Data.sw) {
+					y++;
+					
+					x = 0;
+					
+					Collections.reverse(tmp);
+					
+					tmp2.addAll(tmp);
+					
+					tmp.clear();
+				}
+				
+				i++;
+			}
+			
+			Data.multiSelectionBackground.clear();
+			Data.multiSelectionBackground.addAll(tmp2);
+		}
 	}
 	
 	public void setTileset() {
@@ -483,13 +576,13 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 								DoAction da = null;
 								
 								while (i < Data.multiSelectionForeground.size()) {
-									da = new DoAction(((mx + 16) + (x * 32)) - ((Data.sw * 32) / 2), ((my + 16) + (y * 32)) - ((Data.sh * 32) / 2), Data.map.getTileAt(((mx + 16) + (x * 32)) - ((Data.sw * 32) / 2), ((my + 16) + (y * 32)) - ((Data.sh * 32) / 2), Constants.LAYER_FOREGROUND),  Data.multiSelectionForeground.get(i), Data.TOOL_BRUSH, Constants.LAYER_FOREGROUND);
+									da = new DoAction(((mx + 32) + (x * 32)) - ((Data.sw * 32) / 2), ((my + 32) + (y * 32)) - ((Data.sh * 32) / 2), Data.map.getTileAt(((mx + 32) + (x * 32)) - ((Data.sw * 32) / 2), ((my + 32) + (y * 32)) - ((Data.sh * 32) / 2), Constants.LAYER_FOREGROUND),  Data.multiSelectionForeground.get(i), Data.TOOL_BRUSH, Constants.LAYER_FOREGROUND);
 									
 									if (!Data.multiSelectionForeground.contains(da.value)) {
-										Data.tmpStack.add(new DoAction(((mx + 16) + (x * 32)) - ((Data.sw * 32) / 2), ((my + 16) + (y * 32)) - ((Data.sh * 32) / 2), Data.map.getTileAt(((mx + 16) + (x * 32)) - ((Data.sw * 32) / 2), ((my + 16) + (y * 32)) - ((Data.sh * 32) / 2), Constants.LAYER_FOREGROUND),  Data.multiSelectionForeground.get(i), Data.TOOL_BRUSH, Constants.LAYER_FOREGROUND));
+										Data.tmpStack.add(new DoAction(((mx + 32) + (x * 32)) - ((Data.sw * 32) / 2), ((my + 32) + (y * 32)) - ((Data.sh * 32) / 2), Data.map.getTileAt(((mx + 32) + (x * 32)) - ((Data.sw * 32) / 2), ((my + 32) + (y * 32)) - ((Data.sh * 32) / 2), Constants.LAYER_FOREGROUND),  Data.multiSelectionForeground.get(i), Data.TOOL_BRUSH, Constants.LAYER_FOREGROUND));
 									}
 
-									Data.map.setForegroundTile(((mx + 16) + (x * 32)) - ((Data.sw * 32) / 2), ((my + 16) + (y * 32)) - ((Data.sh * 32) / 2), Data.multiSelectionForeground.get(i));
+									Data.map.setForegroundTile(((mx + 32) + (x * 32)) - ((Data.sw * 32) / 2), ((my + 32) + (y * 32)) - ((Data.sh * 32) / 2), Data.multiSelectionForeground.get(i));
 									
 									y++;
 
@@ -504,8 +597,17 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 							
 							if (!Data.multiSelectionBackground.isEmpty() && (Data.currentLayer == Constants.LAYER_BACKGROUND || Data.currentLayer == Constants.LAYER_BOTH)) {
 								int x = 0, y = 0, i = 0;
+								
+								DoAction da = null;
+								
 								while (i < Data.multiSelectionBackground.size()) {
-									Data.map.setBackgroundTile(((mxFixed + 16) + (x * 32)) - ((Data.sw * 32) / 2), ((myFixed + 16) + (y * 32)) - ((Data.sh * 32) / 2), Data.multiSelectionBackground.get(i));
+									da = new DoAction(((mx + 32) + (x * 32)) - ((Data.sw * 32) / 2), ((my + 32) + (y * 32)) - ((Data.sh * 32) / 2), Data.map.getTileAt(((mx + 32) + (x * 32)) - ((Data.sw * 32) / 2), ((my + 32) + (y * 32)) - ((Data.sh * 32) / 2), Constants.LAYER_BACKGROUND),  Data.multiSelectionBackground.get(i), Data.TOOL_BRUSH, Constants.LAYER_BACKGROUND);
+									
+									if (!Data.multiSelectionBackground.contains(da.value)) {
+										Data.tmpStack.add(new DoAction(((mx + 32) + (x * 32)) - ((Data.sw * 32) / 2), ((my + 32) + (y * 32)) - ((Data.sh * 32) / 2), Data.map.getTileAt(((mx + 32) + (x * 32)) - ((Data.sw * 32) / 2), ((my + 32) + (y * 32)) - ((Data.sh * 32) / 2), Constants.LAYER_BACKGROUND),  Data.multiSelectionBackground.get(i), Data.TOOL_BRUSH, Constants.LAYER_BACKGROUND));
+									}
+
+									Data.map.setBackgroundTile(((mx + 32) + (x * 32)) - ((Data.sw * 32) / 2), ((my + 32) + (y * 32)) - ((Data.sh * 32) / 2), Data.multiSelectionBackground.get(i));
 									
 									y++;
 
@@ -675,9 +777,10 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 								
 								int x = 0, y = 0, i = 0;
 								while (i < Data.multiSelectionForeground.size()) {
-									Data.tmpStack.add(new DoAction(((mx + 16) + (x * 32)) - ((Data.sw * 32) / 2), ((my + 16) + (y * 32)) - ((Data.sh * 32) / 2), Data.map.getTileAt(((mx + 16) + (x * 32)) - ((Data.sw * 32) / 2), ((my + 16) + (y * 32)) - ((Data.sh * 32) / 2), Constants.LAYER_FOREGROUND),  Data.multiSelectionForeground.get(i), Data.TOOL_BRUSH, Constants.LAYER_FOREGROUND));
+									Data.tmpStack.add(new DoAction(((mx / 32) * 32) + (x * 32), ((my / 32) * 32) + (y * 32), Data.map.getTileAt(((mx / 32) * 32) + (x * 32), ((my / 32) * 32) + (y * 32), Constants.LAYER_FOREGROUND),  Data.multiSelectionForeground.get(i), Data.TOOL_BRUSH, Constants.LAYER_FOREGROUND));
 									
-									Data.map.setForegroundTile(((mx + 16) + (x * 32)) - ((Data.sw * 32) / 2), ((my + 16) + (y * 32)) - ((Data.sh * 32) / 2), Data.multiSelectionForeground.get(i));
+									//drawTile(g2d, , Data.multiSelectionForeground.get(i));
+									Data.map.setForegroundTile(((mx / 32) * 32) + (x * 32), ((my / 32) * 32) + (y * 32), Data.multiSelectionForeground.get(i));
 									
 									y++;
 
@@ -695,9 +798,9 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 								
 								int x = 0, y = 0, i = 0;
 								while (i < Data.multiSelectionBackground.size()) {
-									Data.tmpStack.add(new DoAction(((mx + 16) + (x * 32)) - ((Data.sw * 32) / 2), ((my + 16) + (y * 32)) - ((Data.sh * 32) / 2), Data.map.getTileAt(((mx + 16) + (x * 32)) - ((Data.sw * 32) / 2), ((my + 16) + (y * 32)) - ((Data.sh * 32) / 2), Constants.LAYER_BACKGROUND),  Data.multiSelectionBackground.get(i), Data.TOOL_BRUSH, Constants.LAYER_BACKGROUND));
+									Data.tmpStack.add(new DoAction(((mx / 32) * 32) + (x * 32), ((my / 32) * 32) + (y * 32), Data.map.getTileAt(((mx / 32) * 32) + (x * 32), ((my / 32) * 32) + (y * 32), Constants.LAYER_BACKGROUND),  Data.multiSelectionBackground.get(i), Data.TOOL_BRUSH, Constants.LAYER_BACKGROUND));
 									
-									Data.map.setBackgroundTile(((mx + 16) + (x * 32)) - ((Data.sw * 32) / 2), ((my + 16) + (y * 32)) - ((Data.sh * 32) / 2), Data.multiSelectionBackground.get(i));
+									Data.map.setBackgroundTile(((mx / 32) * 32) + (x * 32), ((my / 32) * 32) + (y * 32), Data.multiSelectionBackground.get(i));
 									
 									y++;
 
@@ -823,7 +926,7 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 		}
 		
 		// The following code is responsible for adding the selected tiles to the respective lists, depending on the current layer.
-		if (Data.dragging) {
+		if (Data.dragging && ((Data.sw > 1 && Data.sh == 1) || (Data.sw == 1 && Data.sh > 1) || (Data.sw > 1 && Data.sh > 1))) {
 			// Setting the mouse position variables, because if you don't the selection will appear at 0, 0, until the user moves the mouse
 			Point2D ml = e.getPoint();
 			
@@ -832,6 +935,16 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 			mx = (int) ml.getX();
 			my = (int) ml.getY();
 			
+			Data.multiForeground = new int[Data.sh + 1][Data.sw + 1];
+			
+			for (int i = 0; i < Data.sw; i++) {
+				for (int j = 0; j < Data.sh; j++) {
+					Data.multiForeground[j][i] = -1;
+				}
+			}
+			
+			int x = 0;
+			int y = 0;
 			for (int i = dx; i < dx + Data.sw; i++) {
 				for (int j = dy; j < dy + Data.sh; j++) {
 					if (Data.selectedTool == Data.TOOL_BRUSH) {
@@ -842,6 +955,7 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 								break;
 								
 							case Constants.LAYER_FOREGROUND:
+								//Data.multiForeground[y][x] = Data.map.getTileAt(i * 32, j * 32, Constants.LAYER_FOREGROUND);
 								Data.multiSelectionForeground.add(Data.map.getTileAt(i * 32, j * 32, Constants.LAYER_FOREGROUND));
 								break;
 								
@@ -854,7 +968,9 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 						
 						Data.map.setTile(i * 32, j * 32, 255);
 					}
-				}
+					y++;
+				}				
+				x++;
 			}
 			
 			if (!Data.tmpStack.isEmpty()) {
@@ -866,6 +982,11 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 			Data.dragging = false; // User is not dragging anymore, no need to draw the black/white selection rectangle.
 			
 			repaint();
+		} else {
+			Data.multiSelectLevel = false;
+			Data.multiSelectTiles = false;
+			
+			Data.dragging = false;
 		}
 	}
 	

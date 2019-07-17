@@ -343,13 +343,6 @@ public class PekaEDGUI {
 								if (done) {
 									edLbl.setText(EpisodeExtractor.doneMessage);
 								}
-								
-								try {
-									Thread.sleep(17);
-								} catch (InterruptedException e) {
-									// TODO Auto-generated catch block
-									e.printStackTrace();
-								}
 							}
 							
 						});
@@ -781,7 +774,9 @@ public class PekaEDGUI {
 		bSaveMap.setFocusable(false);
 		btBrush.setFocusable(false);
 		
-		tabbedPane.addTab("Properties", msp);
+		JScrollPane mssp = new JScrollPane(msp, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		
+		tabbedPane.addTab("Properties", mssp);
 		tabbedPane.addTab("Sprites", sp);
 		tabbedPane.addTab("Episode", ep);
 		
@@ -1211,7 +1206,7 @@ public class PekaEDGUI {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				Data.lp.flipSelection(0);
+				Data.lp.flipSelection(Constants.FLIP_VERTICAL);
 			}
 			
 		});
@@ -1745,6 +1740,12 @@ public class PekaEDGUI {
 	
 	public void showLoadDialog() {
 		JFileChooser fc = new JFileChooser(Data.lastPath);
+		
+		if (Data.lastPath != null) {
+			fc.setCurrentDirectory(Data.lastPath);
+		} else {
+			fc.setCurrentDirectory(new File(Settings.EPISODES_PATH));
+		}
 		
 		if (Data.mode == Constants.MODE_CE) {
 			fc.setFileFilter(new FileNameExtensionFilter("Pekka Kana 2 Level (*.map | *.cemap)", "map", "cemap"));
