@@ -3,7 +3,7 @@
   <dontWrapJar>false</dontWrapJar>
   <headerType>gui</headerType>
   <jar>E:\Desktop\pked.jar</jar>
-  <outfile>E:\Desktop\PekaED-120719.exe</outfile>
+  <outfile>E:\Desktop\PekaED-301219.exe</outfile>
   <errTitle></errTitle>
   <cmdLine></cmdLine>
   <chdir>.</chdir>
@@ -13,7 +13,7 @@
   <stayAlive>false</stayAlive>
   <restartOnCrash>false</restartOnCrash>
   <manifest></manifest>
-  <icon>D:\Downloads\pkedit.ico</icon>
+  <icon>E:\eclipse-workspace\Pekka Kana 2 stuff\pked\icons\pkedit.ico</icon>
   <jre>
     <path></path>
     <bundledJre64Bit>false</bundledJre64Bit>

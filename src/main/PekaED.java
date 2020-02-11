@@ -68,14 +68,14 @@ public class PekaED {
 				int key, mod, mask;
 				String action;
 				
-				for (int i = 0; i < 21; i++) {
+				for (int i = 0; i < Settings.SHORTCUT_AMOUNT; i++) {
 					action = dis.readUTF();
 					mod = dis.readInt();
 					mask = dis.readInt();
 					key = dis.readInt();
 					Settings.shortcuts.put(action, new ShortcutKey(mod, mask, key));
 					
-					Settings.shortcutKeyCodes[i] = key;
+					Settings.shortcutKeyCodes.add(key);
 				}
 				
 				Settings.loadLastLevel = dis.readBoolean();

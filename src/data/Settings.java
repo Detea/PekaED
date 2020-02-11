@@ -3,6 +3,7 @@ package data;
 import java.awt.Event;
 import java.awt.event.KeyEvent;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
 public class Settings {
@@ -34,12 +35,14 @@ public class Settings {
 	
 	public static boolean autoSwitchModes = true;
 	
-	public static String parameters = "pk2ce.exe dev test %level%";
+	public static String parameters = "pk2.exe dev test %level%";
 	
 	public static int doLimit = 100;
 	
+	public static final int SHORTCUT_AMOUNT = 23;
+	
 	public static LinkedHashMap<String, ShortcutKey> shortcuts = new LinkedHashMap<String, ShortcutKey>();
-	public static int[] shortcutKeyCodes = new int[21];
+	public static ArrayList<Integer> shortcutKeyCodes = new ArrayList<Integer>();
 	
 	public static void resetShortcuts() {
 		shortcuts.put("createLevel", new ShortcutKey(Event.CTRL_MASK, 0, KeyEvent.VK_N));
@@ -63,10 +66,12 @@ public class Settings {
 		shortcuts.put("undoAction", new ShortcutKey(Event.CTRL_MASK, 0, KeyEvent.VK_Z));
 		shortcuts.put("redoAction", new ShortcutKey(Event.CTRL_MASK, 0, KeyEvent.VK_Y));
 		shortcuts.put("flipVertically", new ShortcutKey(0, 0, KeyEvent.VK_V));
+		shortcuts.put("lockXAxis", new ShortcutKey(0, 0, KeyEvent.VK_X));
+		shortcuts.put("lockYAxis", new ShortcutKey(0, 0, KeyEvent.VK_Y));
 		
 		int i = 0;
 		for (String s : shortcuts.keySet()) {
-			shortcutKeyCodes[i] = shortcuts.get(s).key;
+			shortcutKeyCodes.add(shortcuts.get(s).key);
 			
 			i++;
 		}

@@ -3,7 +3,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
@@ -22,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.concurrent.ThreadLocalRandom;
 
 import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
@@ -42,6 +42,8 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 	
 	private int mx, my, layer, mouseButton, mxFixed, myFixed;
 	private int viewX, viewY, viewW, viewH;
+	
+	private int lockXVal, lockYVal;
 	
 	private BufferedImage background, tileset;
 	public ArrayList<BufferedImage> tiles = new ArrayList<BufferedImage>();
@@ -302,7 +304,7 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 	}
 		
 	private void drawTile(Graphics2D g, int x, int y, int tile) {
-		if (tile != 255 && tile != -1) {
+		if (tile != 255 && tile != -1 && tile <= tiles.size()) {
 			g.drawImage(tiles.get(tile), x, y, null);
 		}
 	}
@@ -575,6 +577,7 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 								
 								DoAction da = null;
 								
+								// TODO IMPLEMENT LOCK FOR MULTI SELECT
 								while (i < Data.multiSelectionForeground.size()) {
 									da = new DoAction(((mx + 32) + (x * 32)) - ((Data.sw * 32) / 2), ((my + 32) + (y * 32)) - ((Data.sh * 32) / 2), Data.map.getTileAt(((mx + 32) + (x * 32)) - ((Data.sw * 32) / 2), ((my + 32) + (y * 32)) - ((Data.sh * 32) / 2), Constants.LAYER_FOREGROUND),  Data.multiSelectionForeground.get(i), Data.TOOL_BRUSH, Constants.LAYER_FOREGROUND);
 									
@@ -623,13 +626,23 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 							DoAction da = null;
 							
 							if (Data.currentLayer == Constants.LAYER_FOREGROUND || Data.currentLayer == Constants.LAYER_BOTH) {
+								// TODO RANDOMIZED TILES
+								//Data.selectedTileForeground = ThreadLocalRandom.current().nextInt(22, 26);
+								
+								// TODO FIX RE-/UNDO
 								da = new DoAction(mx, my, Data.map.getTileAt(mx, my, Constants.LAYER_FOREGROUND), Data.selectedTileForeground, Data.TOOL_BRUSH, Constants.LAYER_FOREGROUND);
 								
 								if (Data.tmpStack.get(Data.tmpStack.size() - 1).lastValue != da.value) {
 									Data.tmpStack.add(da);
 								}
 								
-								Data.map.setForegroundTile(mx, my, Data.selectedTileForeground);
+								if (Data.lockX) {
+									Data.map.setForegroundTile(lockXVal, my, Data.selectedTileForeground);
+								} else if (Data.lockY) {
+									Data.map.setForegroundTile(mx, lockYVal, Data.selectedTileForeground);
+								} else {
+									Data.map.setForegroundTile(mx, my, Data.selectedTileForeground);
+								}
 							} else if (Data.currentLayer == Constants.LAYER_BACKGROUND) {
 								Data.map.setBackgroundTile(mx, my, Data.selectedTileBackground);
 							}
@@ -642,7 +655,13 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 								Data.tmpStack.add(da);
 							}
 							
-							Data.map.setSpriteAt(mx, my, Data.selectedSprite);
+							if (Data.lockX) {
+								Data.map.setSpriteAt(lockXVal, my, Data.selectedSprite);								
+							} else if (Data.lockY) {
+								Data.map.setSpriteAt(mx, lockYVal, Data.selectedSprite);								
+							} else {
+								Data.map.setSpriteAt(mx, my, Data.selectedSprite);
+							}
 							
 							updateStatusbar();
 						}
@@ -741,6 +760,12 @@ public class LevelPanel extends JPanel implements MouseListener, MouseMotionList
 		myFixed = (my / 32) * 32;
 	
 		updateInfo(mxFixed, myFixed);
+		
+		if (Data.lockX) {
+			lockXVal = mxFixed;
+		} else if (Data.lockY) {
+			lockYVal = myFixed;
+		}
 		
 		if (!Data.multiSelectionBackground.isEmpty() || !Data.multiSelectionForeground.isEmpty() || Data.selectedTileBackground != 255 || Data.selectedTileForeground != 255 || Data.selectedSprite != 255) {
 			repaint();

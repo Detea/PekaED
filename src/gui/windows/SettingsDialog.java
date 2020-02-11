@@ -13,7 +13,11 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
@@ -46,6 +50,7 @@ import javax.swing.table.TableColumn;
 import data.Constants;
 import data.Data;
 import data.Settings;
+import data.ShortcutKey;
 
 public class SettingsDialog extends JDialog {
 
@@ -66,6 +71,7 @@ public class SettingsDialog extends JDialog {
 	
 	private boolean changedKeys = false;
 	private JTextField txtPkceexeTestlevel;
+	private JButton btnExport;
 	
 	@SuppressWarnings("serial")
 	public SettingsDialog(PekaEDGUI pkg) {
@@ -290,6 +296,8 @@ public class SettingsDialog extends JDialog {
 				{"Undo", new Integer(0), new Integer(0), null},
 				{"Redo", new Integer(0), new Integer(0), null},
 				{"Flip selection vertically", new Integer(0), new Integer(0), null},
+				{"Lock X axis", new Integer(0), new Integer(0), null},
+				{"Lock Y axis", new Integer(0), new Integer(0), null},
 			},
 			new String[] {
 				"Function", "Modifier", "Mask", "Key"
@@ -317,6 +325,40 @@ public class SettingsDialog extends JDialog {
 		JButton btnReset = new JButton("Reset");
 		btnReset.setBounds(324, 326, 89, 23);
 		panel_1.add(btnReset);
+		
+		JButton btnImport = new JButton("Import");
+		btnImport.setVisible(false);
+		btnImport.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				JFileChooser fc = new JFileChooser();
+				
+				int res = fc.showOpenDialog(null);
+				
+				if (res == JFileChooser.APPROVE_OPTION) {
+					importKeys(fc.getSelectedFile());
+					
+					changedKeys = true;
+				}
+			}
+		});
+		btnImport.setBounds(10, 326, 89, 23);
+		panel_1.add(btnImport);
+		
+		btnExport = new JButton("Export");
+		btnExport.setVisible(false);
+		btnExport.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				JFileChooser fc = new JFileChooser();
+				
+				int res = fc.showSaveDialog(null);
+				
+				if (res == JFileChooser.APPROVE_OPTION) {
+					exportKeys(fc.getSelectedFile());
+				}
+			}
+		});
+		btnExport.setBounds(109, 326, 89, 23);
+		panel_1.add(btnExport);
 		btnReset.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				Settings.resetShortcuts();
@@ -389,7 +431,7 @@ public class SettingsDialog extends JDialog {
 								while (Data.run) {
 									if (!kd.isVisible()) {
 										table.setValueAt(KeyEvent.getKeyText(Data.key), row, 3);
-										Settings.shortcutKeyCodes[row] = Data.key;
+										Settings.shortcutKeyCodes.set(row, Data.key);
 										
 										Data.run = false;
 									}
@@ -463,7 +505,7 @@ public class SettingsDialog extends JDialog {
 			
 			table.getModel().setValueAt(str, i, 1);
 			table.getModel().setValueAt(mask, i, 2);
-			table.getModel().setValueAt(KeyEvent.getKeyText(Settings.shortcutKeyCodes[i]), i, 3);
+			table.getModel().setValueAt(KeyEvent.getKeyText(Settings.shortcutKeyCodes.get(i)), i, 3);
 			
 			i++;
 		}
@@ -612,7 +654,7 @@ public class SettingsDialog extends JDialog {
 							break;
 					}
 					
-					key = Settings.shortcutKeyCodes[i];
+					key = Settings.shortcutKeyCodes.get(i);
 					
 					Settings.shortcuts.get(s).modifier = mod;
 					Settings.shortcuts.get(s).mask = mask;
@@ -659,7 +701,7 @@ public class SettingsDialog extends JDialog {
 						dos.writeUTF(s);
 						dos.writeInt(Settings.shortcuts.get(s).modifier);
 						dos.writeInt(Settings.shortcuts.get(s).mask);
-						dos.writeInt(Settings.shortcutKeyCodes[j]);
+						dos.writeInt(Settings.shortcutKeyCodes.get(j));
 						
 						j++;
 					}
@@ -749,6 +791,95 @@ public class SettingsDialog extends JDialog {
 		
 		setResizable(false);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+	}
+	
+	public void importKeys(File file) {
+		DataInputStream dis;
+		try {
+			dis = new DataInputStream(new FileInputStream(file));
+			
+			for (int i = 0; i < Settings.SHORTCUT_AMOUNT; i++) {
+				String action = dis.readUTF();
+				int mod = dis.readInt();
+				int mask = dis.readInt();
+				int key = dis.readInt();
+				Settings.shortcuts.put(action, new ShortcutKey(mod, mask, key));
+				
+				Settings.shortcutKeyCodes.add(key);
+			}
+			
+			int i = 0;
+			for (String s : Settings.shortcuts.keySet()) {
+				String str = "None", mask = "None";
+				
+				switch (Settings.shortcuts.get(s).modifier) {
+					case Event.CTRL_MASK:
+						str = "CTRL";
+						break;
+						
+					case Event.SHIFT_MASK:
+						str = "SHIFT";
+						break;
+						
+					case Event.META_MASK:
+						str = "META";
+						break;
+						
+					case Event.ALT_MASK:
+						str = "ALT";
+						break;
+				}
+				
+				switch (Settings.shortcuts.get(s).mask) {
+					case Event.CTRL_MASK:
+						mask = "CTRL";
+						break;
+						
+					case Event.SHIFT_MASK:
+						mask = "SHIFT";
+						break;
+						
+					case Event.META_MASK:
+						mask = "META";
+						break;
+						
+					case Event.ALT_MASK:
+						mask = "ALT";
+						break;
+				}
+				
+				table.getModel().setValueAt(str, i, 1);
+				table.getModel().setValueAt(mask, i, 2);
+				table.getModel().setValueAt(KeyEvent.getKeyText(Settings.shortcutKeyCodes.get(i)), i, 3);
+				
+				i++;
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void exportKeys(File file) {
+		DataOutputStream dos;
+		try {
+			dos = new DataOutputStream(new FileOutputStream(file));
+			
+			int i = 0;
+			for (String s : Settings.shortcuts.keySet()) {
+				dos.writeUTF(s);
+				dos.writeInt(Settings.shortcuts.get(s).modifier);
+				dos.writeInt(Settings.shortcuts.get(s).mask);
+				dos.writeInt(Settings.shortcutKeyCodes.get(i));
+				
+				i++;
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public void showDialog() {

@@ -108,13 +108,15 @@ public class MiniMapPanel extends JPanel implements MouseListener, MouseMotionLi
 			for (int i = 0; i < PK2Map.MAP_WIDTH; i++) {
 				for (int j = 0; j < PK2Map.MAP_HEIGHT; j++) {
 					if (Data.map.getTileAt(i * 32, j * 32, Constants.LAYER_BACKGROUND) != 255) {
-						g.setColor(new Color(Data.lp.tiles.get(Data.map.getTileAt(i * 32, j * 32, Constants.LAYER_BACKGROUND)).getRGB(0, 0)));
-						g.fillRect(i, j, 1, 1);
+						if (Data.map.getTileAt(i * 32, j * 32, Constants.LAYER_BACKGROUND) < Data.lp.tiles.size())
+							g.setColor(new Color(Data.lp.tiles.get(Data.map.getTileAt(i * 32, j * 32, Constants.LAYER_BACKGROUND)).getRGB(0, 0)));
+							g.fillRect(i, j, 1, 1);
 					}
 					
 					if (Data.map.getTileAt(i * 32, j * 32, Constants.LAYER_FOREGROUND) != 255) {
-						g.setColor(new Color(Data.lp.tiles.get(Data.map.getTileAt(i * 32, j * 32, Constants.LAYER_FOREGROUND)).getRGB(0, 0)));
-						g.fillRect(i, j, 1, 1);
+						if (Data.map.getTileAt(i * 32, j * 32, Constants.LAYER_FOREGROUND) < Data.lp.tiles.size())
+							g.setColor(new Color(Data.lp.tiles.get(Data.map.getTileAt(i * 32, j * 32, Constants.LAYER_FOREGROUND)).getRGB(0, 0)));
+							g.fillRect(i, j, 1, 1);
 					}
 				}
 			}

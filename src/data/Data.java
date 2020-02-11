@@ -41,6 +41,9 @@ public class Data {
 	public static boolean multiSelectTiles = false;
 	public static boolean dragging = false;
 	
+	public static boolean lockX;
+	public static boolean lockY;
+	
 	public static boolean showSpriteWarning = true;
 	
 	public static boolean showSpriteRect = true;

@@ -1315,6 +1315,42 @@ public class PekaEDGUI {
 			
 		});
 		
+		actionMap.put("lockX", new AbstractAction() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Data.lockX = true;
+			}
+			
+		});
+		
+		actionMap.put("unlockXaxis", new AbstractAction() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Data.lockX = false;
+			}
+			
+		});
+		
+		actionMap.put("lockY", new AbstractAction() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Data.lockY = true;
+			}
+			
+		});
+		
+		actionMap.put("unlockYaxis", new AbstractAction() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Data.lockY = false;
+			}
+			
+		});
+		
 		frame.addWindowListener(new WindowListener() {
 
 			@Override
@@ -1637,6 +1673,9 @@ public class PekaEDGUI {
 		addShortcut(keyMap, "redoAction", "redo");
 		
 		addShortcut(keyMap, "flipVertically", "flipVerticallyAction");
+
+		addShortcut(keyMap, "lockXAxis", "lockX");
+		addShortcut(keyMap, "lockYAxis", "lockY");
 		
 		SwingUtilities.replaceUIInputMap((JComponent) scrollPane2,  JComponent.WHEN_FOCUSED, keyMap);
 		SwingUtilities.replaceUIActionMap((JComponent) scrollPane2, actionMap);
@@ -1690,6 +1729,13 @@ public class PekaEDGUI {
 		}
 		
 		keyMap.put(KeyStroke.getKeyStroke(str.toLowerCase() + " " + mask.toLowerCase() + " pressed " + KeyEvent.getKeyText(Settings.shortcuts.get(shortcutStr).key)), methodStr);
+		
+		// Hacky af
+		if (shortcutStr.equals("lockXAxis")) {
+			keyMap.put(KeyStroke.getKeyStroke(str.toLowerCase() + " " + mask.toLowerCase() + " released " + KeyEvent.getKeyText(Settings.shortcuts.get(shortcutStr).key)), "unlockXaxis");
+		} else if (shortcutStr.equals("lockYAxis")) {
+			keyMap.put(KeyStroke.getKeyStroke(str.toLowerCase() + " " + mask.toLowerCase() + " released " + KeyEvent.getKeyText(Settings.shortcuts.get(shortcutStr).key)), "unlockYaxis");
+		}
 	}
 	
 	private void testLevel() {
@@ -2115,7 +2161,7 @@ public class PekaEDGUI {
 				dos.writeUTF(s);
 				dos.writeInt(Settings.shortcuts.get(s).modifier);
 				dos.writeInt(Settings.shortcuts.get(s).mask);
-				dos.writeInt(Settings.shortcutKeyCodes[i]);
+				dos.writeInt(Settings.shortcutKeyCodes.get(i));
 				
 				i++;
 			}
