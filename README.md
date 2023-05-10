@@ -1,5 +1,7 @@
-## Note: This version will be replaced by a better written and designed version, this year (2020). ##
-This projects code is really messy and badly designed, this repo will (if it does) stay online for archival purposes only.
+## Note: This project has been replaced by PekaEDS and will not receive any updates anymore. ##
+https://github.com/Detea/PekaEDS
+
+---
 
 A modern Pekka Kana 2 level editor.
 [Manual](https://detea.github.io/pekaed/)
